@@ -1,0 +1,43 @@
+{
+  "name": "dsh-ai-core",
+  "version": "0.0.0",
+  "description": "The contract of the AI capabilities DSH lacks (embedding, and later reranking, image generation, speech): service classes, provider descriptor and registry interface. A library, not a plugin.",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./slots": {
+      "types": "./lib/slots.d.ts",
+      "default": "./lib/slots.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "GPL-3.0-only",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
+    "@types/node": "^22.20.0",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}
