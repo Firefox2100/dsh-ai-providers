@@ -5,11 +5,14 @@ import z from '@deepseek-ai/schemastery'
 export interface Config {
   /** The id of the provider that supplies embedding; empty for none. */
   embedding: Volatile<string>
+  /** The id of the provider that supplies reranking; empty for none. */
+  rerank: Volatile<string>
   /** How long a vector prepared with `prefetch` waits to be retrieved before it is dropped, in seconds. */
   holdSeconds: Volatile<number>
 }
 
 export const Config = z.object({
   embedding: z.string().default('').volatile(),
+  rerank: z.string().default('').volatile(),
   holdSeconds: z.natural().default(300).volatile(),
 })

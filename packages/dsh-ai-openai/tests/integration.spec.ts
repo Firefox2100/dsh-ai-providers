@@ -40,7 +40,7 @@ beforeEach(async () => {
   // The plugins are applied with live fields in place of the profile's configuration.
   ctx.plugin({ name: 'vendor', inject: openai.inject, apply: (scope: Context) => { openai.apply(scope, vendorConfig as never) } } as never, {} as never)
   await settle()
-  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: live(selection), holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)
+  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: live(selection), rerank: { get: () => '' }, holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)
   await settle()
 })
 afterEach(async () => {

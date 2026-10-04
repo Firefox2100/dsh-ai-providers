@@ -1,7 +1,8 @@
 import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { Capability } from 'dsh-ai-core'
 import type { Dictionaries } from '../i18n.ts'
 
-export type EmbeddingLocaleKey =
+export type CapabilityLocaleKey =
   | 'nav' | 'title' | 'description'
   | 'provider' | 'providerNone' | 'providerNotLoaded' | 'noProviders' | 'chooseProvider'
   | 'status' | 'statusAvailable' | 'statusUnavailable'
@@ -9,7 +10,7 @@ export type EmbeddingLocaleKey =
   | 'loadFailed' | 'overridden' | 'reset' | 'invalid'
   | 'readOnly' | 'unavailable' | 'save' | 'saving' | 'saveFailed'
 
-export const dictionaries: Dictionaries<EmbeddingLocaleKey> = {
+const embedding: Dictionaries<CapabilityLocaleKey> = {
   en: {
     nav: 'Embedding',
     title: 'Embedding',
@@ -64,7 +65,31 @@ export const dictionaries: Dictionaries<EmbeddingLocaleKey> = {
   },
 }
 
-export const formLabels = (t: (key: EmbeddingLocaleKey) => string): SettingsFormLabels => ({
+const rerank: Dictionaries<CapabilityLocaleKey> = {
+  en: {
+    ...embedding.en,
+    nav: 'Reranking',
+    title: 'Reranking',
+    description: 'Judges how well each of a few texts answers a question by reading them together, which is more accurate than comparing vectors. Other plugins use it to put the best of what a cheaper search found first. Choose which provider supplies it and configure that provider.',
+    noProviders: 'No reranking provider is installed. Install a provider plugin such as dsh-ai-jina-cohere.',
+    statusAvailable: 'Available: other plugins can use reranking now.',
+    testOk: 'Works: {model}, {milliseconds} ms.',
+  },
+  zh: {
+    ...embedding.zh,
+    nav: '重排序',
+    title: '重排序',
+    description: '把问题和几段文本放在一起阅读，判断每段文本回答问题的程度，比单独比较向量更准确。其他插件用它把较便宜的检索找到的内容按相关度排好。选择由哪个提供方提供该服务并完成配置。',
+    noProviders: '尚未安装任何重排序提供方。请安装如 dsh-ai-jina-cohere 之类的提供方插件。',
+    statusAvailable: '可用：其他插件现在可以使用重排序。',
+    testOk: '可用：{model}，{milliseconds} 毫秒。',
+  },
+}
+
+/** The copy of each capability's tab. */
+export const dictionariesOf = { embedding, rerank } as const satisfies Record<Capability, Dictionaries<CapabilityLocaleKey>>
+
+export const formLabels = (t: (key: CapabilityLocaleKey) => string): SettingsFormLabels => ({
   unavailable: t('unavailable'),
   readOnly: t('readOnly'),
   saveFailed: t('saveFailed'),

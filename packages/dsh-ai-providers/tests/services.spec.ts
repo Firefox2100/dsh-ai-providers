@@ -1,15 +1,17 @@
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
-import { FakeEmbedding, providerOf, settle } from './support.ts'
+import { FakeEmbedding, FakeRerank, providerOf, settle } from './support.ts'
 
 let ctx: Context
 let selection: { value: string }
+let reranking: { value: string }
 
 /** The Config the plugin would get: live fields. */
-const config = (embedding: string) => {
+const config = (embedding: string, rerank = '') => {
   selection = { value: embedding }
-  return { embedding: { get: () => selection.value }, holdSeconds: { get: () => 300 } }
+  reranking = { value: rerank }
+  return { embedding: { get: () => selection.value }, rerank: { get: () => reranking.value }, holdSeconds: { get: () => 300 } }
 }
 
 beforeEach(() => { ctx = new Context() })
@@ -18,8 +20,8 @@ beforeEach(() => { ctx = new Context() })
 const edited = (): void => { (ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update') }
 afterEach(async () => { await ctx.fiber.dispose() })
 
-async function load(embedding: string): Promise<void> {
-  plugin.apply(ctx as never, config(embedding) as never)
+async function load(embedding: string, rerank = ''): Promise<void> {
+  plugin.apply(ctx as never, config(embedding, rerank) as never)
   await settle()
 }
 
@@ -63,5 +65,30 @@ describe('the services on the context', () => {
     selection.value = ''
     edited()
     expect(ctx.get('embeddings')).toBeUndefined()
+  })
+})
+
+describe('the rerank service on the context', () => {
+  it('is there while a provider that offers reranking is selected and loaded, and follows the selection and the provider', async () => {
+    await load('', 'fake')
+    expect(ctx.get('rerankers')).toBeUndefined()
+    const remove = ctx.aiProviders.register(providerOf('fake', undefined, new FakeRerank()))
+    expect(ctx.rerankers).toBeInstanceOf(plugin.ConfiguredRerank)
+    expect(ctx.get('embeddings')).toBeUndefined()
+    expect((await ctx.rerankers.rerank('red fox', ['a blue bird', 'a red fox'])).results[0]).toEqual({ index: 1, score: 0.2 })
+    remove()
+    expect(ctx.get('rerankers')).toBeUndefined()
+    ctx.aiProviders.register(providerOf('fake', undefined, new FakeRerank()))
+    reranking.value = ''
+    edited()
+    expect(ctx.get('rerankers')).toBeUndefined()
+  })
+
+  it('is independent of embedding: each capability has its own selection', async () => {
+    await load('fake', 'other')
+    ctx.aiProviders.register(providerOf('fake', new FakeEmbedding()))
+    ctx.aiProviders.register(providerOf('other', undefined, new FakeRerank()))
+    expect(ctx.get('embeddings')).toBeDefined()
+    expect(ctx.get('rerankers')).toBeDefined()
   })
 })

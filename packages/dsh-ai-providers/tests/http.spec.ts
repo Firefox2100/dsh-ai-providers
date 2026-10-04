@@ -2,15 +2,17 @@ import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Context } from '@deepseek-ai/cordis'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApiHandler, probeEmbedding } from '../src/host/http.ts'
+import { createApiHandler, probeEmbedding, probeRerank } from '../src/host/http.ts'
 import { AiProviders } from '../src/host/registry.ts'
 import { AiServices } from '../src/host/services.ts'
-import { FakeEmbedding, providerOf } from './support.ts'
+import { FakeEmbedding, FakeRerank, providerOf } from './support.ts'
 
 let ctx: Context
 let registry: AiProviders
 let services: AiServices
 let service: FakeEmbedding
+let ranker: FakeRerank
+let reranking: string
 let selected: string
 let rejection: 401 | 403 | undefined
 let stored: Map<string, string>
@@ -20,9 +22,12 @@ beforeEach(() => {
   ctx = new Context()
   registry = new AiProviders(ctx)
   selected = 'fake'
-  services = new AiServices(ctx, registry, { embedding: { get: () => selected }, holdSeconds: { get: () => 300 } } as never)
+  reranking = 'ranks'
+  services = new AiServices(ctx, registry, { embedding: { get: () => selected }, rerank: { get: () => reranking }, holdSeconds: { get: () => 300 } } as never)
   service = new FakeEmbedding()
+  ranker = new FakeRerank()
   registry.register(providerOf('fake', service))
+  registry.register(providerOf('ranks', undefined, ranker))
   registry.register(providerOf('plain', undefined))
   rejection = undefined
   stored = new Map()
@@ -61,7 +66,10 @@ describe('the API', () => {
 
   it('lists what can supply each capability, which one is selected and whether it is on the context', async () => {
     const { body } = await call('GET', '/capabilities')
-    expect(body).toEqual({ capabilities: [{ capability: 'embedding', providers: [{ id: 'fake', label: 'FAKE', configEntryId: 'ai-fake' }], selected: 'fake', available: true }] })
+    expect(body).toEqual({ capabilities: [
+      { capability: 'embedding', providers: [{ id: 'fake', label: 'FAKE', configEntryId: 'ai-fake' }], selected: 'fake', available: true },
+      { capability: 'rerank', providers: [{ id: 'ranks', label: 'RANKS', configEntryId: 'ai-ranks' }], selected: 'ranks', available: true },
+    ] })
     registry.register({ ...providerOf('tuned', service), requestOptions: { embedding: [{ key: 'dimensions', type: 'integer', label: 'Dimensions', min: 1, atStart: true }] } })
     const listed = ((await call('GET', '/capabilities')).body as { capabilities: { providers: { id: string; requestOptions?: unknown }[] }[] }).capabilities[0]!.providers
     expect(listed.find(provider => provider.id === 'tuned')?.requestOptions).toEqual([{ key: 'dimensions', type: 'integer', label: 'Dimensions', min: 1, atStart: true }])
@@ -102,5 +110,24 @@ describe('the API', () => {
     expect((await call('POST', '/probe?capability=speech')).status).toBe(400)
     selected = ''
     expect((await call('POST', '/probe?capability=embedding')).body).toMatchObject({ ok: false, code: 'not-configured' })
+  })
+})
+
+describe('testing the rerank provider', () => {
+  it('ranks a few sentences through it and reports what a user would see', async () => {
+    const ok = (await call('POST', '/probe?capability=rerank')).body as { ok: boolean; provider: string; model: string }
+    expect([ok.ok, ok.provider, ok.model]).toEqual([true, 'fake', 'rank-1'])
+    expect(ranker.calls[0]?.query).toMatch(/fox/)
+  })
+
+  it('says so when the provider ranks the wrong sentence first, when it fails, and when none is selected', async () => {
+    ranker.answer = { results: [{ index: 0, score: 0.9 }, { index: 1, score: 0.1 }], model: 'rank-1' }
+    expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('did not put the one about the fox first') })
+    ranker.answer = undefined
+    ranker.failWith = Object.assign(new Error('bad key'), { name: 'AiError' })
+    expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'internal' })
+    reranking = ''
+    ;(ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update')
+    expect((await call('POST', '/probe?capability=rerank')).body).toMatchObject({ ok: false, code: 'not-configured' })
   })
 })

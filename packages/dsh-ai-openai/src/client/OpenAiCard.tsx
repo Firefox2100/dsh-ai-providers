@@ -5,7 +5,7 @@ import type { OpenAiCardFace } from './controller.ts'
 import { formLabels } from './locales.ts'
 
 export type OpenAiCardProps =
-  PropsRuntime<'ai.provider'>
+  PropsRuntime<'ai.provider.embedding'>
   & PropsLocale<'ai.openai'>
   & InjectFace<OpenAiCardFace>
 

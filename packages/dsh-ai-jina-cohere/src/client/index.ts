@@ -6,40 +6,40 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { providerSlotId, providerSlotName } from 'dsh-ai-core'
 import type {} from 'dsh-ai-core/slots'
 import { ENTRY_ID, PROVIDER_ID } from '../ids.ts'
-import { OpenAiCardController } from './controller.ts'
-import { OpenAiCard } from './OpenAiCard.tsx'
-import { dictionaries, type OpenAiLocaleKey } from './locales.ts'
+import { JinaCohereCardController } from './controller.ts'
+import { JinaCohereCard } from './JinaCohereCard.tsx'
+import { dictionaries, type JinaCohereLocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
-    'ai.openai': OpenAiLocaleKey
+    'ai.jina-cohere': JinaCohereLocaleKey
   }
 }
 
-const NAMESPACE = 'ai.openai'
+const NAMESPACE = 'ai.jina-cohere'
 
 /** Union of what the card needs. */
 export const inject = ['slots', 'locale', 'configForms']
 
-/** Puts the provider's configuration into the Embedding tab of the settings modal. */
+/** Puts the provider's configuration into the Reranking tab of the settings modal. */
 export function apply(ctx: Context): void {
   const t = ctx.locale.bind(NAMESPACE)
-  ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-openai: dictionaries')
+  ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-jina-cohere: dictionaries')
 
-  const controller = new OpenAiCardController(ctx.configForms.get(ENTRY_ID))
-  ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-openai: form')
+  const controller = new JinaCohereCardController(ctx.configForms.get(ENTRY_ID))
+  ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-jina-cohere: form')
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
   ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject(providerSlotName('embedding'), () =>
+    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject(providerSlotName('rerank'), () =>
       ctx.slots.register({
-        name: providerSlotName('embedding'),
-        id: providerSlotId('embedding', PROVIDER_ID),
+        name: providerSlotName('rerank'),
+        id: providerSlotId('rerank', PROVIDER_ID),
         order: 0,
         label: () => t('label'),
         locale: NAMESPACE,
         inject: () => controller.inject(),
-      }, OpenAiCard))),
-    'dsh-ai-openai: provider entry',
+      }, JinaCohereCard))),
+    'dsh-ai-jina-cohere: provider entry',
   )
 }

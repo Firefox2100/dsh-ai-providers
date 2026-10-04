@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, SERVICE_NAMES, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -15,7 +15,7 @@ class Fake extends EmbeddingService {
 
 describe('the capabilities', () => {
   it('each have a service name on the context', () => {
-    expect(CAPABILITIES).toEqual(['embedding'])
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank'])
     expect(SERVICE_NAMES.embedding).toBe('embeddings')
   })
 })
@@ -84,6 +84,30 @@ describe('what a consumer can rely on', () => {
     await asBase.embed(['x'])
     await own.embed(['x'], { dimensions: 256 })
     expect(own.seen).toEqual([{}, { dimensions: 256 }])
+  })
+})
+
+describe('reranking', () => {
+  class Reverse extends RerankService {
+    readonly provider = 'rev'
+    readonly model = 'r'
+    rerank(_query: string, documents: readonly string[], options: RerankOptions = {}): Promise<RerankResult> {
+      const all = documents.map((_document, index) => ({ index, score: 1 - index / documents.length })).reverse()
+      return Promise.resolve({ results: all.slice(0, options.topN ?? all.length), model: 'r' })
+    }
+  }
+
+  it('is a capability with its own service name, scored best first with positions into the list given', async () => {
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank'])
+    expect(SERVICE_NAMES.rerank).toBe('rerankers')
+    const service = new Reverse()
+    expect(service.capability).toBe('rerank')
+    expect((await service.rerank('q', ['a', 'b', 'c'], { topN: 2 })).results.map(entry => entry.index)).toEqual([2, 1])
+  })
+
+  it('has a provider entry id in the settings UI like any other capability', () => {
+    expect(providerSlotId('rerank', 'jina-cohere')).toBe('rerank:jina-cohere')
+    expect(parseProviderSlotId('rerank:jina-cohere')).toEqual({ capability: 'rerank', providerId: 'jina-cohere' })
   })
 })
 

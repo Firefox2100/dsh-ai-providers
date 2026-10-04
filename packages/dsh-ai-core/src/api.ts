@@ -53,9 +53,9 @@ export interface CredentialWrite {
   value: string
 }
 
-/** `POST /ai-api/probe?capability=embedding`: whether the configured service works, as the user would see it. */
+/** `POST /ai-api/probe?capability=embedding|rerank`: whether the configured service works, as the user would see it. */
 export type ProbeResult =
-  | { ok: true; provider: string; model: string; dimensions: number; milliseconds: number }
+  | { ok: true; provider: string; model: string; milliseconds: number; /** For embedding: how many dimensions its vectors have. */ dimensions?: number }
   | { ok: false; code: AiErrorCode | 'internal'; message: string }
 
 /** The paths of the API. */

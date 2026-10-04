@@ -1,5 +1,5 @@
 import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, EmbeddingService, type EmbedOptions, type EmbeddingResult } from 'dsh-ai-core'
+import { AiError, EmbeddingService, httpFailure, readJson, type EmbedOptions, type EmbeddingResult } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 
@@ -97,8 +97,8 @@ export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions>
       throw new AiError('unavailable', `${root} could not be reached: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
     }
 
-    const body = await readJson(response)
-    if (!response.ok) throw failure(response, body)
+    const body = await readJson<EmbeddingsResponse>(response)
+    if (!response.ok) throw httpFailure(response, typeof body?.error?.message === 'string' ? body.error.message : undefined)
     const rows = body?.data
     if (!Array.isArray(rows) || rows.length !== input.length) {
       throw new AiError('unavailable', `${root} answered with ${Array.isArray(rows) ? rows.length : 'no'} embeddings for ${input.length} texts`)
@@ -112,18 +112,4 @@ export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions>
     const total = body?.usage?.total_tokens ?? body?.usage?.prompt_tokens
     return { vectors, model: typeof body?.model === 'string' ? body.model : model, ...(typeof total === 'number' ? { tokens: total } : {}) }
   }
-}
-
-async function readJson(response: Response): Promise<EmbeddingsResponse | undefined> {
-  try { return await response.json() as EmbeddingsResponse } catch { return undefined }
-}
-
-/** What an HTTP failure means to a caller, whatever the server is. */
-function failure(response: Response, body: EmbeddingsResponse | undefined): AiError {
-  const said = typeof body?.error?.message === 'string' ? `: ${body.error.message}` : ''
-  const what = `${response.status} ${response.statusText}`.trim()
-  if (response.status === 401 || response.status === 403) return new AiError('rejected', `the API refused the credentials (${what})${said}`)
-  if (response.status === 429) return new AiError('unavailable', `the API is limiting requests (${what})${said}`)
-  if (response.status >= 500) return new AiError('unavailable', `the API failed (${what})${said}`)
-  return new AiError('rejected', `the API refused the request (${what})${said}`)
 }

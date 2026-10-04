@@ -9,6 +9,7 @@ import { AiServices } from './host/services.ts'
 export { Config } from './host/config.ts'
 export { AiProviders } from './host/registry.ts'
 export { ConfiguredEmbedding } from './host/embedding.ts'
+export { ConfiguredRerank } from './host/rerank.ts'
 export { AiServices } from './host/services.ts'
 export const name = 'dsh-ai-providers'
 

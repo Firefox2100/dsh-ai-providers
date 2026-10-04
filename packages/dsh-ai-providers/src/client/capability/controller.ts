@@ -9,7 +9,7 @@ import {
   type SettingsFormScope,
   type SettingsFormShell,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { AI_API_PREFIX, AI_API_ROUTES, parseProviderSlotId, type CapabilitiesPayload, type ProbeResult } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, parseProviderSlotId, providerSlotName, type CapabilitiesPayload, type Capability, type ProbeResult } from 'dsh-ai-core'
 import type {} from 'dsh-ai-core/slots'
 
 export interface ProviderEntry {
@@ -19,58 +19,55 @@ export interface ProviderEntry {
   loaded: boolean
 }
 
-export interface EmbeddingSettings {
-  embedding?: string
-}
+/** The settings form of the main plugin: the field of each capability holds the id of its selected provider. */
+export type CapabilitySettings = Partial<Record<Capability, string>>
 
-export interface EmbeddingState extends SettingsFormShell {
+export interface CapabilityState extends SettingsFormShell {
   /** The staged id of the selected provider; empty for none. */
-  embedding: SettingsFieldState
+  selected: SettingsFieldState
   providers: readonly ProviderEntry[]
-  /** Whether the embedding service is on the host's context right now. */
+  /** Whether the service is on the host's context right now. */
   available: boolean
   status: 'loading' | 'ready' | 'failed'
   error?: string
   probe: { status: 'idle' | 'running' | 'done'; result?: ProbeResult }
 }
 
-export interface EmbeddingFace extends SettingsFormActions {
+export interface CapabilityFace extends SettingsFormActions {
   hooks: {
-    /** Bound by the renderer as `useEmbedding`. */
-    embedding: SnapshotStore<EmbeddingState>
+    /** Bound by the renderer as `useCapability`. */
+    capability: SnapshotStore<CapabilityState>
   }
   runProbe: () => void
 }
 
-const CAPABILITY = 'embedding'
-
-/** The tab of the embedding capability: which provider supplies it, and whether it works. */
-export class EmbeddingController {
-  private readonly form: SettingsFormModel<EmbeddingSettings>
-  private readonly store: SnapshotStore<EmbeddingState>
+/** The tab of one capability: which provider supplies it, and whether it works. */
+export class CapabilityController {
+  private readonly form: SettingsFormModel<CapabilitySettings>
+  private readonly store: SnapshotStore<CapabilityState>
   private readonly abort = new AbortController()
   private entries: { id: string; label: string }[] = []
   private loaded = new Set<string>()
   private available = false
-  private status: EmbeddingState['status'] = 'loading'
+  private status: CapabilityState['status'] = 'loading'
   private error: string | undefined
-  private probe: EmbeddingState['probe'] = { status: 'idle' }
+  private probe: CapabilityState['probe'] = { status: 'idle' }
 
-  constructor(private readonly ctx: Context, scope: SettingsFormScope<EmbeddingSettings>) {
-    this.form = new SettingsFormModel(scope, [settingsTextField('embedding')])
+  constructor(private readonly ctx: Context, scope: SettingsFormScope<CapabilitySettings>, private readonly capability: Capability) {
+    this.form = new SettingsFormModel(scope, [settingsTextField(capability)])
     this.store = this.form.bind(() => this.projection())
     this.syncEntries()
     ctx.effect(() => {
-      const disposers = [ctx.slots.subscribe('ai.provider', () => { this.syncEntries() }), ctx.locale.subscribe(() => { this.syncEntries() })]
+      const disposers = [ctx.slots.subscribe(providerSlotName(this.capability), () => { this.syncEntries() }), ctx.locale.subscribe(() => { this.syncEntries() })]
       return () => { for (const dispose of disposers) dispose() }
     }, 'dsh-ai-providers: provider list')
     void this.refresh()
   }
 
-  private projection(): EmbeddingState {
+  private projection(): CapabilityState {
     return {
       ...this.form.shell(),
-      embedding: this.form.field('embedding'),
+      selected: this.form.field(this.capability),
       providers: this.entries.map(entry => ({ ...entry, loaded: this.loaded.has(entry.id) })),
       available: this.available,
       status: this.status,
@@ -85,10 +82,10 @@ export class EmbeddingController {
 
   /** The providers whose vendor plugins have put their configuration in the tab. */
   private syncEntries(): void {
-    this.entries = this.ctx.slots.entriesOfSlot('ai.provider')
+    this.entries = this.ctx.slots.entriesOfSlot(providerSlotName(this.capability))
       .flatMap(({ options }) => {
         const parsed = parseProviderSlotId(options.id as string)
-        return parsed?.capability === CAPABILITY ? [{ id: parsed.providerId, order: options.order ?? 0, label: resolveSlotLabel(options.label) ?? parsed.providerId }] : []
+        return parsed?.capability === this.capability ? [{ id: parsed.providerId, order: options.order ?? 0, label: resolveSlotLabel(options.label) ?? parsed.providerId }] : []
       })
       .sort((a, b) => a.order - b.order)
       .map(({ id, label }) => ({ id, label }))
@@ -101,7 +98,7 @@ export class EmbeddingController {
       const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.capabilities}`, { credentials: 'same-origin', signal: this.abort.signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       const payload = await response.json() as CapabilitiesPayload
-      const state = payload.capabilities.find(entry => entry.capability === CAPABILITY)
+      const state = payload.capabilities.find(entry => entry.capability === this.capability)
       this.loaded = new Set((state?.providers ?? []).map(provider => provider.id))
       this.available = state?.available ?? false
       this.status = 'ready'
@@ -114,12 +111,12 @@ export class EmbeddingController {
     this.publish()
   }
 
-  /** Ask the host to embed a sentence through the selected provider, and show what came of it. */
+  /** Ask the host to try the selected provider with a small job of its kind, and show what came of it. */
   async runProbe(): Promise<void> {
     this.probe = { status: 'running' }
     this.publish()
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.probe}?capability=${CAPABILITY}`, { method: 'POST', credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.probe}?capability=${this.capability}`, { method: 'POST', credentials: 'same-origin', signal: this.abort.signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       this.probe = { status: 'done', result: await response.json() as ProbeResult }
     } catch (error) {
@@ -129,9 +126,9 @@ export class EmbeddingController {
     await this.refresh()
   }
 
-  inject(): EmbeddingFace {
+  inject(): CapabilityFace {
     return {
-      hooks: { embedding: this.store },
+      hooks: { capability: this.store },
       ...this.form.actions(),
       runProbe: () => { void this.runProbe() },
     }

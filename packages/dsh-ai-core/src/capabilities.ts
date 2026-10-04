@@ -1,4 +1,5 @@
 import type { EmbeddingService } from './embedding.ts'
+import type { RerankService } from './rerank.ts'
 
 /**
  * The service each capability is offered as. Adding a capability is adding a line here, a
@@ -6,17 +7,23 @@ import type { EmbeddingService } from './embedding.ts'
  */
 export interface CapabilityServices {
   embedding: EmbeddingService
+  rerank: RerankService
 }
 
 export type Capability = keyof CapabilityServices
 
 /** Every capability, in the order a settings UI lists them. */
-export const CAPABILITIES = ['embedding'] as const satisfies readonly Capability[]
+export const CAPABILITIES = ['embedding', 'rerank'] as const satisfies readonly Capability[]
 
-/** The name of the service that offers each capability on the Cordis context (`ctx.embeddings`). */
-export const SERVICE_NAMES = { embedding: 'embeddings' } as const satisfies Record<Capability, string>
+/** The name of the service that offers each capability on the Cordis context (`ctx.embeddings`, `ctx.rerankers`). */
+export const SERVICE_NAMES = { embedding: 'embeddings', rerank: 'rerankers' } as const satisfies Record<Capability, string>
 
-/** The id of a provider's entry in the `ai.provider` slot of the settings UI. */
+/** The slot a capability's tab declares for its providers' configuration: a slot has one declarer, so each tab has its own. */
+export type ProviderSlotName = `ai.provider.${Capability}`
+
+export const providerSlotName = (capability: Capability): ProviderSlotName => `ai.provider.${capability}`
+
+/** The id of a provider's entry in the slot of its capability (see {@link providerSlotName}). */
 export const providerSlotId = (capability: Capability, providerId: string): string => `${capability}:${providerId}`
 
 /** The provider and capability an entry of the `ai.provider` slot stands for, or `undefined` for an id that is not one. */

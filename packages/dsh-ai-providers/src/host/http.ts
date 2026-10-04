@@ -110,9 +110,9 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
     },
     [AI_API_ROUTES.probe]: {
       POST: async (_req, res, url) => {
-        if (url.searchParams.get('capability') !== 'embedding') throw new HttpError(400, 'only "embedding" can be tested so far')
-        const result = await probeEmbedding(services, registry)
-        send(res, 200, result)
+        const capability = url.searchParams.get('capability')
+        if (capability !== 'embedding' && capability !== 'rerank') throw new HttpError(400, 'only "embedding" and "rerank" can be tested')
+        send(res, 200, capability === 'embedding' ? await probeEmbedding(services, registry) : await probeRerank(services, registry))
       },
     },
   }
@@ -152,6 +152,24 @@ export async function probeEmbedding(services: AiServices, registry: AiProviders
     const service = factory()
     const answer = await service.embed(['The quick brown fox jumps over the lazy dog.'], { inputType: 'document' })
     return { ok: true, provider: service.provider, model: answer.model, dimensions: answer.dimensions, milliseconds: Math.round(performance.now() - started) }
+  } catch (error) {
+    if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
+    return { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+/** Rerank a few sentences through the selected provider and report it as the user would meet it; the one about the fox must come first. */
+export async function probeRerank(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
+  const id = services.selected('rerank')
+  const factory = id === '' ? undefined : registry.get(id)?.capabilities.rerank
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no rerank provider is selected, or the selected one is not loaded' }
+  const started = performance.now()
+  try {
+    const service = factory()
+    const documents = ['The stock market closed higher on Tuesday.', 'A quick brown fox jumped over the lazy dog.', 'Recipes for a good tomato soup.']
+    const answer = await service.rerank('Which sentence is about a fox?', documents, { topN: 3 })
+    if (answer.results[0]?.index !== 1) return { ok: false, code: 'unavailable', message: `${service.provider} ranked the sentences oddly: it did not put the one about the fox first` }
+    return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
     return { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) }

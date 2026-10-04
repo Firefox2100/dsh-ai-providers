@@ -11,5 +11,7 @@ declare module '@deepseek-ai/cordis' {
      * selected and loaded, so look it up with `ctx.get('embeddings')`.
      */
     embeddings: CapabilityServices['embedding']
+    /** The reranking service the profile has selected; exists only while a provider is selected and loaded. */
+    rerankers: CapabilityServices['rerank']
   }
 }
