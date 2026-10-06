@@ -13,5 +13,11 @@ declare module '@deepseek-ai/cordis' {
     embeddings: CapabilityServices['embedding']
     /** The reranking service the profile has selected; exists only while a provider is selected and loaded. */
     rerankers: CapabilityServices['rerank']
+    /** The text-to-speech service the profile has selected; exists only while its provider is selected and loaded. */
+    textToSpeech: CapabilityServices['tts']
+    /** The speech-to-text service the profile has selected. */
+    speechToText: CapabilityServices['stt']
+    /** The image generation service the profile has selected. */
+    imageGeneration: CapabilityServices['image']
   }
 }

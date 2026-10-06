@@ -23,7 +23,7 @@ beforeEach(() => {
   registry = new AiProviders(ctx)
   selected = 'fake'
   reranking = 'ranks'
-  services = new AiServices(ctx, registry, { embedding: { get: () => selected }, rerank: { get: () => reranking }, holdSeconds: { get: () => 300 } } as never)
+  services = new AiServices(ctx, registry, { embedding: { get: () => selected }, rerank: { get: () => reranking }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } } as never)
   service = new FakeEmbedding()
   ranker = new FakeRerank()
   registry.register(providerOf('fake', service))
@@ -69,6 +69,9 @@ describe('the API', () => {
     expect(body).toEqual({ capabilities: [
       { capability: 'embedding', providers: [{ id: 'fake', label: 'FAKE', configEntryId: 'ai-fake' }], selected: 'fake', available: true },
       { capability: 'rerank', providers: [{ id: 'ranks', label: 'RANKS', configEntryId: 'ai-ranks' }], selected: 'ranks', available: true },
+      { capability: 'tts', providers: [], available: false },
+      { capability: 'stt', providers: [], available: false },
+      { capability: 'image', providers: [], available: false },
     ] })
     registry.register({ ...providerOf('tuned', service), requestOptions: { embedding: [{ key: 'dimensions', type: 'integer', label: 'Dimensions', min: 1, atStart: true }] } })
     const listed = ((await call('GET', '/capabilities')).body as { capabilities: { providers: { id: string; requestOptions?: unknown }[] }[] }).capabilities[0]!.providers

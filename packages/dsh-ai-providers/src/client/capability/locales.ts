@@ -86,8 +86,39 @@ const rerank: Dictionaries<CapabilityLocaleKey> = {
   },
 }
 
+const tts: Dictionaries<CapabilityLocaleKey> = {
+  en: {
+    ...embedding.en,
+    nav: 'Text to speech',
+    title: 'Text to speech',
+    description: 'Turns text into streamed speech audio. Choose which provider supplies it and configure its model, voice and output defaults.',
+    noProviders: 'No text-to-speech provider is installed. Install a provider plugin such as dsh-ai-openai.',
+    statusAvailable: 'Available: other plugins can synthesize speech now.',
+    testOk: 'Works: {model}, {milliseconds} ms.',
+  },
+  zh: {
+    ...embedding.zh,
+    nav: '文本转语音',
+    title: '文本转语音',
+    description: '把文本转换为流式语音音频。选择由哪个提供方提供，并配置其模型、声音和输出默认值。',
+    noProviders: '尚未安装任何文本转语音提供方。请安装如 dsh-ai-openai 之类的提供方插件。',
+    statusAvailable: '可用：其他插件现在可以合成语音。',
+    testOk: '可用：{model}，{milliseconds} 毫秒。',
+  },
+}
+
+const stt: Dictionaries<CapabilityLocaleKey> = {
+  en: { ...embedding.en, nav: 'Speech to text', title: 'Speech to text', description: 'Transcribes completed audio files and live microphone audio. Choose which provider supplies it and configure its transcription model.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can transcribe audio now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '语音转文本', title: '语音转文本', description: '转录完整音频文件和实时麦克风音频。选择由哪个提供方提供，并配置其转录模型。', noProviders: '尚未安装任何语音转文本提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以转录音频。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+}
+
+const image: Dictionaries<CapabilityLocaleKey> = {
+  en: { ...embedding.en, nav: 'Image generation', title: 'Image generation', description: 'Creates bitmap images from text prompts. Choose which provider supplies it and configure its model and output defaults.', noProviders: 'No image generation provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can generate images now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '图像生成', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+}
+
 /** The copy of each capability's tab. */
-export const dictionariesOf = { embedding, rerank } as const satisfies Record<Capability, Dictionaries<CapabilityLocaleKey>>
+export const dictionariesOf = { embedding, rerank, tts, stt, image } as const satisfies Record<Capability, Dictionaries<CapabilityLocaleKey>>
 
 export const formLabels = (t: (key: CapabilityLocaleKey) => string): SettingsFormLabels => ({
   unavailable: t('unavailable'),

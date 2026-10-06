@@ -9,7 +9,7 @@ export type OpenAiCardProps =
   & PropsLocale<'ai.openai'>
   & InjectFace<OpenAiCardFace>
 
-/** The configuration of the OpenAI-compatible provider: where to connect, with which key, and which model. */
+/** The shared connection settings and the fields relevant to the capability being configured. */
 export function OpenAiCard(props: OpenAiCardProps) {
   const { t } = props
   const state = props.useOpenAiCard(snapshot => snapshot)
@@ -32,9 +32,28 @@ export function OpenAiCard(props: OpenAiCardProps) {
           stateLabel={state.apiKeyConfigured ? t('apiKeySet') : t('apiKeyUnset')}
           onEdit={(text) => { props.edit('apiKey', text) }}
         />
-        <SettingsValueField id="ai-openai-model" label={t('embeddingModel')} hint={t('embeddingModelHint')} {...common} {...state.embeddingModel} onEdit={(text) => { props.edit('embeddingModel', text) }} onReset={() => { props.resetField('embeddingModel') }} />
-        <SettingsValueField id="ai-openai-dimensions" label={t('embeddingDimensions')} hint={t('embeddingDimensionsHint')} numeric {...common} {...state.embeddingDimensions} onEdit={(text) => { props.edit('embeddingDimensions', text) }} onReset={() => { props.resetField('embeddingDimensions') }} />
-        <SettingsValueField id="ai-openai-batch" label={t('batchSize')} hint={t('batchSizeHint')} numeric {...common} {...state.batchSize} onEdit={(text) => { props.edit('batchSize', text) }} onReset={() => { props.resetField('batchSize') }} />
+        {props.capability === 'embedding' && <>
+          <SettingsValueField id="ai-openai-model" label={t('embeddingModel')} hint={t('embeddingModelHint')} {...common} {...state.embeddingModel} onEdit={(text) => { props.edit('embeddingModel', text) }} onReset={() => { props.resetField('embeddingModel') }} />
+          <SettingsValueField id="ai-openai-dimensions" label={t('embeddingDimensions')} hint={t('embeddingDimensionsHint')} numeric {...common} {...state.embeddingDimensions} onEdit={(text) => { props.edit('embeddingDimensions', text) }} onReset={() => { props.resetField('embeddingDimensions') }} />
+          <SettingsValueField id="ai-openai-batch" label={t('batchSize')} hint={t('batchSizeHint')} numeric {...common} {...state.batchSize} onEdit={(text) => { props.edit('batchSize', text) }} onReset={() => { props.resetField('batchSize') }} />
+        </>}
+        {props.capability === 'tts' && <>
+          <SettingsValueField id="ai-openai-tts-model" label={t('ttsModel')} hint={t('ttsModelHint')} {...common} {...state.ttsModel} onEdit={(text) => { props.edit('ttsModel', text) }} onReset={() => { props.resetField('ttsModel') }} />
+          <SettingsValueField id="ai-openai-tts-voice" label={t('ttsVoice')} hint={t('ttsVoiceHint')} {...common} {...state.ttsVoice} onEdit={(text) => { props.edit('ttsVoice', text) }} onReset={() => { props.resetField('ttsVoice') }} />
+          <SettingsValueField id="ai-openai-tts-format" label={t('ttsResponseFormat')} hint={t('ttsResponseFormatHint')} {...common} {...state.ttsResponseFormat} onEdit={(text) => { props.edit('ttsResponseFormat', text) }} onReset={() => { props.resetField('ttsResponseFormat') }} />
+          <SettingsValueField id="ai-openai-tts-speed" label={t('ttsSpeed')} hint={t('ttsSpeedHint')} numeric {...common} {...state.ttsSpeed} onEdit={(text) => { props.edit('ttsSpeed', text) }} onReset={() => { props.resetField('ttsSpeed') }} />
+        </>}
+        {props.capability === 'stt' && <>
+          <SettingsValueField id="ai-openai-stt-model" label={t('sttModel')} hint={t('sttModelHint')} {...common} {...state.sttModel} onEdit={(text) => { props.edit('sttModel', text) }} onReset={() => { props.resetField('sttModel') }} />
+          <SettingsValueField id="ai-openai-stt-realtime-model" label={t('sttRealtimeModel')} hint={t('sttRealtimeModelHint')} {...common} {...state.sttRealtimeModel} onEdit={(text) => { props.edit('sttRealtimeModel', text) }} onReset={() => { props.resetField('sttRealtimeModel') }} />
+        </>}
+        {props.capability === 'image' && <>
+          <SettingsValueField id="ai-openai-image-model" label={t('imageModel')} hint={t('imageModelHint')} {...common} {...state.imageModel} onEdit={(text) => { props.edit('imageModel', text) }} onReset={() => { props.resetField('imageModel') }} />
+          <SettingsValueField id="ai-openai-image-size" label={t('imageSize')} hint={t('imageSizeHint')} {...common} {...state.imageSize} onEdit={(text) => { props.edit('imageSize', text) }} onReset={() => { props.resetField('imageSize') }} />
+          <SettingsValueField id="ai-openai-image-quality" label={t('imageQuality')} hint={t('imageQualityHint')} {...common} {...state.imageQuality} onEdit={(text) => { props.edit('imageQuality', text) }} onReset={() => { props.resetField('imageQuality') }} />
+          <SettingsValueField id="ai-openai-image-format" label={t('imageOutputFormat')} hint={t('imageOutputFormatHint')} {...common} {...state.imageOutputFormat} onEdit={(text) => { props.edit('imageOutputFormat', text) }} onReset={() => { props.resetField('imageOutputFormat') }} />
+          <SettingsValueField id="ai-openai-image-compression" label={t('imageOutputCompression')} hint={t('imageOutputCompressionHint')} numeric {...common} {...state.imageOutputCompression} onEdit={(text) => { props.edit('imageOutputCompression', text) }} onReset={() => { props.resetField('imageOutputCompression') }} />
+        </>}
         <SettingsValueField id="ai-openai-timeout" label={t('timeoutMs')} hint={t('timeoutMsHint')} numeric {...common} {...state.timeoutMs} onEdit={(text) => { props.edit('timeoutMs', text) }} onReset={() => { props.resetField('timeoutMs') }} />
       </SettingsForm>
     </div>

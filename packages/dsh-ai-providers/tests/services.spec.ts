@@ -1,17 +1,19 @@
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
-import { FakeEmbedding, FakeRerank, providerOf, settle } from './support.ts'
+import { FakeEmbedding, FakeRerank, FakeTts, providerOf, settle } from './support.ts'
 
 let ctx: Context
 let selection: { value: string }
 let reranking: { value: string }
+let speech: { value: string }
 
 /** The Config the plugin would get: live fields. */
-const config = (embedding: string, rerank = '') => {
+const config = (embedding: string, rerank = '', tts = '') => {
   selection = { value: embedding }
   reranking = { value: rerank }
-  return { embedding: { get: () => selection.value }, rerank: { get: () => reranking.value }, holdSeconds: { get: () => 300 } }
+  speech = { value: tts }
+  return { embedding: { get: () => selection.value }, rerank: { get: () => reranking.value }, tts: { get: () => speech.value }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } }
 }
 
 beforeEach(() => { ctx = new Context() })
@@ -20,8 +22,8 @@ beforeEach(() => { ctx = new Context() })
 const edited = (): void => { (ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update') }
 afterEach(async () => { await ctx.fiber.dispose() })
 
-async function load(embedding: string, rerank = ''): Promise<void> {
-  plugin.apply(ctx as never, config(embedding, rerank) as never)
+async function load(embedding: string, rerank = '', tts = ''): Promise<void> {
+  plugin.apply(ctx as never, config(embedding, rerank, tts) as never)
   await settle()
 }
 
@@ -90,5 +92,25 @@ describe('the rerank service on the context', () => {
     ctx.aiProviders.register(providerOf('other', undefined, new FakeRerank()))
     expect(ctx.get('embeddings')).toBeDefined()
     expect(ctx.get('rerankers')).toBeDefined()
+  })
+})
+
+describe('the text-to-speech service on the context', () => {
+  it('streams through the selected provider and leaves independently', async () => {
+    await load('', '', 'fake')
+    expect(ctx.get('textToSpeech')).toBeUndefined()
+    const remove = ctx.aiProviders.register(providerOf('fake', undefined, undefined, new FakeTts()))
+    expect(ctx.textToSpeech).toBeInstanceOf(plugin.ConfiguredTts)
+    const answer = await ctx.textToSpeech.synthesize('hello')
+    expect(await new Response(answer.audio).text()).toBe('hello')
+    expect([answer.model, answer.mediaType]).toEqual(['voice-1', 'audio/mpeg'])
+    remove()
+    expect(ctx.get('textToSpeech')).toBeUndefined()
+  })
+
+  it('rejects empty text at the facade boundary', async () => {
+    await load('', '', 'fake')
+    ctx.aiProviders.register(providerOf('fake', undefined, undefined, new FakeTts()))
+    await expect(ctx.textToSpeech.synthesize(' ')).rejects.toMatchObject({ code: 'invalid-input' })
   })
 })

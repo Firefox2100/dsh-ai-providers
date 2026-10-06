@@ -21,7 +21,7 @@ const NAMESPACE = 'ai.openai'
 /** Union of what the card needs. */
 export const inject = ['slots', 'locale', 'configForms']
 
-/** Puts the provider's configuration into the Embedding tab of the settings modal. */
+/** Puts the provider's shared configuration into every capability tab it supplies. */
 export function apply(ctx: Context): void {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-openai: dictionaries')
@@ -30,16 +30,18 @@ export function apply(ctx: Context): void {
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-openai: form')
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
-  ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject(providerSlotName('embedding'), () =>
-      ctx.slots.register({
-        name: providerSlotName('embedding'),
-        id: providerSlotId('embedding', PROVIDER_ID),
-        order: 0,
-        label: () => t('label'),
-        locale: NAMESPACE,
-        inject: () => controller.inject(),
-      }, OpenAiCard))),
-    'dsh-ai-openai: provider entry',
-  )
+  for (const capability of ['embedding', 'tts', 'stt', 'image'] as const) {
+    ctx.effect(
+      () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject(providerSlotName(capability), () =>
+        ctx.slots.register({
+          name: providerSlotName(capability),
+          id: providerSlotId(capability, PROVIDER_ID),
+          order: 0,
+          label: () => t('label'),
+          locale: NAMESPACE,
+          inject: () => controller.inject(),
+        }, OpenAiCard as never))),
+      `dsh-ai-openai: ${capability} provider entry`,
+    )
+  }
 }

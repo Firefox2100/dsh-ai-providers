@@ -1,7 +1,7 @@
 {
   "name": "dsh-ai-core",
   "version": "0.0.0",
-  "description": "The contract of the AI capabilities DSH lacks (embedding, and later reranking, image generation, speech): service classes, provider descriptor and registry interface. A library, not a plugin.",
+  "description": "Shared contracts for embedding, reranking, text-to-speech, speech-to-text, and image generation providers for DSH.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

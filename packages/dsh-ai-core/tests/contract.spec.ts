@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SttLiveSession, type SttResult, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -15,7 +15,7 @@ class Fake extends EmbeddingService {
 
 describe('the capabilities', () => {
   it('each have a service name on the context', () => {
-    expect(CAPABILITIES).toEqual(['embedding', 'rerank'])
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image'])
     expect(SERVICE_NAMES.embedding).toBe('embeddings')
   })
 })
@@ -98,7 +98,7 @@ describe('reranking', () => {
   }
 
   it('is a capability with its own service name, scored best first with positions into the list given', async () => {
-    expect(CAPABILITIES).toEqual(['embedding', 'rerank'])
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image'])
     expect(SERVICE_NAMES.rerank).toBe('rerankers')
     const service = new Reverse()
     expect(service.capability).toBe('rerank')
@@ -111,6 +111,39 @@ describe('reranking', () => {
   })
 })
 
+describe('text to speech', () => {
+  class Speech extends TtsService {
+    readonly provider = 'voice'
+    readonly model = 'voice-1'
+    synthesize(text: string): Promise<TtsResult> {
+      return Promise.resolve({ audio: new Blob([text]).stream(), mediaType: 'audio/mpeg', model: this.model })
+    }
+  }
+
+  it('is a streaming capability with its own context service name', async () => {
+    expect(SERVICE_NAMES.tts).toBe('textToSpeech')
+    const service = new Speech()
+    expect(service.capability).toBe('tts')
+    expect(await new Response((await service.synthesize('hello')).audio).text()).toBe('hello')
+    expect(providerSlotId('tts', 'openai')).toBe('tts:openai')
+  })
+})
+
+describe('speech to text', () => {
+  class Transcriber extends SttService {
+    readonly provider = 'ears'
+    readonly model = 'listen-1'
+    transcribe(_audio: Blob): Promise<SttResult> { return Promise.resolve({ text: 'hello', model: this.model }) }
+    startLive(): Promise<SttLiveSession> { throw new Error('unused') }
+  }
+  it('supports completed audio and names the live context service', async () => {
+    const service = new Transcriber()
+    expect(service.capability).toBe('stt')
+    expect(SERVICE_NAMES.stt).toBe('speechToText')
+    expect(await service.transcribe(new Blob(['audio']))).toEqual({ text: 'hello', model: 'listen-1' })
+  })
+})
+
 describe('the ids of provider entries in the settings UI', () => {
   it('name the capability and the provider, and refuse an id that is not one', () => {
     expect(providerSlotId('embedding', 'openai')).toBe('embedding:openai')
@@ -118,6 +151,7 @@ describe('the ids of provider entries in the settings UI', () => {
     expect(parseProviderSlotId('embedding:a:b')).toEqual({ capability: 'embedding', providerId: 'a:b' })
     expect(parseProviderSlotId('nothing')).toBeUndefined()
     expect(parseProviderSlotId('speech:x')).toBeUndefined()
+    expect(parseProviderSlotId('tts:openai')).toEqual({ capability: 'tts', providerId: 'openai' })
   })
 })
 

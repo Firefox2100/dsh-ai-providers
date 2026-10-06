@@ -1,6 +1,6 @@
 import { Context } from '@deepseek-ai/cordis'
 import { AiProviders } from 'dsh-ai-providers'
-import { EmbeddingService } from 'dsh-ai-core'
+import { EmbeddingService, ImageGenerationService, SttService, TtsService } from 'dsh-ai-core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
 
@@ -23,6 +23,9 @@ describe('the provider', () => {
     const service = ctx.aiProviders.get('openai')!.capabilities.embedding!()
     expect(service).toBeInstanceOf(EmbeddingService)
     expect([service.provider, service.model]).toEqual(['openai', 'text-embedding-3-small'])
+    expect(ctx.aiProviders.get('openai')!.capabilities.tts!()).toBeInstanceOf(TtsService)
+    expect(ctx.aiProviders.get('openai')!.capabilities.stt!()).toBeInstanceOf(SttService)
+    expect(ctx.aiProviders.get('openai')!.capabilities.image!()).toBeInstanceOf(ImageGenerationService)
     fiber.dispose()
     await settle()
     expect(ctx.aiProviders.list()).toEqual([])
@@ -31,7 +34,10 @@ describe('the provider', () => {
   it('has a configuration of defaults a profile can override, all editable in settings', () => {
     const parse = plugin.Config as unknown as (value: unknown) => Record<string, { get(): unknown }>
     expect(Object.fromEntries(Object.entries(parse({})).map(([key, field]) => [key, field.get()]))).toEqual({
-      baseUrl: 'https://api.openai.com/v1', apiKeyEnv: 'OPENAI_API_KEY', embeddingModel: 'text-embedding-3-small', embeddingDimensions: 0, batchSize: 64, timeoutMs: 60_000,
+      baseUrl: 'https://api.openai.com/v1', apiKeyEnv: 'OPENAI_API_KEY', embeddingModel: 'text-embedding-3-small', embeddingDimensions: 0,
+      ttsModel: 'gpt-4o-mini-tts', ttsVoice: 'alloy', ttsResponseFormat: 'mp3', ttsSpeed: 1, batchSize: 64, timeoutMs: 60_000,
+      sttModel: 'whisper-1', sttRealtimeModel: 'gpt-4o-mini-transcribe',
+      imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,
     })
   })
 })

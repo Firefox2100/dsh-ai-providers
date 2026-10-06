@@ -5,6 +5,9 @@ import { CAPABILITIES, SERVICE_NAMES, type Capability } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { ConfiguredEmbedding } from './embedding.ts'
 import { ConfiguredRerank } from './rerank.ts'
+import { ConfiguredTts } from './tts.ts'
+import { ConfiguredStt } from './stt.ts'
+import { ConfiguredImageGeneration } from './image.ts'
 import type { AiProviders } from './registry.ts'
 
 /**
@@ -16,16 +19,25 @@ import type { AiProviders } from './registry.ts'
 export class AiServices {
   readonly embedding: ConfiguredEmbedding
   readonly rerank: ConfiguredRerank
+  readonly tts: ConfiguredTts
+  readonly stt: ConfiguredStt
+  readonly image: ConfiguredImageGeneration
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config) {
     ctx.provide('embeddings')
     ctx.provide('rerankers')
+    ctx.provide('textToSpeech')
+    ctx.provide('speechToText')
+    ctx.provide('imageGeneration')
     this.embedding = new ConfiguredEmbedding({
       selected: () => config.embedding.get(),
       registry,
       holdMs: () => config.holdSeconds.get() * 1000,
     })
     this.rerank = new ConfiguredRerank({ selected: () => config.rerank.get(), registry })
+    this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry })
+    this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry })
+    this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry })
     this.sync()
     ctx.effect(() => registry.subscribe(() => { this.sync() }), 'dsh-ai-providers: providers changed')
     ctx.on('loader/volatile-update', () => { this.sync() })
@@ -33,7 +45,7 @@ export class AiServices {
 
   /** The provider chosen for a capability; empty for none. */
   selected(capability: Capability): string {
-    return this.config[capability === 'embedding' ? 'embedding' : 'rerank'].get()
+    return this.config[capability].get()
   }
 
   /** Whether the service of a capability is on the context now. */
@@ -47,7 +59,7 @@ export class AiServices {
       const name = SERVICE_NAMES[capability]
       const offered = selected !== '' && this.registry.get(selected)?.capabilities[capability] !== undefined
       const present = this.ctx.get(name) !== undefined
-      if (offered && !present) this.ctx.set(name, capability === 'embedding' ? this.embedding : this.rerank)
+      if (offered && !present) this.ctx.set(name, capability === 'embedding' ? this.embedding : capability === 'rerank' ? this.rerank : capability === 'tts' ? this.tts : capability === 'stt' ? this.stt : this.image)
       else if (!offered && present) this.ctx.set(name, undefined as never)
     }
   }

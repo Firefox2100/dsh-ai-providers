@@ -5,6 +5,9 @@ export type OpenAiLocaleKey =
   | 'label' | 'title' | 'description'
   | 'baseUrl' | 'baseUrlHint' | 'apiKeyEnv' | 'apiKeyEnvHint' | 'apiKey' | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
   | 'embeddingModel' | 'embeddingModelHint' | 'embeddingDimensions' | 'embeddingDimensionsHint' | 'batchSize' | 'batchSizeHint' | 'timeoutMs' | 'timeoutMsHint'
+  | 'ttsModel' | 'ttsModelHint' | 'ttsVoice' | 'ttsVoiceHint' | 'ttsResponseFormat' | 'ttsResponseFormatHint' | 'ttsSpeed' | 'ttsSpeedHint'
+  | 'sttModel' | 'sttModelHint' | 'sttRealtimeModel' | 'sttRealtimeModelHint'
+  | 'imageModel' | 'imageModelHint' | 'imageSize' | 'imageSizeHint' | 'imageQuality' | 'imageQualityHint' | 'imageOutputFormat' | 'imageOutputFormatHint' | 'imageOutputCompression' | 'imageOutputCompressionHint'
   | 'overridden' | 'reset' | 'invalidNumber'
   | 'readOnly' | 'unavailable' | 'save' | 'saving' | 'saveFailed'
 
@@ -25,6 +28,23 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     embeddingModelHint: 'The embedding model, as the API names it, for example text-embedding-3-small or bge-m3.',
     embeddingDimensions: 'Dimensions',
     embeddingDimensionsHint: 'Shorter vectors, for models that can shorten theirs (such as text-embedding-3). 0 leaves it to the model.',
+    ttsModel: 'Speech model',
+    ttsModelHint: 'The text-to-speech model, for example gpt-4o-mini-tts or tts-1.',
+    ttsVoice: 'Default voice',
+    ttsVoiceHint: 'The voice id used unless a request chooses another, for example alloy.',
+    ttsResponseFormat: 'Default audio format',
+    ttsResponseFormatHint: 'mp3, opus, aac, flac, wav or pcm.',
+    ttsSpeed: 'Default speech speed',
+    ttsSpeedHint: 'A value from 0.25 to 4; 1 is normal speed.',
+    sttModel: 'Transcription model',
+    sttModelHint: 'The model for completed audio files, for example whisper-1 or gpt-4o-mini-transcribe.',
+    sttRealtimeModel: 'Live transcription model',
+    sttRealtimeModelHint: 'The model used by Realtime transcription sessions.',
+    imageModel: 'Image model', imageModelHint: 'The image generation model, for example gpt-image-1 or a LocalAI diffusion model.',
+    imageSize: 'Default image size', imageSizeHint: 'A provider-supported size such as 1024x1024.',
+    imageQuality: 'Default image quality', imageQualityHint: 'A provider-supported quality such as auto, low, medium or high.',
+    imageOutputFormat: 'Default image format', imageOutputFormatHint: 'png, jpeg or webp.',
+    imageOutputCompression: 'Default compression', imageOutputCompressionHint: 'Output compression from 0 to 100.',
     batchSize: 'Texts per request',
     batchSizeHint: 'The most texts sent in one request; more are sent in several.',
     timeoutMs: 'Timeout (ms)',
@@ -54,6 +74,23 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     embeddingModelHint: '嵌入模型在接口中的名称，例如 text-embedding-3-small 或 bge-m3。',
     embeddingDimensions: '维度',
     embeddingDimensionsHint: '缩短向量长度，适用于支持缩短的模型（如 text-embedding-3）。0 表示由模型决定。',
+    ttsModel: '语音模型',
+    ttsModelHint: '文本转语音模型，例如 gpt-4o-mini-tts 或 tts-1。',
+    ttsVoice: '默认声音',
+    ttsVoiceHint: '请求未另外指定时使用的声音标识，例如 alloy。',
+    ttsResponseFormat: '默认音频格式',
+    ttsResponseFormatHint: 'mp3、opus、aac、flac、wav 或 pcm。',
+    ttsSpeed: '默认语速',
+    ttsSpeedHint: '范围为 0.25 到 4；1 为正常语速。',
+    sttModel: '转录模型',
+    sttModelHint: '用于完整音频文件的模型，例如 whisper-1 或 gpt-4o-mini-transcribe。',
+    sttRealtimeModel: '实时转录模型',
+    sttRealtimeModelHint: '实时转录会话使用的模型。',
+    imageModel: '图像模型', imageModelHint: '图像生成模型，例如 gpt-image-1 或 LocalAI 扩散模型。',
+    imageSize: '默认图像尺寸', imageSizeHint: '提供方支持的尺寸，例如 1024x1024。',
+    imageQuality: '默认图像质量', imageQualityHint: '提供方支持的质量，例如 auto、low、medium 或 high。',
+    imageOutputFormat: '默认图像格式', imageOutputFormatHint: 'png、jpeg 或 webp。',
+    imageOutputCompression: '默认压缩', imageOutputCompressionHint: '输出压缩率，范围 0 到 100。',
     batchSize: '每次请求的文本数',
     batchSizeHint: '一次请求最多发送的文本数；更多时会分多次发送。',
     timeoutMs: '超时（毫秒）',

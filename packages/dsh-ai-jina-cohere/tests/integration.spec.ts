@@ -34,7 +34,7 @@ beforeEach(async () => {
   const vendorConfig = { baseUrl: { get: () => `http://127.0.0.1:${port}/v1` }, apiKeyEnv: { get: () => '' }, rerankModel: { get: () => 'bge-reranker' }, timeoutMs: { get: () => 2000 } }
   ctx.plugin({ name: 'vendor', inject: vendor.inject, apply: (scope: Context) => { vendor.apply(scope, vendorConfig as never) } } as never, {} as never)
   await settle()
-  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: { get: () => '' }, rerank: { get: () => selection.value }, holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)
+  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: { get: () => '' }, rerank: { get: () => selection.value }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)
   await settle()
 })
 afterEach(async () => {

@@ -6,11 +6,11 @@ import css from './CapabilitySection.module.css'
 import { formLabels } from './locales.ts'
 import type { CapabilityFace } from './controller.ts'
 
-/** The copy of the two capability tabs has the same keys, so one component serves both. */
+/** Every capability tab uses the same structure and localized copy keys. */
 export type CapabilitySectionProps =
   PropsRuntime<'settings.section'>
   & PropsLocale<'ai.embedding'>
-  & PropsRenderSlots<'ai.provider.embedding' | 'ai.provider.rerank'>
+  & PropsRenderSlots<'ai.provider.embedding' | 'ai.provider.rerank' | 'ai.provider.tts' | 'ai.provider.stt' | 'ai.provider.image'>
   & InjectFace<CapabilityFace>
 
 /** The tab of a capability, shown for the one it is registered for. */

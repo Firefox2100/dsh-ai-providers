@@ -17,6 +17,17 @@ export interface OpenAiSettings {
   apiKeyEnv?: string
   embeddingModel?: string
   embeddingDimensions?: number
+  ttsModel?: string
+  ttsVoice?: string
+  ttsResponseFormat?: string
+  ttsSpeed?: number
+  sttModel?: string
+  sttRealtimeModel?: string
+  imageModel?: string
+  imageSize?: string
+  imageQuality?: string
+  imageOutputFormat?: string
+  imageOutputCompression?: number
   batchSize?: number
   timeoutMs?: number
 }
@@ -28,6 +39,17 @@ export interface OpenAiCardState extends SettingsFormShell {
   apiKey: SettingsFieldState
   embeddingModel: SettingsFieldState
   embeddingDimensions: SettingsFieldState
+  ttsModel: SettingsFieldState
+  ttsVoice: SettingsFieldState
+  ttsResponseFormat: SettingsFieldState
+  ttsSpeed: SettingsFieldState
+  sttModel: SettingsFieldState
+  sttRealtimeModel: SettingsFieldState
+  imageModel: SettingsFieldState
+  imageSize: SettingsFieldState
+  imageQuality: SettingsFieldState
+  imageOutputFormat: SettingsFieldState
+  imageOutputCompression: SettingsFieldState
   batchSize: SettingsFieldState
   timeoutMs: SettingsFieldState
   /** Whether a key is stored or supplied under the name. */
@@ -69,7 +91,10 @@ export class OpenAiCardController {
       scope,
       [
         settingsTextField('baseUrl'), settingsTextField('apiKeyEnv'), settingsTextField('embeddingModel'),
-        settingsNumberField('embeddingDimensions'), settingsNumberField('batchSize'), settingsNumberField('timeoutMs'),
+        settingsNumberField('embeddingDimensions'), settingsTextField('ttsModel'), settingsTextField('ttsVoice'),
+        settingsTextField('ttsResponseFormat'), settingsNumberField('ttsSpeed'), settingsNumberField('batchSize'), settingsNumberField('timeoutMs'),
+        settingsTextField('sttModel'), settingsTextField('sttRealtimeModel'),
+        settingsTextField('imageModel'), settingsTextField('imageSize'), settingsTextField('imageQuality'), settingsTextField('imageOutputFormat'), settingsNumberField('imageOutputCompression'),
       ],
       [{ field: API_KEY_FIELD, write: text => this.writeKey(text) }],
     )
@@ -86,6 +111,17 @@ export class OpenAiCardController {
       apiKey: this.form.field(API_KEY_FIELD),
       embeddingModel: this.form.field('embeddingModel'),
       embeddingDimensions: this.form.field('embeddingDimensions'),
+      ttsModel: this.form.field('ttsModel'),
+      ttsVoice: this.form.field('ttsVoice'),
+      ttsResponseFormat: this.form.field('ttsResponseFormat'),
+      ttsSpeed: this.form.field('ttsSpeed'),
+      sttModel: this.form.field('sttModel'),
+      sttRealtimeModel: this.form.field('sttRealtimeModel'),
+      imageModel: this.form.field('imageModel'),
+      imageSize: this.form.field('imageSize'),
+      imageQuality: this.form.field('imageQuality'),
+      imageOutputFormat: this.form.field('imageOutputFormat'),
+      imageOutputCompression: this.form.field('imageOutputCompression'),
       batchSize: this.form.field('batchSize'),
       timeoutMs: this.form.field('timeoutMs'),
       apiKeyConfigured: this.credential.configured,

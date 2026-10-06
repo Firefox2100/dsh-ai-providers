@@ -1,7 +1,7 @@
 {
   "name": "dsh-ai-providers",
   "version": "0.0.0",
-  "description": "DSH plugin that supplies the AI capabilities DSH lacks (embedding, later reranking, image generation, speech): a registry for vendor plugins, the configured services on the context, and the settings UI to choose and configure them.",
+  "description": "DSH plugin that selects and exposes embedding, reranking, speech, and image generation providers.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

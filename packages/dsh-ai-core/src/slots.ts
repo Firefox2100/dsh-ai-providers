@@ -14,6 +14,9 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
     'ai.provider.embedding': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
     'ai.provider.rerank': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
+    'ai.provider.tts': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
+    'ai.provider.stt': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
+    'ai.provider.image': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
   }
 }
 

@@ -1,4 +1,4 @@
-import { EmbeddingService, RerankService, type AiProvider, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult } from 'dsh-ai-core'
+import { EmbeddingService, RerankService, TtsService, type AiProvider, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type TtsResult } from 'dsh-ai-core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {
@@ -35,11 +35,19 @@ export class FakeRerank extends RerankService {
   }
 }
 
-export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank): AiProvider => ({
+export class FakeTts extends TtsService {
+  readonly provider = 'fake'
+  model = 'voice-1'
+  synthesize(text: string): Promise<TtsResult> {
+    return Promise.resolve({ audio: new Blob([text]).stream(), mediaType: 'audio/mpeg', model: this.model })
+  }
+}
+
+export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank, tts?: FakeTts): AiProvider => ({
   id,
   label: id.toUpperCase(),
   configEntryId: `ai-${id}`,
-  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }) },
+  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }), ...(tts === undefined ? {} : { tts: () => tts }) },
 })
 
 export const settle = (ms = 30): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
