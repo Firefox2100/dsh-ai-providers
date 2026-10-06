@@ -7,7 +7,7 @@ export { EmbeddingService, type EmbedOptions, type EmbeddingInputType, type Embe
 export { RerankService, type RerankedDocument, type RerankOptions, type RerankResult } from './rerank.ts'
 export { TtsService, type TtsOptions, type TtsResult } from './tts.ts'
 export { SttService, type SttOptions, type SttResult, type SttLiveEvent, type SttLiveOptions, type SttLiveSession } from './stt.ts'
-export { ImageGenerationService, type GeneratedImage, type ImageGenerationOptions, type ImageGenerationResult } from './image.ts'
+export { ImageGenerationService, type GeneratedImage, type ImageGenerationOptions, type ImageGenerationResult, type ImageReference } from './image.ts'
 export { localized, type LocalizedText, type RequestOption } from './options.ts'
 export { cosineSimilarity } from './similarity.ts'
 export type { AiProvider, AiProviderRegistry, ServiceFactory } from './provider.ts'

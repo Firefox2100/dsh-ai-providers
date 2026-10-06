@@ -6,14 +6,14 @@ const PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AA
 const setup = () => {
   const settings: Record<string, string | number> = { baseUrl: 'https://images.example/v1/', apiKeyEnv: 'OPENAI_API_KEY', imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100, timeoutMs: 2000 }
   const field = (name: string) => ({ get: () => settings[name] })
-  let seen: { url: string; body?: Record<string, unknown> }[] = []
+  let seen: { url: string; body?: Record<string, unknown> | FormData }[] = []
   let answer = new Response(JSON.stringify({ data: [{ b64_json: PIXEL, revised_prompt: 'A tiny red circle.' }] }), { headers: { 'content-type': 'application/json' } })
   const service = new OpenAiImageGenerationService({
     config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), imageModel: field('imageModel'), imageSize: field('imageSize'), imageQuality: field('imageQuality'), imageOutputFormat: field('imageOutputFormat'), imageOutputCompression: field('imageOutputCompression'), timeoutMs: field('timeoutMs') } as never,
     connection: () => ({ baseUrl: String(settings.baseUrl).replace(/\/+$/, ''), apiKeyRef: String(settings.apiKeyEnv) }),
     credentials: () => ({ resolve: () => Promise.resolve({ value: 'sk-test', source: 'file' }) }) as never,
     fetch: (async (url: string | URL | Request, init?: RequestInit) => {
-      seen.push({ url: String(url), ...(init?.body === undefined ? {} : { body: JSON.parse(String(init.body)) }) })
+      seen.push({ url: String(url), ...(init?.body === undefined ? {} : { body: init.body instanceof FormData ? init.body : JSON.parse(String(init.body)) }) })
       return String(url) === 'https://cdn.example/image.webp' ? new Response('image', { headers: { 'content-type': 'image/webp' } }) : answer
     }) as typeof fetch,
   })
@@ -37,6 +37,16 @@ describe('OpenAI-compatible image generation', () => {
     const result = await service.generate('A tree.')
     expect(result.model).toBe('local-image')
     expect(result.images[0]?.mediaType).toBe('image/webp')
+  })
+
+  it('uses the edits endpoint when reference images are supplied', async () => {
+    const { service, seen } = setup()
+    await service.generate('Keep this person recognisable.', { references: [{ data: new Blob(['png'], { type: 'image/png' }), description: 'Mira' }] })
+    expect(seen[0]?.url).toBe('https://images.example/v1/images/edits')
+    const body = seen[0]?.body as FormData
+    expect(body.get('prompt')).toBe('Keep this person recognisable.')
+    expect(body.get('model')).toBe('gpt-image-1')
+    expect(body.getAll('image[]')).toHaveLength(1)
   })
 
   it('validates prompt, count and compression before sending', async () => {

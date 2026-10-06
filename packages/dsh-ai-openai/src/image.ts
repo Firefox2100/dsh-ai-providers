@@ -51,28 +51,40 @@ export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiI
     if (root === '') throw new AiError('not-configured', 'no base URL is configured')
     const outputFormat = options.outputFormat ?? this.deps.config.imageOutputFormat.get()
     const headers = await connectionHeaders(connection, this.deps.credentials)
-    headers['content-type'] = 'application/json'
-    const response = await this.request(`${root}/images/generations`, {
-      method: 'POST', headers,
-      body: JSON.stringify({
-        model, prompt, n: count,
-        size: options.size ?? this.deps.config.imageSize.get(), quality: options.quality ?? this.deps.config.imageQuality.get(),
-        output_format: outputFormat, output_compression: compression,
-        ...(options.style === undefined ? {} : { style: options.style }), ...(options.background === undefined ? {} : { background: options.background }),
-        ...(options.user === undefined ? {} : { user: options.user }),
-      }),
-    }, options.signal)
-    const body = await readJson<ImagesResponse>(response)
-    if (!response.ok) throw httpFailure(response, typeof body?.error?.message === 'string' ? body.error.message : undefined)
-    if (!Array.isArray(body?.data) || body.data.length === 0) throw new AiError('unavailable', `${root} answered without images`)
-    const images = await Promise.all(body.data.map(async (entry) => {
+    const fields = {
+      model, prompt, n: count,
+      size: options.size ?? this.deps.config.imageSize.get(), quality: options.quality ?? this.deps.config.imageQuality.get(),
+      output_format: outputFormat, output_compression: compression,
+      ...(options.style === undefined ? {} : { style: options.style }), ...(options.background === undefined ? {} : { background: options.background }),
+      ...(options.user === undefined ? {} : { user: options.user }),
+    }
+    let endpoint = `${root}/images/generations`
+    let requestBody: RequestInit['body']
+    if (options.references === undefined || options.references.length === 0) {
+      headers['content-type'] = 'application/json'
+      requestBody = JSON.stringify(fields)
+    } else {
+      endpoint = `${root}/images/edits`
+      const form = new FormData()
+      for (const [key, value] of Object.entries(fields)) form.append(key, String(value))
+      for (const [index, reference] of options.references.entries()) {
+        if (reference.data.size === 0) throw new AiError('invalid-input', `reference image ${index + 1} is empty`)
+        form.append('image[]', reference.data, `reference-${index + 1}.${extensionOf(reference.data.type)}`)
+      }
+      requestBody = form
+    }
+    const response = await this.request(endpoint, { method: 'POST', headers, body: requestBody }, options.signal)
+    const responseBody = await readJson<ImagesResponse>(response)
+    if (!response.ok) throw httpFailure(response, typeof responseBody?.error?.message === 'string' ? responseBody.error.message : undefined)
+    if (!Array.isArray(responseBody?.data) || responseBody.data.length === 0) throw new AiError('unavailable', `${root} answered without images`)
+    const images = await Promise.all(responseBody.data.map(async (entry) => {
       let data: Blob
       if (typeof entry.b64_json === 'string') data = new Blob([Buffer.from(entry.b64_json, 'base64')], { type: MEDIA_TYPES[outputFormat] })
       else if (typeof entry.url === 'string') data = await this.download(entry.url, options.signal)
       else throw new AiError('unavailable', `${root} answered with an image that has no data`)
       return { data, mediaType: data.type || MEDIA_TYPES[outputFormat], ...(typeof entry.revised_prompt === 'string' ? { revisedPrompt: entry.revised_prompt } : {}) }
     }))
-    return { images, model: typeof body.model === 'string' ? body.model : model }
+    return { images, model: typeof responseBody.model === 'string' ? responseBody.model : model }
   }
 
   private async download(url: string, signal?: AbortSignal): Promise<Blob> {
@@ -91,4 +103,10 @@ export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiI
       throw new AiError('unavailable', `${url} could not be reached: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
     }
   }
+}
+
+function extensionOf(mediaType: string): string {
+  if (mediaType === 'image/jpeg') return 'jpg'
+  if (mediaType === 'image/webp') return 'webp'
+  return 'png'
 }
