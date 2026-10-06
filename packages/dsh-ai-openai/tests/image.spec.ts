@@ -10,6 +10,7 @@ const setup = () => {
   let answer = new Response(JSON.stringify({ data: [{ b64_json: PIXEL, revised_prompt: 'A tiny red circle.' }] }), { headers: { 'content-type': 'application/json' } })
   const service = new OpenAiImageGenerationService({
     config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), imageModel: field('imageModel'), imageSize: field('imageSize'), imageQuality: field('imageQuality'), imageOutputFormat: field('imageOutputFormat'), imageOutputCompression: field('imageOutputCompression'), timeoutMs: field('timeoutMs') } as never,
+    connection: () => ({ baseUrl: String(settings.baseUrl).replace(/\/+$/, ''), apiKeyRef: String(settings.apiKeyEnv) }),
     credentials: () => ({ resolve: () => Promise.resolve({ value: 'sk-test', source: 'file' }) }) as never,
     fetch: (async (url: string | URL | Request, init?: RequestInit) => {
       seen.push({ url: String(url), ...(init?.body === undefined ? {} : { body: JSON.parse(String(init.body)) }) })

@@ -1,16 +1,21 @@
 import type { Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 
+export interface OpenAiConnectionConfig {
+  id: string
+  name: string
+  baseUrl: string
+  apiKeyRef: string
+}
+
 /** How to reach an OpenAI-compatible API. Every field is edited in the settings UI and read on each call. */
 export interface Config {
-  /** The API root, such as `https://api.openai.com/v1` or a local server's `http://localhost:8081/v1`. */
-  baseUrl: Volatile<string>
-  /**
-   * The name the API key is stored under (a credential reference, an environment-variable name). The key
-   * itself is never in a profile: it is typed into the settings UI and kept by DSH's credentials service,
-   * or supplied by the environment under this name.
-   */
-  apiKeyEnv: Volatile<string>
+  /** Reusable OpenAI-compatible endpoints shared by every capability. */
+  connections: Volatile<OpenAiConnectionConfig[]>
+  embeddingConnection: Volatile<string>
+  ttsConnection: Volatile<string>
+  sttConnection: Volatile<string>
+  imageConnection: Volatile<string>
   /** The embedding model, as the API names it. */
   embeddingModel: Volatile<string>
   /** Vectors of this many dimensions, for models that can shorten theirs; 0 leaves it to the model. */
@@ -39,8 +44,16 @@ export interface Config {
 }
 
 export const Config = z.object({
-  baseUrl: z.string().default('https://api.openai.com/v1').volatile(),
-  apiKeyEnv: z.string().default('OPENAI_API_KEY').volatile(),
+  connections: z.array(z.object({
+    id: z.string().required(),
+    name: z.string().required(),
+    baseUrl: z.string().required(),
+    apiKeyRef: z.string().default(''),
+  })).default([{ id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', apiKeyRef: 'OPENAI_API_KEY' }]).volatile(),
+  embeddingConnection: z.string().default('openai').volatile(),
+  ttsConnection: z.string().default('openai').volatile(),
+  sttConnection: z.string().default('openai').volatile(),
+  imageConnection: z.string().default('openai').volatile(),
   embeddingModel: z.string().default('text-embedding-3-small').volatile(),
   embeddingDimensions: z.natural().default(0).volatile(),
   ttsModel: z.string().default('gpt-4o-mini-tts').volatile(),

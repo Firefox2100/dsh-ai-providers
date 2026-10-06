@@ -31,7 +31,10 @@ beforeEach(async () => {
 
   ctx = new Context()
   selection = { value: 'jina-cohere' }
-  const vendorConfig = { baseUrl: { get: () => `http://127.0.0.1:${port}/v1` }, apiKeyEnv: { get: () => '' }, rerankModel: { get: () => 'bge-reranker' }, timeoutMs: { get: () => 2000 } }
+  const vendorConfig = {
+    connections: { get: () => [{ id: 'test', name: 'Test', baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyRef: '' }] },
+    rerankConnection: { get: () => 'test' }, rerankModel: { get: () => 'bge-reranker' }, timeoutMs: { get: () => 2000 },
+  }
   ctx.plugin({ name: 'vendor', inject: vendor.inject, apply: (scope: Context) => { vendor.apply(scope, vendorConfig as never) } } as never, {} as never)
   await settle()
   ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: { get: () => '' }, rerank: { get: () => selection.value }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)

@@ -34,7 +34,9 @@ describe('the provider', () => {
   it('has a configuration of defaults a profile can override, all editable in settings', () => {
     const parse = plugin.Config as unknown as (value: unknown) => Record<string, { get(): unknown }>
     expect(Object.fromEntries(Object.entries(parse({})).map(([key, field]) => [key, field.get()]))).toEqual({
-      baseUrl: 'https://api.openai.com/v1', apiKeyEnv: 'OPENAI_API_KEY', embeddingModel: 'text-embedding-3-small', embeddingDimensions: 0,
+      connections: [{ id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', apiKeyRef: 'OPENAI_API_KEY' }],
+      embeddingConnection: 'openai', ttsConnection: 'openai', sttConnection: 'openai', imageConnection: 'openai',
+      embeddingModel: 'text-embedding-3-small', embeddingDimensions: 0,
       ttsModel: 'gpt-4o-mini-tts', ttsVoice: 'alloy', ttsResponseFormat: 'mp3', ttsSpeed: 1, batchSize: 64, timeoutMs: 60_000,
       sttModel: 'whisper-1', sttRealtimeModel: 'gpt-4o-mini-transcribe',
       imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,

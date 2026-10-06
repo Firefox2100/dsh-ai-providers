@@ -8,6 +8,7 @@ import type {} from 'dsh-ai-core/slots'
 import { ENTRY_ID, PROVIDER_ID } from '../ids.ts'
 import { JinaCohereCardController } from './controller.ts'
 import { JinaCohereCard } from './JinaCohereCard.tsx'
+import { JinaCohereConnections } from './JinaCohereConnections.tsx'
 import { dictionaries, type JinaCohereLocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -28,6 +29,15 @@ export function apply(ctx: Context): void {
 
   const controller = new JinaCohereCardController(ctx.configForms.get(ENTRY_ID))
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-jina-cohere: form')
+
+  ctx.effect(
+    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
+      ctx.slots.register({
+        name: 'settings.section', id: 'ai-jina-cohere-connections', order: 44.5,
+        label: () => t('connectionsNav'), locale: NAMESPACE, inject: () => controller.inject(),
+      }, JinaCohereConnections as never))),
+    'dsh-ai-jina-cohere: connections section',
+  )
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
   ctx.effect(

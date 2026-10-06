@@ -3,6 +3,7 @@ import type { Dictionaries } from './i18n.ts'
 
 export type OpenAiLocaleKey =
   | 'label' | 'title' | 'description'
+  | 'connectionsNav' | 'connectionsTitle' | 'connectionsDescription' | 'connectionsEmpty' | 'connection' | 'connectionHint' | 'connectionNone' | 'connectionName' | 'connectionAdd' | 'connectionRemove' | 'apiKeySave'
   | 'baseUrl' | 'baseUrlHint' | 'apiKeyEnv' | 'apiKeyEnvHint' | 'apiKey' | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
   | 'embeddingModel' | 'embeddingModelHint' | 'embeddingDimensions' | 'embeddingDimensionsHint' | 'batchSize' | 'batchSizeHint' | 'timeoutMs' | 'timeoutMsHint'
   | 'ttsModel' | 'ttsModelHint' | 'ttsVoice' | 'ttsVoiceHint' | 'ttsResponseFormat' | 'ttsResponseFormatHint' | 'ttsSpeed' | 'ttsSpeedHint'
@@ -15,9 +16,20 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
   en: {
     label: 'OpenAI-compatible',
     title: 'OpenAI-compatible API',
-    description: 'Any server that speaks the OpenAI embeddings API: OpenAI itself, or a local one such as LocalAI or vLLM.',
+    description: 'Any server that speaks OpenAI-compatible APIs: OpenAI itself, or a local one such as LocalAI or vLLM.',
+    connectionsNav: 'OpenAI connections',
+    connectionsTitle: 'OpenAI-compatible connections',
+    connectionsDescription: 'Configure endpoints and credentials once, then select a connection in each AI capability.',
+    connectionsEmpty: 'No OpenAI-compatible connections are configured.',
+    connection: 'Connection',
+    connectionHint: 'Managed in the AI connections settings page.',
+    connectionNone: 'No connection',
+    connectionName: 'Name',
+    connectionAdd: 'Add connection',
+    connectionRemove: 'Remove',
+    apiKeySave: 'Store key',
     baseUrl: 'Base URL',
-    baseUrlHint: 'The API root, for example https://api.openai.com/v1 or http://localhost:8081/v1. Requests go to {base URL}/embeddings.',
+    baseUrlHint: 'The shared API root, for example https://api.openai.com/v1 or http://localhost:8081/v1.',
     apiKeyEnv: 'Key name',
     apiKeyEnvHint: 'The name the key is stored under. It can also be supplied by an environment variable of this name, which then takes precedence.',
     apiKey: 'API key',
@@ -61,9 +73,20 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
   zh: {
     label: 'OpenAI 兼容',
     title: 'OpenAI 兼容接口',
-    description: '任何遵循 OpenAI 嵌入接口的服务：OpenAI 本身，或 LocalAI、vLLM 之类的本地服务。',
+    description: '任何遵循 OpenAI 兼容接口的服务：OpenAI 本身，或 LocalAI、vLLM 之类的本地服务。',
+    connectionsNav: 'OpenAI 连接',
+    connectionsTitle: 'OpenAI 兼容连接',
+    connectionsDescription: '只需配置一次接口和凭据，然后在各项 AI 功能中选择连接。',
+    connectionsEmpty: '尚未配置 OpenAI 兼容连接。',
+    connection: '连接',
+    connectionHint: '在“AI 连接”设置页中管理。',
+    connectionNone: '无连接',
+    connectionName: '名称',
+    connectionAdd: '添加连接',
+    connectionRemove: '移除',
+    apiKeySave: '保存密钥',
     baseUrl: '基础 URL',
-    baseUrlHint: '接口根地址，例如 https://api.openai.com/v1 或 http://localhost:8081/v1。请求会发往 {基础 URL}/embeddings。',
+    baseUrlHint: '共享接口根地址，例如 https://api.openai.com/v1 或 http://localhost:8081/v1。',
     apiKeyEnv: '密钥名称',
     apiKeyEnvHint: '密钥存放所用的名称。也可以由同名环境变量提供，此时环境变量优先。',
     apiKey: 'API 密钥',

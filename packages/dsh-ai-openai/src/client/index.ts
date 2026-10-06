@@ -8,6 +8,7 @@ import type {} from 'dsh-ai-core/slots'
 import { ENTRY_ID, PROVIDER_ID } from '../ids.ts'
 import { OpenAiCardController } from './controller.ts'
 import { OpenAiCard } from './OpenAiCard.tsx'
+import { OpenAiConnections } from './OpenAiConnections.tsx'
 import { dictionaries, type OpenAiLocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -28,6 +29,15 @@ export function apply(ctx: Context): void {
 
   const controller = new OpenAiCardController(ctx.configForms.get(ENTRY_ID))
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-openai: form')
+
+  ctx.effect(
+    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
+      ctx.slots.register({
+        name: 'settings.section', id: 'ai-openai-connections', order: 44,
+        label: () => t('connectionsNav'), locale: NAMESPACE, inject: () => controller.inject(),
+      }, OpenAiConnections as never))),
+    'dsh-ai-openai: connections section',
+  )
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
   for (const capability of ['embedding', 'tts', 'stt', 'image'] as const) {

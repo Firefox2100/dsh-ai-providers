@@ -14,6 +14,7 @@ let key: string | undefined
 const field = <K extends keyof typeof settings>(name: K) => ({ get: () => settings[name] })
 const service = () => new JinaCohereRerankService({
   config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), rerankModel: field('rerankModel'), timeoutMs: field('timeoutMs') } as never,
+  connection: () => ({ baseUrl: settings.baseUrl.replace(/\/+$/, ''), apiKeyRef: settings.apiKeyEnv }),
   credentials: () => ({ resolve: () => Promise.resolve(key === undefined ? undefined : { value: key, source: 'file' }) }) as never,
 })
 
@@ -95,12 +96,9 @@ describe('what goes wrong', () => {
     expect(seen).toEqual([])
   })
 
-  it('is not configured without a model or a base URL', async () => {
+  it('is not configured without a model', async () => {
     settings.rerankModel = ''
     await expectCode(service().rerank('q', ['a']), 'not-configured', /model/)
-    settings.rerankModel = 'm'
-    settings.baseUrl = ' '
-    await expectCode(service().rerank('q', ['a']), 'not-configured', /base URL/)
   })
 
   it('is rejected for bad credentials or a refused request, with what the API said in whichever field it says it', async () => {

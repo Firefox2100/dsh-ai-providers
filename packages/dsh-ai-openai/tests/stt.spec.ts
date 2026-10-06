@@ -17,6 +17,7 @@ const setup = () => {
   const socket = new FakeSocket()
   const service = new OpenAiSttService({
     config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), sttModel: field('sttModel'), sttRealtimeModel: field('sttRealtimeModel'), timeoutMs: field('timeoutMs') } as never,
+    connection: () => ({ baseUrl: String(settings.baseUrl).replace(/\/+$/, ''), apiKeyRef: String(settings.apiKeyEnv) }),
     credentials: () => ({ resolve: () => Promise.resolve({ value: 'sk-test', source: 'file' }) }) as never,
     fetch: (async (url: string | URL | Request, init?: RequestInit) => { request = { url: String(url), init: init ?? {} }; return new Response(JSON.stringify({ text: 'Hello there.', duration: 1.2 }), { headers: { 'content-type': 'application/json' } }) }) as typeof fetch,
     socket: (url, headers) => { request = { url, init: { headers } }; queueMicrotask(() => socket.emit('open')); return socket },

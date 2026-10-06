@@ -3,6 +3,7 @@ import type { Dictionaries } from './i18n.ts'
 
 export type JinaCohereLocaleKey =
   | 'label' | 'title' | 'description'
+  | 'connectionsNav' | 'connectionsTitle' | 'connectionsDescription' | 'connectionsEmpty' | 'connection' | 'connectionHint' | 'connectionNone' | 'connectionName' | 'connectionAdd' | 'connectionRemove' | 'apiKeySave'
   | 'baseUrl' | 'baseUrlHint' | 'apiKeyEnv' | 'apiKeyEnvHint' | 'apiKey' | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
   | 'rerankModel' | 'rerankModelHint' | 'timeoutMs' | 'timeoutMsHint'
   | 'overridden' | 'reset' | 'invalidNumber'
@@ -13,6 +14,12 @@ export const dictionaries: Dictionaries<JinaCohereLocaleKey> = {
     label: 'Jina / Cohere (rerank API)',
     title: 'Jina / Cohere rerank API',
     description: 'Any server that speaks the rerank API Jina and Cohere share: Jina AI, Cohere, or a local one such as LocalAI or vLLM.',
+    connectionsNav: 'Jina / Cohere connections',
+    connectionsTitle: 'Jina / Cohere connections',
+    connectionsDescription: 'Configure reranking endpoints and credentials once, then select one in the Reranking settings.',
+    connectionsEmpty: 'No Jina / Cohere connections are configured.',
+    connection: 'Connection', connectionHint: 'Managed in the Jina / Cohere connections settings page.', connectionNone: 'No connection',
+    connectionName: 'Name', connectionAdd: 'Add connection', connectionRemove: 'Remove', apiKeySave: 'Store key',
     baseUrl: 'Base URL',
     baseUrlHint: 'The API root, for example https://api.jina.ai/v1, https://api.cohere.com/v2 or http://localhost:8081/v1. Requests go to {base URL}/rerank.',
     apiKeyEnv: 'Key name',
@@ -38,6 +45,12 @@ export const dictionaries: Dictionaries<JinaCohereLocaleKey> = {
     label: 'Jina / Cohere（重排序接口）',
     title: 'Jina / Cohere 重排序接口',
     description: '任何遵循 Jina 与 Cohere 共用的重排序接口的服务：Jina AI、Cohere，或 LocalAI、vLLM 之类的本地服务。',
+    connectionsNav: 'Jina / Cohere 连接',
+    connectionsTitle: 'Jina / Cohere 连接',
+    connectionsDescription: '只需配置一次重排序接口和凭据，然后在“重排序”设置中选择连接。',
+    connectionsEmpty: '尚未配置 Jina / Cohere 连接。',
+    connection: '连接', connectionHint: '在“Jina / Cohere 连接”设置页中管理。', connectionNone: '无连接',
+    connectionName: '名称', connectionAdd: '添加连接', connectionRemove: '移除', apiKeySave: '保存密钥',
     baseUrl: '基础 URL',
     baseUrlHint: '接口根地址，例如 https://api.jina.ai/v1、https://api.cohere.com/v2 或 http://localhost:8081/v1。请求会发往 {基础 URL}/rerank。',
     apiKeyEnv: '密钥名称',

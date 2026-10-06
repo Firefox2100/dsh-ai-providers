@@ -34,7 +34,8 @@ beforeEach(async () => {
   const live = <T>(box: { value: T }) => ({ get: () => box.value })
   // The vendor is loaded first and waits for the main plugin, as it would in a profile.
   const vendorConfig = {
-    baseUrl: { get: () => `http://127.0.0.1:${port}/v1` }, apiKeyEnv: { get: () => '' }, embeddingModel: live(model),
+    connections: { get: () => [{ id: 'test', name: 'Test', baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyRef: '' }] },
+    embeddingConnection: { get: () => 'test' }, ttsConnection: { get: () => 'test' }, sttConnection: { get: () => 'test' }, imageConnection: { get: () => 'test' }, embeddingModel: live(model),
     embeddingDimensions: { get: () => 0 }, batchSize: { get: () => 64 }, timeoutMs: { get: () => 2000 },
   }
   // The plugins are applied with live fields in place of the profile's configuration.

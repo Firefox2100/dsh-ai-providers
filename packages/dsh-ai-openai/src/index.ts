@@ -9,6 +9,7 @@ import { OpenAiTtsService } from './tts.ts'
 import { OpenAiSttService } from './stt.ts'
 import { OpenAiImageGenerationService } from './image.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
+import { resolveConnection } from './connection.ts'
 
 export { Config } from './config.ts'
 export { OpenAiEmbeddingService, type OpenAiEmbedOptions } from './embedding.ts'
@@ -72,10 +73,10 @@ export function apply(ctx: Context, config: Config): void {
     label: 'OpenAI-compatible',
     configEntryId: ENTRY_ID,
     capabilities: {
-      embedding: () => new OpenAiEmbeddingService({ config, credentials: () => ctx.get('credentials') }),
-      tts: () => new OpenAiTtsService({ config, credentials: () => ctx.get('credentials') }),
-      stt: () => new OpenAiSttService({ config, credentials: () => ctx.get('credentials') }),
-      image: () => new OpenAiImageGenerationService({ config, credentials: () => ctx.get('credentials') }),
+      embedding: () => new OpenAiEmbeddingService({ config, connection: () => resolveConnection(config, 'embedding'), credentials: () => ctx.get('credentials') }),
+      tts: () => new OpenAiTtsService({ config, connection: () => resolveConnection(config, 'tts'), credentials: () => ctx.get('credentials') }),
+      stt: () => new OpenAiSttService({ config, connection: () => resolveConnection(config, 'stt'), credentials: () => ctx.get('credentials') }),
+      image: () => new OpenAiImageGenerationService({ config, connection: () => resolveConnection(config, 'image'), credentials: () => ctx.get('credentials') }),
     },
     requestOptions: { embedding: EMBEDDING_REQUEST_OPTIONS, tts: TTS_REQUEST_OPTIONS, stt: STT_REQUEST_OPTIONS, image: IMAGE_REQUEST_OPTIONS },
   }), 'dsh-ai-openai: provider')

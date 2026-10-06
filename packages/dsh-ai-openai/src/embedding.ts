@@ -1,7 +1,8 @@
-import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
+import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, EmbeddingService, httpFailure, readJson, type EmbedOptions, type EmbeddingResult } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
+import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 /**
  * What belongs to one request to an OpenAI-compatible API and not to every provider: the instance's
@@ -18,6 +19,7 @@ export interface OpenAiEmbeddingDeps {
   config: Config
   /** The credentials service, looked up on each call: the key is never held. */
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
+  connection: () => OpenAiConnection
   /** Replaceable for tests. */
   fetch?: typeof fetch
 }
@@ -66,20 +68,11 @@ export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions>
 
   private async request(input: readonly string[], model: string, options: OpenAiEmbedOptions): Promise<{ vectors: number[][]; model: string; tokens?: number }> {
     const { config, credentials } = this.deps
-    const root = config.baseUrl.get().trim().replace(/\/+$/, '')
+    const connection = this.deps.connection()
+    const root = connection.baseUrl
     if (root === '') throw new AiError('not-configured', 'no base URL is configured')
     const dimensions = options.dimensions ?? config.embeddingDimensions.get()
-    const headers: Record<string, string> = { 'content-type': 'application/json' }
-    const ref = config.apiKeyEnv.get().trim()
-    if (ref !== '') {
-      let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-      try {
-        key = await credentials()?.resolve(credentialRef(ref))
-      } catch (error) {
-        throw new AiError('not-configured', `the credential name "${ref}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
-      }
-      if (key !== undefined) headers['authorization'] = `Bearer ${key.value}`
-    }
+    const headers: Record<string, string> = { 'content-type': 'application/json', ...await connectionHeaders(connection, credentials) }
     const timeout = AbortSignal.timeout(Math.max(1, config.timeoutMs.get()))
     const signal = options.signal === undefined ? timeout : AbortSignal.any([options.signal, timeout])
 

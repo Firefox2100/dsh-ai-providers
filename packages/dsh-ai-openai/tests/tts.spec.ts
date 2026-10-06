@@ -15,6 +15,7 @@ const setup = () => {
   }
   const service = new OpenAiTtsService({
     config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), ttsModel: field('ttsModel'), ttsVoice: field('ttsVoice'), ttsResponseFormat: field('ttsResponseFormat'), ttsSpeed: field('ttsSpeed'), timeoutMs: field('timeoutMs') } as never,
+    connection: () => ({ baseUrl: String(settings.baseUrl).replace(/\/+$/, ''), apiKeyRef: String(settings.apiKeyEnv) }),
     credentials: () => ({ resolve: () => Promise.resolve({ value: 'sk-test', source: 'file' }) }) as never,
     fetch: send as typeof fetch,
   })

@@ -5,6 +5,7 @@ import type {} from '@deepseek-ai/dsh-credentials'
 import { Config } from './config.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
 import { JinaCohereRerankService } from './rerank.ts'
+import { resolveConnection } from './connection.ts'
 
 export { Config } from './config.ts'
 export { JinaCohereRerankService } from './rerank.ts'
@@ -19,6 +20,6 @@ export function apply(ctx: Context, config: Config): void {
     id: PROVIDER_ID,
     label: 'Jina / Cohere (rerank API)',
     configEntryId: ENTRY_ID,
-    capabilities: { rerank: () => new JinaCohereRerankService({ config, credentials: () => ctx.get('credentials') }) },
+    capabilities: { rerank: () => new JinaCohereRerankService({ config, connection: () => resolveConnection(config), credentials: () => ctx.get('credentials') }) },
   }), 'dsh-ai-jina-cohere: provider')
 }

@@ -1,4 +1,4 @@
-import { SettingsForm, SettingsSecretField, SettingsValueField } from '@deepseek-ai/dsh-client-ui-primitives'
+import { SettingsForm, SettingsValueField } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from 'dsh-ai-core/slots'
 import type { OpenAiCardFace } from './controller.ts'
@@ -15,23 +15,20 @@ export function OpenAiCard(props: OpenAiCardProps) {
   const state = props.useOpenAiCard(snapshot => snapshot)
   const disabled = !state.writable
   const common = { overriddenLabel: t('overridden'), resetLabel: t('reset'), invalidLabel: t('invalidNumber'), disabled }
+  const connection = state[`${props.capability}Connection` as 'embeddingConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection']
   return (
     <div data-testid="ai-openai">
       <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 500 }}>{t('title')}</h3>
       <p style={{ margin: '0 0 12px', fontSize: 12 }}>{t('description')}</p>
       <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
-        <SettingsValueField id="ai-openai-base-url" label={t('baseUrl')} hint={t('baseUrlHint')} {...common} {...state.baseUrl} onEdit={(text) => { props.edit('baseUrl', text) }} onReset={() => { props.resetField('baseUrl') }} />
-        <SettingsValueField id="ai-openai-key-name" label={t('apiKeyEnv')} hint={t('apiKeyEnvHint')} {...common} {...state.apiKeyEnv} onEdit={(text) => { props.edit('apiKeyEnv', text) }} onReset={() => { props.resetField('apiKeyEnv') }} />
-        <SettingsSecretField
-          id="ai-openai-key"
-          label={t('apiKey')}
-          hint={t('apiKeyHint')}
-          disabled={!state.apiKeyWritable}
-          text={state.apiKey.text}
-          configured={state.apiKeyConfigured}
-          stateLabel={state.apiKeyConfigured ? t('apiKeySet') : t('apiKeyUnset')}
-          onEdit={(text) => { props.edit('apiKey', text) }}
-        />
+        <label style={{ display: 'grid', gap: 6, marginBottom: 12 }}>
+          <span>{t('connection')}</span>
+          <select value={connection.text} disabled={disabled} onChange={event => { props.edit(`${props.capability}Connection`, event.target.value) }}>
+            <option value="">{t('connectionNone')}</option>
+            {state.connections.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+          <small>{t('connectionHint')}</small>
+        </label>
         {props.capability === 'embedding' && <>
           <SettingsValueField id="ai-openai-model" label={t('embeddingModel')} hint={t('embeddingModelHint')} {...common} {...state.embeddingModel} onEdit={(text) => { props.edit('embeddingModel', text) }} onReset={() => { props.resetField('embeddingModel') }} />
           <SettingsValueField id="ai-openai-dimensions" label={t('embeddingDimensions')} hint={t('embeddingDimensionsHint')} numeric {...common} {...state.embeddingDimensions} onEdit={(text) => { props.edit('embeddingDimensions', text) }} onReset={() => { props.resetField('embeddingDimensions') }} />

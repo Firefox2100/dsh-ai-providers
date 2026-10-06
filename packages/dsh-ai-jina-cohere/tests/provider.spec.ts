@@ -31,7 +31,8 @@ describe('the provider', () => {
   it('has a configuration of defaults a profile can override, all editable in settings', () => {
     const parse = plugin.Config as unknown as (value: unknown) => Record<string, { get(): unknown }>
     expect(Object.fromEntries(Object.entries(parse({})).map(([key, field]) => [key, field.get()]))).toEqual({
-      baseUrl: 'https://api.jina.ai/v1', apiKeyEnv: 'JINA_API_KEY', rerankModel: 'jina-reranker-v2-base-multilingual', timeoutMs: 60_000,
+      connections: [{ id: 'jina', name: 'Jina AI', baseUrl: 'https://api.jina.ai/v1', apiKeyRef: 'JINA_API_KEY' }],
+      rerankConnection: 'jina', rerankModel: 'jina-reranker-v2-base-multilingual', timeoutMs: 60_000,
     })
   })
 })

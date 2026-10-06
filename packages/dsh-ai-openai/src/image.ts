@@ -1,7 +1,8 @@
-import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
+import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, ImageGenerationService, httpFailure, readJson, type ImageGenerationOptions, type ImageGenerationResult } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
+import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export type OpenAiImageFormat = 'png' | 'jpeg' | 'webp'
 export interface OpenAiImageOptions extends ImageGenerationOptions {
@@ -17,6 +18,7 @@ export interface OpenAiImageOptions extends ImageGenerationOptions {
 export interface OpenAiImageDeps {
   config: Config
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
+  connection: () => OpenAiConnection
   fetch?: typeof fetch
 }
 
@@ -44,10 +46,11 @@ export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiI
     if (!Number.isInteger(count) || count < 1) throw new AiError('invalid-input', 'count must be a whole number from 1')
     const compression = options.outputCompression ?? this.deps.config.imageOutputCompression.get()
     if (!Number.isInteger(compression) || compression < 0 || compression > 100) throw new AiError('invalid-input', 'output compression must be a whole number from 0 to 100')
-    const root = this.deps.config.baseUrl.get().trim().replace(/\/+$/, '')
+    const connection = this.deps.connection()
+    const root = connection.baseUrl
     if (root === '') throw new AiError('not-configured', 'no base URL is configured')
     const outputFormat = options.outputFormat ?? this.deps.config.imageOutputFormat.get()
-    const headers = await this.headers()
+    const headers = await connectionHeaders(connection, this.deps.credentials)
     headers['content-type'] = 'application/json'
     const response = await this.request(`${root}/images/generations`, {
       method: 'POST', headers,
@@ -70,17 +73,6 @@ export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiI
       return { data, mediaType: data.type || MEDIA_TYPES[outputFormat], ...(typeof entry.revised_prompt === 'string' ? { revisedPrompt: entry.revised_prompt } : {}) }
     }))
     return { images, model: typeof body.model === 'string' ? body.model : model }
-  }
-
-  private async headers(): Promise<Record<string, string>> {
-    const headers: Record<string, string> = {}
-    const ref = this.deps.config.apiKeyEnv.get().trim()
-    if (ref === '') return headers
-    let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-    try { key = await this.deps.credentials()?.resolve(credentialRef(ref)) }
-    catch (error) { throw new AiError('not-configured', `the credential name "${ref}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error }) }
-    if (key !== undefined) headers.authorization = `Bearer ${key.value}`
-    return headers
   }
 
   private async download(url: string, signal?: AbortSignal): Promise<Blob> {

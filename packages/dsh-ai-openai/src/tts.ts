@@ -1,7 +1,8 @@
-import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
+import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, TtsService, httpFailure, readJson, type TtsOptions, type TtsResult } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
+import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export type OpenAiSpeechFormat = 'mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm'
 
@@ -16,6 +17,7 @@ export interface OpenAiTtsOptions extends TtsOptions {
 export interface OpenAiTtsDeps {
   config: Config
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
+  connection: () => OpenAiConnection
   fetch?: typeof fetch
 }
 
@@ -41,7 +43,8 @@ export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
     if (text.trim() === '') throw new AiError('invalid-input', 'the text is empty')
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     const { config, credentials } = this.deps
-    const root = config.baseUrl.get().trim().replace(/\/+$/, '')
+    const connection = this.deps.connection()
+    const root = connection.baseUrl
     if (root === '') throw new AiError('not-configured', 'no base URL is configured')
     const model = config.ttsModel.get().trim()
     if (model === '') throw new AiError('not-configured', 'no text-to-speech model is configured')
@@ -51,14 +54,7 @@ export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
     const speed = options.speed ?? config.ttsSpeed.get()
     if (!Number.isFinite(speed) || speed < 0.25 || speed > 4) throw new AiError('invalid-input', 'speed must be from 0.25 to 4')
 
-    const headers: Record<string, string> = { 'content-type': 'application/json' }
-    const ref = config.apiKeyEnv.get().trim()
-    if (ref !== '') {
-      let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-      try { key = await credentials()?.resolve(credentialRef(ref)) }
-      catch (error) { throw new AiError('not-configured', `the credential name "${ref}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error }) }
-      if (key !== undefined) headers['authorization'] = `Bearer ${key.value}`
-    }
+    const headers: Record<string, string> = { 'content-type': 'application/json', ...await connectionHeaders(connection, credentials) }
     const timeout = AbortSignal.timeout(Math.max(1, config.timeoutMs.get()))
     const signal = options.signal === undefined ? timeout : AbortSignal.any([options.signal, timeout])
     let response: Response

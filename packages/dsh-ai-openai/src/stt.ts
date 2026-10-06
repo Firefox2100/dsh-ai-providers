@@ -1,7 +1,8 @@
-import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
+import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, SttService, httpFailure, readJson, type SttLiveEvent, type SttLiveOptions, type SttLiveSession, type SttOptions, type SttResult } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
+import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export interface OpenAiSttOptions extends SttOptions { filename?: string; temperature?: number }
 export interface OpenAiLiveSttOptions extends SttLiveOptions { model?: string }
@@ -16,6 +17,7 @@ type SocketFactory = (url: string, headers: Record<string, string>) => SocketLik
 export interface OpenAiSttDeps {
   config: Config
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
+  connection: () => OpenAiConnection
   fetch?: typeof fetch
   socket?: SocketFactory
 }
@@ -64,8 +66,9 @@ export class OpenAiSttService extends SttService<OpenAiSttOptions, OpenAiLiveStt
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     const model = this.deps.config.sttModel.get().trim()
     if (model === '') throw new AiError('not-configured', 'no speech-to-text model is configured')
-    const root = this.root()
-    const headers = await this.headers()
+    const connection = this.connection()
+    const root = connection.baseUrl
+    const headers = await connectionHeaders(connection, this.deps.credentials)
     const form = new FormData()
     form.set('file', audio, options.filename ?? `audio.${extension(audio.type)}`)
     form.set('model', model); form.set('response_format', 'json')
@@ -83,8 +86,9 @@ export class OpenAiSttService extends SttService<OpenAiSttOptions, OpenAiLiveStt
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     const model = (options.model ?? this.deps.config.sttRealtimeModel.get()).trim()
     if (model === '') throw new AiError('not-configured', 'no live speech-to-text model is configured')
-    const headers = await this.headers()
-    const url = `${this.root().replace(/^http/, 'ws')}/realtime?intent=transcription`
+    const connection = this.connection()
+    const headers = await connectionHeaders(connection, this.deps.credentials)
+    const url = `${connection.baseUrl.replace(/^http/, 'ws')}/realtime?intent=transcription`
     const socket = this.deps.socket?.(url, headers) ?? await defaultSocket(url, headers)
     const queue = new EventQueue()
     let opened = false
@@ -107,21 +111,8 @@ export class OpenAiSttService extends SttService<OpenAiSttOptions, OpenAiLiveStt
     return new OpenAiLiveSession(socket, queue)
   }
 
-  private root(): string {
-    const root = this.deps.config.baseUrl.get().trim().replace(/\/+$/, '')
-    if (root === '') throw new AiError('not-configured', 'no base URL is configured')
-    return root
-  }
-
-  private async headers(): Promise<Record<string, string>> {
-    const headers: Record<string, string> = {}
-    const ref = this.deps.config.apiKeyEnv.get().trim()
-    if (ref === '') return headers
-    let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-    try { key = await this.deps.credentials()?.resolve(credentialRef(ref)) }
-    catch (error) { throw new AiError('not-configured', `the credential name "${ref}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error }) }
-    if (key !== undefined) headers.authorization = `Bearer ${key.value}`
-    return headers
+  private connection(): OpenAiConnection {
+    return this.deps.connection()
   }
 
   private async request(url: string, init: RequestInit, caller?: AbortSignal): Promise<Response> {
