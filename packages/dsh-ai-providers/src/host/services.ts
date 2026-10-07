@@ -24,11 +24,8 @@ export class AiServices {
   readonly image: ConfiguredImageGeneration
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config) {
-    ctx.provide('embeddings')
-    ctx.provide('rerankers')
-    ctx.provide('textToSpeech')
-    ctx.provide('speechToText')
-    ctx.provide('imageGeneration')
+    for (const capability of CAPABILITIES) ctx.provide(SERVICE_NAMES[capability])
+    ctx.provide('streamingSpeechToText')
     this.embedding = new ConfiguredEmbedding({
       selected: () => config.embedding.get(),
       registry,
@@ -62,5 +59,7 @@ export class AiServices {
       if (offered && !present) this.ctx.set(name, capability === 'embedding' ? this.embedding : capability === 'rerank' ? this.rerank : capability === 'tts' ? this.tts : capability === 'stt' ? this.stt : this.image)
       else if (!offered && present) this.ctx.set(name, undefined as never)
     }
+    const stt = this.registry.get(this.selected('stt'))?.capabilities.stt?.()
+    this.ctx.set('streamingSpeechToText', stt !== undefined && typeof Reflect.get(stt, 'startStreaming') === 'function' ? this.stt : undefined as never)
   }
 }

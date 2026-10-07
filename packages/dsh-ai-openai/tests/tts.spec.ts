@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { OpenAiTtsService } from '../src/tts.ts'
 
-interface Seen { url: string; auth?: string; body: Record<string, unknown> }
+interface Seen { url: string; auth?: string; body?: Record<string, unknown> }
 
 const setup = () => {
   const settings: Record<string, string | number> = { baseUrl: 'https://speech.example/v1/', apiKeyEnv: 'OPENAI_API_KEY', ttsModel: 'gpt-4o-mini-tts', ttsVoice: 'alloy', ttsResponseFormat: 'mp3', ttsSpeed: 1, timeoutMs: 2000 }
@@ -10,7 +10,7 @@ const setup = () => {
   const field = (name: string) => ({ get: () => settings[name] })
   const send = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const headers = init?.headers as Record<string, string>
-    seen.push({ url: String(input), ...(headers.authorization === undefined ? {} : { auth: headers.authorization }), body: JSON.parse(String(init?.body)) })
+    seen.push({ url: String(input), ...(headers.authorization === undefined ? {} : { auth: headers.authorization }), ...(init?.body === undefined ? {} : { body: JSON.parse(String(init.body)) }) })
     return answer
   }
   const service = new OpenAiTtsService({
@@ -42,6 +42,14 @@ describe('OpenAI-compatible speech', () => {
       { model: 'tts-1', input: 'two', voice: 'nova', response_format: 'opus', speed: 0.8 },
     ])
     expect(service.model).toBe('tts-1')
+  })
+
+  it('lists provider voices and treats an unsupported endpoint as an empty list', async () => {
+    const { service, setAnswer } = setup()
+    setAnswer(Response.json({ data: [{ id: 'alloy', name: 'Alloy' }, 'nova'] }))
+    await expect(service.voices()).resolves.toEqual([{ id: 'alloy', name: 'Alloy' }, { id: 'nova' }])
+    setAnswer(new Response('', { status: 404 }))
+    await expect(service.voices()).resolves.toEqual([])
   })
 
   it('maps invalid input and API rejection to AiError', async () => {

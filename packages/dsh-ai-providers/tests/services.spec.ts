@@ -1,29 +1,29 @@
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
-import { FakeEmbedding, FakeRerank, FakeTts, providerOf, settle } from './support.ts'
+import { FakeEmbedding, FakeRerank, FakeStt, FakeTts, providerOf, settle } from './support.ts'
 
 let ctx: Context
-let selection: { value: string }
-let reranking: { value: string }
-let speech: { value: string }
-
-/** The Config the plugin would get: live fields. */
-const config = (embedding: string, rerank = '', tts = '') => {
-  selection = { value: embedding }
-  reranking = { value: rerank }
-  speech = { value: tts }
-  return { embedding: { get: () => selection.value }, rerank: { get: () => reranking.value }, tts: { get: () => speech.value }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } }
+let selection: Record<'embedding' | 'rerank' | 'tts' | 'stt' | 'image', string>
+const config = (embedding: string, rerank = '', tts = '', stt = '') => {
+  selection = { embedding, rerank, tts, stt, image: '' }
+  const field = (key: keyof typeof selection) => ({ get: () => selection[key] })
+  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), holdSeconds: { get: () => 300 } }
 }
 
 beforeEach(() => { ctx = new Context() })
 
-/** What the loader says when a setting is edited. */
-const edited = (): void => { (ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update') }
 afterEach(async () => { await ctx.fiber.dispose() })
+
+const edited = (): void => { (ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update') }
 
 async function load(embedding: string, rerank = '', tts = ''): Promise<void> {
   plugin.apply(ctx as never, config(embedding, rerank, tts) as never)
+  await settle()
+}
+
+async function loadWithStt(stt: string): Promise<void> {
+  plugin.apply(ctx as never, config('', '', '', stt) as never)
   await settle()
 }
 
@@ -52,19 +52,17 @@ describe('the services on the context', () => {
     ctx.aiProviders.register(providerOf('fake', new FakeEmbedding()))
     expect(ctx.get('embeddings')).toBeUndefined()
     ctx.aiProviders.register(providerOf('plain', undefined))
-    selection.value = 'plain'
-    edited()
     expect(ctx.get('embeddings')).toBeUndefined()
   })
 
-  it('follows the selection when it is edited', async () => {
+  it('follows a provider selection edited in settings', async () => {
     await load('')
     ctx.aiProviders.register(providerOf('fake', new FakeEmbedding()))
     expect(ctx.get('embeddings')).toBeUndefined()
-    selection.value = 'fake'
+    selection.embedding = 'fake'
     edited()
     expect(ctx.get('embeddings')).toBeDefined()
-    selection.value = ''
+    selection.embedding = ''
     edited()
     expect(ctx.get('embeddings')).toBeUndefined()
   })
@@ -81,9 +79,7 @@ describe('the rerank service on the context', () => {
     remove()
     expect(ctx.get('rerankers')).toBeUndefined()
     ctx.aiProviders.register(providerOf('fake', undefined, new FakeRerank()))
-    reranking.value = ''
-    edited()
-    expect(ctx.get('rerankers')).toBeUndefined()
+    expect(ctx.get('rerankers')).toBeDefined()
   })
 
   it('is independent of embedding: each capability has its own selection', async () => {
@@ -112,5 +108,28 @@ describe('the text-to-speech service on the context', () => {
     await load('', '', 'fake')
     ctx.aiProviders.register(providerOf('fake', undefined, undefined, new FakeTts()))
     await expect(ctx.textToSpeech.synthesize(' ')).rejects.toMatchObject({ code: 'invalid-input' })
+  })
+})
+
+describe('the speech-to-text service on the context', () => {
+  it('does not expose API speech when disabled', async () => {
+    await loadWithStt('')
+    expect(ctx.get('apiSpeechToText')).toBeUndefined()
+  })
+
+  it('uses the selected completed-recording provider', async () => {
+    await loadWithStt('fake')
+    ctx.aiProviders.register(providerOf('fake', undefined, undefined, undefined, new FakeStt()))
+    expect(ctx.apiSpeechToText.info.languages).toContain('auto')
+    await expect(ctx.apiSpeechToText.transcribe({ audio: new Uint8Array(32_000), language: 'auto' }, new AbortController().signal)).resolves.toMatchObject({ text: 'heard', audioSeconds: 1 })
+  })
+
+  it('publishes realtime transcription separately only when the provider supports it', async () => {
+    await loadWithStt('fake')
+    const service = Object.assign(new FakeStt(), { startStreaming: async () => ({ events: { async *[Symbol.asyncIterator]() {} }, append: () => {}, commit: () => {}, close: () => {} }) })
+    const remove = ctx.aiProviders.register(providerOf('fake', undefined, undefined, undefined, service))
+    expect(ctx.get('streamingSpeechToText')).toBeDefined()
+    remove()
+    expect(ctx.get('streamingSpeechToText')).toBeUndefined()
   })
 })

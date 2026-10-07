@@ -1,6 +1,7 @@
 import type {} from '@deepseek-ai/cordis'
 import type { AiProviderRegistry } from './provider.ts'
 import type { CapabilityServices } from './capabilities.ts'
+import type { StreamingSttService } from './stt.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -15,8 +16,10 @@ declare module '@deepseek-ai/cordis' {
     rerankers: CapabilityServices['rerank']
     /** The text-to-speech service the profile has selected; exists only while its provider is selected and loaded. */
     textToSpeech: CapabilityServices['tts']
-    /** The speech-to-text service the profile has selected. */
-    speechToText: CapabilityServices['stt']
+    /** The API speech recognizer the profile selected; DSH reserves `speechToText` for its provider registry. */
+    apiSpeechToText: CapabilityServices['stt']
+    /** Optional realtime transcription, separate from DSH's completed-recording provider contract. */
+    streamingSpeechToText: StreamingSttService
     /** The image generation service the profile has selected. */
     imageGeneration: CapabilityServices['image']
   }

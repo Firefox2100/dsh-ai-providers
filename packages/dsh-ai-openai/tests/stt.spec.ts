@@ -28,17 +28,18 @@ const setup = () => {
 describe('OpenAI-compatible transcription', () => {
   it('uploads a completed audio file as multipart form data', async () => {
     const { service, request } = setup()
-    const result = await service.transcribe(new Blob(['wav'], { type: 'audio/wav' }), { filename: 'clip.wav', language: 'en', prompt: 'Names: Ada' })
-    expect(result).toEqual({ text: 'Hello there.', model: 'whisper-1', durationSeconds: 1.2 })
+    const result = await service.transcribe({ audio: new Uint8Array(44), language: 'en' }, new AbortController().signal)
+    expect(result).toMatchObject({ text: 'Hello there.', audioSeconds: 1.2 })
+    expect(result.inferenceSeconds).toBeGreaterThanOrEqual(0)
     expect(request()?.url).toBe('https://speech.example/v1/audio/transcriptions')
     expect(request()?.init.headers).toEqual({ authorization: 'Bearer sk-test' })
     const form = request()?.init.body as FormData
-    expect(Object.fromEntries([...form.entries()].map(([key, value]) => [key, typeof value === 'string' ? value : value.name]))).toEqual({ file: 'clip.wav', model: 'whisper-1', response_format: 'json', language: 'en', prompt: 'Names: Ada' })
+    expect(Object.fromEntries([...form.entries()].map(([key, value]) => [key, typeof value === 'string' ? value : value.name]))).toEqual({ file: 'recording.wav', model: 'whisper-1', response_format: 'json', language: 'en' })
   })
 
   it('opens a realtime session, appends audio and yields delta and final events', async () => {
     const { service, socket, request } = setup()
-    const session = await service.startLive({ language: 'en', prompt: 'Ada', format: 'pcm16' })
+    const session = await service.startStreaming({ language: 'en', prompt: 'Ada', format: 'pcm16' })
     expect(request()).toEqual({ url: 'wss://speech.example/v1/realtime?intent=transcription', init: { headers: { authorization: 'Bearer sk-test' } } })
     expect(socket.sent[0]).toMatchObject({ type: 'transcription_session.update', session: { input_audio_format: 'pcm16', input_audio_transcription: { model: 'gpt-4o-mini-transcribe', language: 'en', prompt: 'Ada' }, turn_detection: null } })
     session.append(new Uint8Array([1, 2, 3])); session.commit()
@@ -53,6 +54,6 @@ describe('OpenAI-compatible transcription', () => {
 
   it('rejects empty files and malformed provider answers', async () => {
     const { service } = setup()
-    await expect(service.transcribe(new Blob([]))).rejects.toMatchObject({ code: 'invalid-input' })
+    await expect(service.transcribe({ audio: new Uint8Array(), language: 'auto' }, new AbortController().signal)).rejects.toMatchObject({ code: 'invalid-input' })
   })
 })

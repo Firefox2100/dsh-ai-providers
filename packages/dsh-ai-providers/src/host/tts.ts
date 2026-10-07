@@ -1,4 +1,4 @@
-import { AiError, TtsService, type AiProviderRegistry, type TtsOptions, type TtsResult } from 'dsh-ai-core'
+import { AiError, TtsService, type AiProviderRegistry, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from 'dsh-ai-core'
 
 interface Source {
   selected: () => string
@@ -23,6 +23,12 @@ export class ConfiguredTts extends TtsService {
     if (!(answer.audio instanceof ReadableStream)) throw new AiError('unavailable', `${service.provider} returned no audio stream`)
     if (answer.mediaType.trim() === '') throw new AiError('unavailable', `${service.provider} returned no audio media type`)
     return answer
+  }
+
+  override async voices(options: CallOptions = {}): Promise<TtsVoice[]> {
+    const service = this.current()
+    if (service === undefined) throw new AiError('not-configured', 'no text-to-speech provider is selected, or the selected one is not loaded')
+    return await service.voices(options)
   }
 
   private current(): TtsService | undefined {

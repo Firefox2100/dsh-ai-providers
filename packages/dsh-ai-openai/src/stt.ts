@@ -1,10 +1,9 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, SttService, httpFailure, readJson, type SttLiveEvent, type SttLiveOptions, type SttLiveSession, type SttOptions, type SttResult } from 'dsh-ai-core'
+import { AiError, SttService, httpFailure, readJson, type SpeechInput, type SpeechProviderInfo, type SttLiveEvent, type SttLiveOptions, type SttLiveSession, type Transcript } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
-export interface OpenAiSttOptions extends SttOptions { filename?: string; temperature?: number }
 export interface OpenAiLiveSttOptions extends SttLiveOptions { model?: string }
 
 interface SocketLike {
@@ -55,34 +54,38 @@ class OpenAiLiveSession implements SttLiveSession {
   close(): void { this.socket.close(); this.queue.end() }
 }
 
-export class OpenAiSttService extends SttService<OpenAiSttOptions, OpenAiLiveSttOptions> {
+export class OpenAiSttService extends SttService {
   readonly provider = PROVIDER_ID
   private readonly send: typeof fetch
   constructor(private readonly deps: OpenAiSttDeps) { super(); this.send = deps.fetch ?? fetch }
   get model(): string { return this.deps.config.sttModel.get() }
+  get info(): SpeechProviderInfo {
+    const hostname = new URL(this.deps.connection().baseUrl).hostname
+    const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+    return { id: PROVIDER_ID, name: 'OpenAI compatible', location: local ? 'host-local' : 'cloud', languages: ['auto', 'zh', 'en', 'yue', 'ja', 'ko'] }
+  }
 
-  async transcribe(audio: Blob, options: OpenAiSttOptions = {}): Promise<SttResult> {
-    if (audio.size === 0) throw new AiError('invalid-input', 'the audio file is empty')
-    if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
+  async transcribe(input: SpeechInput, signal: AbortSignal): Promise<Transcript> {
+    if (input.audio.byteLength === 0) throw new AiError('invalid-input', 'the audio recording is empty')
+    if (signal.aborted) throw new AiError('cancelled', 'cancelled')
     const model = this.deps.config.sttModel.get().trim()
     if (model === '') throw new AiError('not-configured', 'no speech-to-text model is configured')
     const connection = this.connection()
     const root = connection.baseUrl
     const headers = await connectionHeaders(connection, this.deps.credentials)
     const form = new FormData()
-    form.set('file', audio, options.filename ?? `audio.${extension(audio.type)}`)
+    form.set('file', new Blob([input.audio], { type: 'audio/wav' }), 'recording.wav')
     form.set('model', model); form.set('response_format', 'json')
-    if (options.language !== undefined) form.set('language', options.language)
-    if (options.prompt !== undefined) form.set('prompt', options.prompt)
-    if (options.temperature !== undefined) form.set('temperature', String(options.temperature))
-    const response = await this.request(`${root}/audio/transcriptions`, { method: 'POST', headers, body: form }, options.signal)
+    if (input.language !== 'auto') form.set('language', input.language)
+    const started = performance.now()
+    const response = await this.request(`${root}/audio/transcriptions`, { method: 'POST', headers, body: form }, signal)
     const body = await readJson<TranscriptionResponse>(response)
     if (!response.ok) throw httpFailure(response, typeof body?.error?.message === 'string' ? body.error.message : undefined)
     if (typeof body?.text !== 'string') throw new AiError('unavailable', `${root} answered without a transcript`)
-    return { text: body.text, model: typeof body.model === 'string' ? body.model : model, ...(typeof body.duration === 'number' ? { durationSeconds: body.duration } : {}) }
+    return { text: body.text, audioSeconds: typeof body.duration === 'number' ? body.duration : waveSeconds(input.audio), inferenceSeconds: (performance.now() - started) / 1000 }
   }
 
-  async startLive(options: OpenAiLiveSttOptions = {}): Promise<SttLiveSession> {
+  async startStreaming(options: OpenAiLiveSttOptions = {}): Promise<SttLiveSession> {
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     const model = (options.model ?? this.deps.config.sttRealtimeModel.get()).trim()
     if (model === '') throw new AiError('not-configured', 'no live speech-to-text model is configured')
@@ -127,7 +130,13 @@ export class OpenAiSttService extends SttService<OpenAiSttOptions, OpenAiLiveStt
   }
 }
 
-const extension = (type: string): string => ({ 'audio/mpeg': 'mp3', 'audio/ogg': 'ogg', 'audio/webm': 'webm', 'audio/flac': 'flac' })[type] ?? 'wav'
+function waveSeconds(audio: Uint8Array): number {
+  if (audio.byteLength < 44) return 0
+  const view = new DataView(audio.buffer, audio.byteOffset, audio.byteLength)
+  const bytesPerSecond = view.getUint32(28, true)
+  const dataBytes = view.getUint32(40, true)
+  return bytesPerSecond === 0 ? 0 : dataBytes / bytesPerSecond
+}
 
 function handleLive(raw: unknown, queue: EventQueue): void {
   try {

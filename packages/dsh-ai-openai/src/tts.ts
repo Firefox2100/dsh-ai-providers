@@ -1,5 +1,5 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, TtsService, httpFailure, readJson, type TtsOptions, type TtsResult } from 'dsh-ai-core'
+import { AiError, TtsService, httpFailure, readJson, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from 'dsh-ai-core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
@@ -38,6 +38,32 @@ export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
   }
 
   get model(): string { return this.deps.config.ttsModel.get() }
+
+  override async voices(options: CallOptions = {}): Promise<TtsVoice[]> {
+    const connection = this.deps.connection(); const root = connection.baseUrl
+    if (root === '') throw new AiError('not-configured', 'no base URL is configured')
+    if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
+    const timeout = AbortSignal.timeout(Math.max(1, this.deps.config.timeoutMs.get()))
+    const signal = options.signal === undefined ? timeout : AbortSignal.any([options.signal, timeout])
+    let response: Response
+    try {
+      response = await this.send(`${root}/audio/voices`, { headers: await connectionHeaders(connection, this.deps.credentials), signal })
+    } catch (error) {
+      if ((options.signal as AbortSignal | undefined)?.aborted === true) throw new AiError('cancelled', 'cancelled', { cause: error })
+      if (timeout.aborted) throw new AiError('unavailable', `${root} did not answer within ${this.deps.config.timeoutMs.get()} ms`, { cause: error })
+      throw new AiError('unavailable', `${root} could not be reached: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
+    }
+    if (response.status === 404 || response.status === 405) return []
+    if (!response.ok) throw httpFailure(response)
+    const body = await readJson<{ data?: unknown; voices?: unknown }>(response)
+    const rows = Array.isArray(body?.data) ? body.data : Array.isArray(body?.voices) ? body.voices : []
+    return rows.flatMap((entry): TtsVoice[] => {
+      if (typeof entry === 'string') return [{ id: entry }]
+      if (typeof entry !== 'object' || entry === null) return []
+      const row = entry as Record<string, unknown>; const id = typeof row['id'] === 'string' ? row['id'] : typeof row['voice_id'] === 'string' ? row['voice_id'] : undefined
+      return id === undefined ? [] : [{ id, ...(typeof row['name'] === 'string' ? { name: row['name'] } : {}), ...(typeof row['description'] === 'string' ? { description: row['description'] } : {}) }]
+    })
+  }
 
   async synthesize(text: string, options: OpenAiTtsOptions = {}): Promise<TtsResult> {
     if (text.trim() === '') throw new AiError('invalid-input', 'the text is empty')

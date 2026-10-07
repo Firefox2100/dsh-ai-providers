@@ -16,7 +16,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     title: 'Embedding',
     description: 'Turns text into vectors, so that other plugins can find what is similar by meaning. Choose which provider supplies it and configure that provider; the service is then available to every plugin that asks for it.',
     provider: 'Provider',
-    providerNone: 'None',
+    providerNone: 'Disabled',
     providerNotLoaded: 'not loaded',
     noProviders: 'No embedding provider is installed. Install a provider plugin such as dsh-ai-openai.',
     chooseProvider: 'Choose a provider to configure it.',
@@ -42,7 +42,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     title: '嵌入',
     description: '把文本转换为向量，让其他插件能按含义查找相近内容。选择由哪个提供方提供该服务并完成配置；之后所有需要它的插件都可以使用。',
     provider: '提供方',
-    providerNone: '无',
+    providerNone: '已禁用',
     providerNotLoaded: '未加载',
     noProviders: '尚未安装任何嵌入提供方。请安装如 dsh-ai-openai 之类的提供方插件。',
     chooseProvider: '选择一个提供方后即可配置。',
@@ -108,8 +108,8 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
 }
 
 const stt: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'Speech to text', title: 'Speech to text', description: 'Transcribes completed audio files and live microphone audio. Choose which provider supplies it and configure its transcription model.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can transcribe audio now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: '语音转文本', title: '语音转文本', description: '转录完整音频文件和实时麦克风音频。选择由哪个提供方提供，并配置其转录模型。', noProviders: '尚未安装任何语音转文本提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以转录音频。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'API speech to text', title: 'API speech to text', description: 'Transcribes completed recordings through the same provider shape as DSH Voice Input; a provider may also support realtime transcription. This API service can be disabled while DSH Voice Input uses SenseVoice.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can use API transcription now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: 'API 语音转文本', title: 'API 语音转文本', description: '使用与 DSH 语音输入提供方相同的接口转录完整录音；提供方还可选择支持实时转录。此 API 服务可以禁用，同时让 DSH 语音输入使用 SenseVoice。', noProviders: '尚未安装任何语音转文本提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以使用 API 转录。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 const image: Dictionaries<CapabilityLocaleKey> = {

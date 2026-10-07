@@ -1,6 +1,12 @@
 import { AiService, type CallOptions } from './service.ts'
 
-export interface TtsOptions extends CallOptions {}
+export interface TtsOptions extends CallOptions { voice?: string }
+
+export interface TtsVoice {
+  id: string
+  name?: string
+  description?: string
+}
 
 export interface TtsResult {
   /** Audio bytes as the provider produces them; consumers may play or persist them without buffering the whole response. */
@@ -17,4 +23,7 @@ export abstract class TtsService<Options extends TtsOptions = TtsOptions> extend
 
   /** @throws {AiError} with a code that says why synthesis could not start. */
   abstract synthesize(text: string, options?: Options): Promise<TtsResult>
+
+  /** Voices the provider can enumerate. An empty list means callers should accept a manually entered id. */
+  async voices(_options: CallOptions = {}): Promise<TtsVoice[]> { return [] }
 }

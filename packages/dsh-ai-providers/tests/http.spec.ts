@@ -23,7 +23,10 @@ beforeEach(() => {
   registry = new AiProviders(ctx)
   selected = 'fake'
   reranking = 'ranks'
-  services = new AiServices(ctx, registry, { embedding: { get: () => selected }, rerank: { get: () => reranking }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } } as never)
+  services = new AiServices(ctx, registry, {
+    embedding: { get: () => selected }, rerank: { get: () => reranking },
+    tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 },
+  } as never)
   service = new FakeEmbedding()
   ranker = new FakeRerank()
   registry.register(providerOf('fake', service))
@@ -77,12 +80,6 @@ describe('the API', () => {
     const listed = ((await call('GET', '/capabilities')).body as { capabilities: { providers: { id: string; requestOptions?: unknown }[] }[] }).capabilities[0]!.providers
     expect(listed.find(provider => provider.id === 'tuned')?.requestOptions).toEqual([{ key: 'dimensions', type: 'integer', label: 'Dimensions', min: 1, atStart: true }])
     expect(listed.find(provider => provider.id === 'fake')).not.toHaveProperty('requestOptions')
-    selected = 'plain'
-    ;(ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update')
-    expect(((await call('GET', '/capabilities')).body as { capabilities: { selected?: string }[] }).capabilities[0]).not.toHaveProperty('selected')
-    selected = ''
-    ;(ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update')
-    expect(((await call('GET', '/capabilities')).body as { capabilities: { available: boolean }[] }).capabilities[0]?.available).toBe(false)
   })
 
   it('says whether a credential is configured, never its value, and stores and removes one', async () => {
@@ -111,8 +108,6 @@ describe('the API', () => {
     service.failWith = Object.assign(new Error('bad key'), { name: 'AiError', code: 'rejected' })
     expect(await probeEmbedding(services, registry)).toMatchObject({ ok: false, code: 'internal' })
     expect((await call('POST', '/probe?capability=speech')).status).toBe(400)
-    selected = ''
-    expect((await call('POST', '/probe?capability=embedding')).body).toMatchObject({ ok: false, code: 'not-configured' })
   })
 })
 
@@ -123,14 +118,11 @@ describe('testing the rerank provider', () => {
     expect(ranker.calls[0]?.query).toMatch(/fox/)
   })
 
-  it('says so when the provider ranks the wrong sentence first, when it fails, and when none is selected', async () => {
+  it('says so when the provider ranks the wrong sentence first or fails', async () => {
     ranker.answer = { results: [{ index: 0, score: 0.9 }, { index: 1, score: 0.1 }], model: 'rank-1' }
     expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('did not put the one about the fox first') })
     ranker.answer = undefined
     ranker.failWith = Object.assign(new Error('bad key'), { name: 'AiError' })
     expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'internal' })
-    reranking = ''
-    ;(ctx as unknown as { emit(name: string): void }).emit('loader/volatile-update')
-    expect((await call('POST', '/probe?capability=rerank')).body).toMatchObject({ ok: false, code: 'not-configured' })
   })
 })

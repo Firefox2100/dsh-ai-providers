@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SttLiveSession, type SttResult, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -133,14 +133,14 @@ describe('speech to text', () => {
   class Transcriber extends SttService {
     readonly provider = 'ears'
     readonly model = 'listen-1'
-    transcribe(_audio: Blob): Promise<SttResult> { return Promise.resolve({ text: 'hello', model: this.model }) }
-    startLive(): Promise<SttLiveSession> { throw new Error('unused') }
+    readonly info = { id: 'ears', name: 'Ears', location: 'host-local' as const, languages: ['auto'] }
+    transcribe(_input: SpeechInput, _signal: AbortSignal): Promise<Transcript> { return Promise.resolve({ text: 'hello', audioSeconds: 1, inferenceSeconds: 0.1 }) }
   }
   it('supports completed audio and names the live context service', async () => {
     const service = new Transcriber()
     expect(service.capability).toBe('stt')
-    expect(SERVICE_NAMES.stt).toBe('speechToText')
-    expect(await service.transcribe(new Blob(['audio']))).toEqual({ text: 'hello', model: 'listen-1' })
+    expect(SERVICE_NAMES.stt).toBe('apiSpeechToText')
+    expect(await service.transcribe({ audio: new Uint8Array([1]), language: 'auto' }, new AbortController().signal)).toEqual({ text: 'hello', audioSeconds: 1, inferenceSeconds: 0.1 })
   })
 })
 

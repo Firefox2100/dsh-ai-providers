@@ -22,7 +22,7 @@ export type Capability = keyof CapabilityServices
 export const CAPABILITIES = ['embedding', 'rerank', 'tts', 'stt', 'image'] as const satisfies readonly Capability[]
 
 /** The name of the service that offers each capability on the Cordis context (`ctx.embeddings`, `ctx.rerankers`). */
-export const SERVICE_NAMES = { embedding: 'embeddings', rerank: 'rerankers', tts: 'textToSpeech', stt: 'speechToText', image: 'imageGeneration' } as const satisfies Record<Capability, string>
+export const SERVICE_NAMES = { embedding: 'embeddings', rerank: 'rerankers', tts: 'textToSpeech', stt: 'apiSpeechToText', image: 'imageGeneration' } as const satisfies Record<Capability, string>
 
 /** The slot a capability's tab declares for its providers' configuration: a slot has one declarer, so each tab has its own. */
 export type ProviderSlotName = `ai.provider.${Capability}`
