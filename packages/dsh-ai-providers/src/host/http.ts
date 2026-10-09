@@ -3,7 +3,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import { credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
 // Type-only: declares `ctx.webServer` and `ctx.credentials`.
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type CredentialsPayload, type ProbeResult } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from 'dsh-ai-core'
+import type { LlmRoutes } from './llm.ts'
 import type { AiProviders } from './registry.ts'
 import type { AiServices } from './services.ts'
 
@@ -49,6 +50,9 @@ function referenceOf(value: unknown): CredentialRef {
 export interface ApiDeps {
   registry: AiProviders
   services: AiServices
+  llm: LlmRoutes
+  /** DSH's model service, looked up on use. */
+  models: () => Context['llm'] | undefined
   connection: ApiConnection
   /** The credentials service, looked up on use: a profile without it cannot store keys. */
   credentials: () => Context['credentials'] | undefined
@@ -108,6 +112,40 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
         send(res, 200, payload)
       },
     },
+    [AI_API_ROUTES.llm]: {
+      GET: async (_req, res) => {
+        const payload: LlmPayload = {
+          routes: deps.llm.routes.owners().map(({ provider, route }) => {
+            const state = deps.llm.state(route.id)
+            return {
+              provider: provider.id, providerLabel: provider.label, id: route.id, name: route.name,
+              models: route.models.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens } })),
+              active: state.active, ...state.problem === undefined ? {} : { problem: state.problem },
+            }
+          }),
+        }
+        send(res, 200, payload)
+      },
+    },
+    [AI_API_ROUTES.llmProbe]: {
+      POST: async (_req, res, url) => {
+        const route = url.searchParams.get('route') ?? ''
+        const model = url.searchParams.get('model') ?? ''
+        if (route === '' || model === '') throw new HttpError(400, '"route" and "model" are required')
+        send(res, 200, await probeLlm(deps.models(), route, model))
+      },
+    },
+    [AI_API_ROUTES.llmDiscover]: {
+      GET: async (_req, res, url) => {
+        const owner = deps.llm.routes.owners().find(candidate => candidate.provider.id === url.searchParams.get('provider') && candidate.route.id === url.searchParams.get('route'))
+        if (owner === undefined) throw new HttpError(404, 'there is no such route')
+        let found
+        try { found = await owner.service.discover(owner.route.id) }
+        catch (error) { throw new HttpError(502, error instanceof Error ? error.message : String(error)) }
+        const payload: LlmDiscoverPayload = { models: found.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens } })) }
+        send(res, 200, payload)
+      },
+    },
     [AI_API_ROUTES.probe]: {
       POST: async (_req, res, url) => {
         const capability = url.searchParams.get('capability')
@@ -140,6 +178,24 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
       else send(res, 500, { message: error instanceof Error ? error.message : 'internal error' })
     }
   }
+}
+
+/** Ask a model a short question through DSH's own model service, as a chat would, and report what it answered and how fast. */
+export async function probeLlm(llm: Context['llm'] | undefined, route: string, model: string): Promise<LlmProbeResult> {
+  if (llm === undefined) return { ok: false, code: 'not-configured', message: 'this profile has no model service' }
+  const started = performance.now()
+  let text = ''
+  let outputTokens: number | undefined
+  try {
+    for await (const chunk of llm.stream({ provider: route, model, messages: [{ role: 'user', content: [{ type: 'text', text: 'Reply with the single word: ready' }] }], maxTokens: 64, signal: AbortSignal.timeout(120_000) })) {
+      if (chunk.type === 'text-delta') text += chunk.text
+      else if (chunk.type === 'usage') outputTokens = chunk.usage.outputTokens
+      else if (chunk.type === 'finish' && (chunk.reason.kind === 'error' || chunk.reason.kind === 'aborted')) return { ok: false, code: chunk.reason.failure.code, message: chunk.reason.failure.message }
+    }
+  } catch (error) {
+    return { ok: false, code: error instanceof AiError ? error.code : 'internal', message: error instanceof Error ? error.message : String(error) }
+  }
+  return { ok: true, route, model, milliseconds: Math.round(performance.now() - started), ...outputTokens === undefined ? {} : { outputTokens }, text: text.trim() }
 }
 
 /** Embed one text through the selected provider itself, past the cache, and report it as the user would meet it. */
@@ -243,11 +299,11 @@ export async function probeImage(services: AiServices, registry: AiProviders): P
 }
 
 /** Mount the API once the web server and its authentication are available; profiles without them skip it. */
-export function registerApi(ctx: Context, deps: Omit<ApiDeps, 'connection' | 'credentials'>): void {
+export function registerApi(ctx: Context, deps: Omit<ApiDeps, 'connection' | 'credentials' | 'models'>): void {
   ctx.inject(['webServer', 'connection'], (webCtx) => {
     // The connection package is browser-side, so its service is typed locally.
     const connection = Reflect.get(webCtx, 'connection') as ApiConnection
-    const handler = createApiHandler({ ...deps, connection, credentials: () => ctx.get('credentials') })
+    const handler = createApiHandler({ ...deps, connection, credentials: () => ctx.get('credentials'), models: () => ctx.get('llm') })
     webCtx.effect(() => webCtx.webServer.register({ kind: 'prefix', path: `/${AI_API_PREFIX}`, handler }), 'dsh-ai-providers: http api')
   })
 }

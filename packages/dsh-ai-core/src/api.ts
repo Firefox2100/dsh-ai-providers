@@ -59,8 +59,38 @@ export type ProbeResult =
   | { ok: false; code: AiErrorCode | 'internal'; message: string }
 
 /** The paths of the API. */
+/** One route of a provider's language models as the settings UI shows it. */
+export interface LlmRouteSummary {
+  provider: string
+  providerLabel: string
+  id: string
+  name: string
+  models: { id: string; name: string; contextWindow?: number; maxTokens?: number }[]
+  /** Whether DSH is served this route by the plugin now; when not, `problem` says why (another adapter holds the id, for example). */
+  active: boolean
+  problem?: string
+}
+
+/** `GET /ai-api/llm` */
+export interface LlmPayload {
+  routes: LlmRouteSummary[]
+}
+
+/** `POST /ai-api/llm/probe?route=&model=`: one short request through DSH's own model service, as a chat would send it. */
+export type LlmProbeResult =
+  | { ok: true; route: string; model: string; milliseconds: number; outputTokens?: number; text: string }
+  | { ok: false; code: string; message: string }
+
+/** `GET /ai-api/llm/discover?provider=&route=`: the models the endpoint of a route lists. */
+export interface LlmDiscoverPayload {
+  models: { id: string; name: string; contextWindow?: number; maxTokens?: number }[]
+}
+
 export const AI_API_ROUTES = {
   capabilities: '/capabilities',
   credentials: '/credentials',
   probe: '/probe',
+  llm: '/llm',
+  llmProbe: '/llm/probe',
+  llmDiscover: '/llm/discover',
 } as const

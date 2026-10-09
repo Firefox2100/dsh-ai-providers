@@ -17,9 +17,16 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     'ai.provider.tts': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
     'ai.provider.stt': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
     'ai.provider.image': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
+    /** A provider's editor of its language model routes, shown in the Language models tab. */
+    'ai.provider.llm': { kind: 'list'; scope: 'root'; owner: AiLlmOwnerProps }
   }
 }
 
+
+/** What the Language models tab passes to the editor of a provider. */
+export interface AiLlmOwnerProps {
+  children?: never
+}
 
 /** What the tab passes to the component of the provider it shows. */
 export interface AiProviderOwnerProps {

@@ -1,5 +1,5 @@
 import { Service, type Context } from '@deepseek-ai/cordis'
-import type { AiProvider, AiProviderRegistry, Capability } from 'dsh-ai-core'
+import type { AiProvider, AiProviderRegistry, Capability, LlmPolicy } from 'dsh-ai-core'
 
 /**
  * The registry vendor plugins register their providers in. A registration is an effect of the
@@ -8,6 +8,7 @@ import type { AiProvider, AiProviderRegistry, Capability } from 'dsh-ai-core'
 export class AiProviders extends Service implements AiProviderRegistry {
   private readonly providers = new Map<string, AiProvider>()
   private readonly listeners = new Set<() => void>()
+  private readonly llmPolicies: LlmPolicy[] = []
 
   constructor(ctx: Context) {
     super(ctx, 'aiProviders')
@@ -22,6 +23,24 @@ export class AiProviders extends Service implements AiProviderRegistry {
       this.providers.delete(provider.id)
       this.changed()
     }
+  }
+
+  policy(policy: LlmPolicy): () => void {
+    this.llmPolicies.push(policy)
+    return () => {
+      const at = this.llmPolicies.indexOf(policy)
+      if (at >= 0) this.llmPolicies.splice(at, 1)
+    }
+  }
+
+  /** The policies for model requests, in registration order. */
+  policies(): readonly LlmPolicy[] {
+    return this.llmPolicies
+  }
+
+  /** The providers that offer language models. */
+  llmProviders(): AiProvider[] {
+    return [...this.providers.values()].filter(provider => provider.llm !== undefined)
   }
 
   get(id: string): AiProvider | undefined {

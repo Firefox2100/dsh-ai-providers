@@ -1,3 +1,4 @@
+import { LlmRoutes } from '../src/host/llm.ts'
 import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Context } from '@deepseek-ai/cordis'
@@ -39,7 +40,7 @@ beforeEach(() => {
     set: (ref: string, value: string) => (ref === 'LOCKED' ? Promise.reject(new Error('shadowed by the environment')) : Promise.resolve(void stored.set(ref, value))),
     unset: (ref: string) => Promise.resolve(void stored.delete(ref)),
   }
-  handler = createApiHandler({ registry, services, connection: { requestRejection: () => rejection }, credentials: () => credentials as never })
+  handler = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, connection: { requestRejection: () => rejection }, credentials: () => credentials as never })
 })
 
 async function call(method: string, path: string, body?: unknown, type = 'application/json'): Promise<{ status: number; body: unknown; headers: Record<string, string> }> {
@@ -97,7 +98,7 @@ describe('the API', () => {
     expect((await call('PUT', '/credentials', { ref: 'OK_KEY', value: 5 })).status).toBe(400)
     expect((await call('PUT', '/credentials', { ref: 'LOCKED', value: 'x' })).status).toBe(409)
     expect((await call('PUT', '/credentials', {}, 'text/plain')).status).toBe(415)
-    const none = createApiHandler({ registry, services, connection: { requestRejection: () => undefined }, credentials: () => undefined })
+    const none = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, connection: { requestRejection: () => undefined }, credentials: () => undefined })
     handler = none
     expect((await call('GET', '/credentials?ref=OK_KEY')).status).toBe(503)
   })

@@ -1,4 +1,5 @@
 import type { Capability, CapabilityServices } from './capabilities.ts'
+import type { LlmPolicy, LlmService } from './llm.ts'
 import type { RequestOption } from './options.ts'
 
 /**
@@ -19,6 +20,8 @@ export interface AiProvider {
    */
   configEntryId?: string
   capabilities: { [C in Capability]?: ServiceFactory<C> }
+  /** The provider's language models. Unlike the capabilities, every provider that offers them is in use at once: each serves its own routes. */
+  llm?: () => LlmService
   /** What can be set per request for each capability the provider offers, beyond the options every provider has. */
   requestOptions?: { [C in Capability]?: readonly RequestOption[] }
 }
@@ -30,6 +33,11 @@ export interface AiProviderRegistry {
    * @throws {Error} when the id is already registered.
    */
   register(provider: AiProvider): () => void
+  /**
+   * Adds a policy for model requests (see `LlmPolicy`).
+   * @returns what removes it again.
+   */
+  policy(policy: LlmPolicy): () => void
   get(id: string): AiProvider | undefined
   /** The registered providers, in registration order; only those that offer the capability when one is given. */
   list(capability?: Capability): AiProvider[]

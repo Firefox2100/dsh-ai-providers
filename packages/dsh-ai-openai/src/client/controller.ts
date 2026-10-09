@@ -10,7 +10,7 @@ import {
   type SettingsFieldSpec,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { AI_API_PREFIX, AI_API_ROUTES, type CredentialsPayload } from 'dsh-ai-core'
-import type { OpenAiConnectionConfig } from '../config.ts'
+import type { OpenAiConnectionConfig, OpenAiLlmRouteConfig } from '../config.ts'
 
 /** The fields of the provider's configuration this form edits. */
 export interface OpenAiSettings {
@@ -32,6 +32,8 @@ export interface OpenAiSettings {
   imageQuality?: string
   imageOutputFormat?: string
   imageOutputCompression?: number
+  llmRoutes?: OpenAiLlmRouteConfig[]
+  llmIdleTimeoutMs?: number
   batchSize?: number
   timeoutMs?: number
 }
@@ -56,6 +58,8 @@ export interface OpenAiCardState extends SettingsFormShell {
   imageQuality: SettingsFieldState
   imageOutputFormat: SettingsFieldState
   imageOutputCompression: SettingsFieldState
+  llmRoutes: readonly OpenAiLlmRouteConfig[]
+  llmIdleTimeoutMs: SettingsFieldState
   batchSize: SettingsFieldState
   timeoutMs: SettingsFieldState
 }
@@ -69,10 +73,11 @@ export interface OpenAiCardFace extends SettingsFormActions {
   updateConnection(id: string, field: 'name' | 'baseUrl' | 'apiKeyRef', value: string): void
   removeConnection(id: string): void
   saveKey(id: string, value: string): Promise<boolean>
+  setLlmRoutes(routes: readonly OpenAiLlmRouteConfig[]): void
 }
 
-const connectionListField: SettingsFieldSpec = {
-  field: 'connections',
+const listField = (field: string): SettingsFieldSpec => ({
+  field,
   format: value => JSON.stringify(Array.isArray(value) ? value : []),
   parse: text => {
     try {
@@ -80,7 +85,9 @@ const connectionListField: SettingsFieldSpec = {
       return Array.isArray(value) ? { kind: 'set', value } : undefined
     } catch { return undefined }
   },
-}
+})
+const connectionListField = listField('connections')
+const routeListField = listField('llmRoutes')
 
 /**
  * Stages the provider's models and reusable connections over its configuration entry.
@@ -96,7 +103,7 @@ export class OpenAiCardController {
     this.form = new SettingsFormModel(
       scope,
       [
-        connectionListField,
+        connectionListField, routeListField, settingsNumberField('llmIdleTimeoutMs'),
         settingsTextField('embeddingConnection'), settingsTextField('ttsConnection'), settingsTextField('sttConnection'), settingsTextField('imageConnection'),
         settingsTextField('embeddingModel'),
         settingsNumberField('embeddingDimensions'), settingsTextField('ttsModel'), settingsTextField('ttsVoice'),
@@ -132,6 +139,8 @@ export class OpenAiCardController {
       imageQuality: this.form.field('imageQuality'),
       imageOutputFormat: this.form.field('imageOutputFormat'),
       imageOutputCompression: this.form.field('imageOutputCompression'),
+      llmRoutes: this.llmRoutes(),
+      llmIdleTimeoutMs: this.form.field('llmIdleTimeoutMs'),
       batchSize: this.form.field('batchSize'),
       timeoutMs: this.form.field('timeoutMs'),
     }
@@ -139,6 +148,11 @@ export class OpenAiCardController {
 
   private connections(): OpenAiConnectionConfig[] {
     try { return JSON.parse(this.form.field('connections').text) as OpenAiConnectionConfig[] }
+    catch { return [] }
+  }
+
+  private llmRoutes(): OpenAiLlmRouteConfig[] {
+    try { return JSON.parse(this.form.field('llmRoutes').text) as OpenAiLlmRouteConfig[] }
     catch { return [] }
   }
 
@@ -189,6 +203,7 @@ export class OpenAiCardController {
         }
       },
       saveKey: (id, value) => this.writeKey(id, value),
+      setLlmRoutes: (routes) => { this.form.actions().edit('llmRoutes', JSON.stringify(routes)) },
     }
   }
 

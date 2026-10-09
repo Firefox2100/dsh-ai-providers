@@ -1,4 +1,5 @@
-import { EmbeddingService, RerankService, SttService, TtsService, type AiProvider, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from 'dsh-ai-core'
+import type { StreamChunk } from '@deepseek-ai/dsh-llm'
+import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from 'dsh-ai-core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {
@@ -60,3 +61,20 @@ export const providerOf = (id: string, service: FakeEmbedding | undefined, reran
 })
 
 export const settle = (ms = 30): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+
+/** A language model service whose routes are given, that records what it was asked and streams what it is told to. */
+export class FakeLlm extends LlmService {
+  readonly provider = 'fake'
+  routeList: LlmRouteSpec[] = []
+  calls: LlmCall[] = []
+  chunks: StreamChunk[] = [{ type: 'block-start', index: 0, blockType: 'text' }, { type: 'text-delta', index: 0, text: 'hi' }, { type: 'block-end', index: 0, block: { type: 'text', text: 'hi' } }, { type: 'finish', reason: { kind: 'stop' } }]
+  failWith: Error | undefined
+
+  routes(): readonly LlmRouteSpec[] { return this.routeList }
+
+  async * stream(call: LlmCall): AsyncGenerator<StreamChunk> {
+    this.calls.push(call)
+    if (this.failWith !== undefined) throw this.failWith
+    yield * this.chunks
+  }
+}

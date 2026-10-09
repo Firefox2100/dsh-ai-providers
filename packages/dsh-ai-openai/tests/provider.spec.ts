@@ -1,6 +1,6 @@
 import { Context } from '@deepseek-ai/cordis'
 import { AiProviders } from 'dsh-ai-providers'
-import { EmbeddingService, ImageGenerationService, SttService, TtsService } from 'dsh-ai-core'
+import { EmbeddingService, ImageGenerationService, LlmService, SttService, TtsService } from 'dsh-ai-core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
 
@@ -26,6 +26,7 @@ describe('the provider', () => {
     expect(ctx.aiProviders.get('openai')!.capabilities.tts!()).toBeInstanceOf(TtsService)
     expect(ctx.aiProviders.get('openai')!.capabilities.stt!()).toBeInstanceOf(SttService)
     expect(ctx.aiProviders.get('openai')!.capabilities.image!()).toBeInstanceOf(ImageGenerationService)
+    expect(ctx.aiProviders.get('openai')!.llm!()).toBeInstanceOf(LlmService)
     fiber.dispose()
     await settle()
     expect(ctx.aiProviders.list()).toEqual([])
@@ -40,6 +41,7 @@ describe('the provider', () => {
       ttsModel: 'gpt-4o-mini-tts', ttsVoice: 'alloy', ttsResponseFormat: 'mp3', ttsSpeed: 1, batchSize: 64, timeoutMs: 60_000,
       sttModel: 'whisper-1', sttRealtimeModel: 'gpt-4o-mini-transcribe',
       imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,
+      llmRoutes: [], llmIdleTimeoutMs: 300_000,
     })
   })
 })

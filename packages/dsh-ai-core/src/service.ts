@@ -10,7 +10,7 @@ export interface ServiceIdentity {
 
 /** The base of every capability's service class. */
 export abstract class AiService implements ServiceIdentity {
-  abstract readonly capability: Capability
+  abstract readonly capability: Capability | 'llm'
   abstract readonly provider: string
   abstract readonly model: string
 }

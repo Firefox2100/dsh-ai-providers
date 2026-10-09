@@ -132,4 +132,17 @@ describe('the speech-to-text service on the context', () => {
     remove()
     expect(ctx.get('streamingSpeechToText')).toBeUndefined()
   })
+
+  it('registers the selected completed-recording provider with DSH Voice Input when its registry exists', async () => {
+    const registered: unknown[] = []
+    ctx.provide('speechToText')
+    ctx.set('speechToText', { register: (provider: unknown) => { registered.push(provider); return async () => { registered.splice(registered.indexOf(provider), 1) } } } as never)
+    await loadWithStt('fake')
+    ctx.aiProviders.register(providerOf('fake', undefined, undefined, undefined, new FakeStt()))
+    await settle()
+    expect(registered).toHaveLength(1)
+    const provider = registered[0] as { info: unknown; transcribe: unknown }
+    expect(provider.info).toEqual({ ...ctx.apiSpeechToText.info })
+    expect(typeof provider.transcribe).toBe('function')
+  })
 })

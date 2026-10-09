@@ -33,7 +33,7 @@ export function resolveConnection(config: Config, capability: OpenAiCapability):
   return validateConnection(connection)
 }
 
-function validateConnection(connection: OpenAiConnectionConfig): OpenAiConnection {
+export function validateConnection(connection: OpenAiConnectionConfig): OpenAiConnection {
   const baseUrl = connection.baseUrl.trim().replace(/\/+$/, '')
   if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
   let url: URL

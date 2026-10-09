@@ -16,6 +16,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-slots':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
+      '@deepseek-ai/dsh-llm':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -98,6 +101,9 @@ importers:
       '@deepseek-ai/schemastery':
         specifier: ^3.18.4
         version: 3.18.4
+      ws:
+        specifier: ^8.22.0
+        version: 8.22.0
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: ^4.0.4
@@ -123,6 +129,9 @@ importers:
       '@deepseek-ai/dsh-credentials':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))
+      '@deepseek-ai/dsh-llm':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -191,6 +200,9 @@ importers:
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))
       '@deepseek-ai/dsh-host-webserver':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
+      '@deepseek-ai/dsh-llm':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
       '@types/node':
@@ -7914,20 +7926,15 @@ snapshots:
       - ws
       - zod
 
-  '@deepseek-ai/libreoffice-kit-darwin-arm64@0.1.5':
-    optional: true
+  '@deepseek-ai/libreoffice-kit-darwin-arm64@0.1.5': {}
 
-  '@deepseek-ai/libreoffice-kit-darwin-x64@0.1.5':
-    optional: true
+  '@deepseek-ai/libreoffice-kit-darwin-x64@0.1.5': {}
 
-  '@deepseek-ai/libreoffice-kit-wasm@0.1.5':
-    optional: true
+  '@deepseek-ai/libreoffice-kit-wasm@0.1.5': {}
 
-  '@deepseek-ai/libreoffice-kit-win32-arm64@0.1.5':
-    optional: true
+  '@deepseek-ai/libreoffice-kit-win32-arm64@0.1.5': {}
 
-  '@deepseek-ai/libreoffice-kit-win32-x64@0.1.5':
-    optional: true
+  '@deepseek-ai/libreoffice-kit-win32-x64@0.1.5': {}
 
   '@deepseek-ai/libreoffice-kit@0.1.5':
     dependencies:
@@ -7942,17 +7949,13 @@ snapshots:
       '@deepseek-ai/libreoffice-kit-win32-arm64': 0.1.5
       '@deepseek-ai/libreoffice-kit-win32-x64': 0.1.5
 
-  '@deepseek-ai/node-addon-system-darwin-arm64@0.1.2':
-    optional: true
+  '@deepseek-ai/node-addon-system-darwin-arm64@0.1.2': {}
 
-  '@deepseek-ai/node-addon-system-darwin-x64@0.1.2':
-    optional: true
+  '@deepseek-ai/node-addon-system-darwin-x64@0.1.2': {}
 
-  '@deepseek-ai/node-addon-system-linux-arm64@0.1.2':
-    optional: true
+  '@deepseek-ai/node-addon-system-linux-arm64@0.1.2': {}
 
-  '@deepseek-ai/node-addon-system-linux-x64@0.1.2':
-    optional: true
+  '@deepseek-ai/node-addon-system-linux-x64@0.1.2': {}
 
   '@deepseek-ai/node-addon-system@0.1.2':
     optionalDependencies:
@@ -7992,7 +7995,6 @@ snapshots:
   '@emnapi/runtime@1.11.3':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@eslint-community/regexpp@4.12.2': {}
 
@@ -8012,106 +8014,80 @@ snapshots:
   '@img/sharp-darwin-arm64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-darwin-arm64': 1.3.4
-    optional: true
 
   '@img/sharp-darwin-x64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-darwin-x64': 1.3.4
-    optional: true
 
   '@img/sharp-freebsd-wasm32@0.35.5':
     dependencies:
       '@img/sharp-wasm32': 0.35.5
-    optional: true
 
-  '@img/sharp-libvips-darwin-arm64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-darwin-arm64@1.3.4': {}
 
-  '@img/sharp-libvips-darwin-x64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-darwin-x64@1.3.4': {}
 
-  '@img/sharp-libvips-linux-arm64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-arm64@1.3.4': {}
 
-  '@img/sharp-libvips-linux-arm@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-arm@1.3.4': {}
 
-  '@img/sharp-libvips-linux-ppc64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-ppc64@1.3.4': {}
 
-  '@img/sharp-libvips-linux-riscv64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-riscv64@1.3.4': {}
 
-  '@img/sharp-libvips-linux-s390x@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-s390x@1.3.4': {}
 
-  '@img/sharp-libvips-linux-x64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linux-x64@1.3.4': {}
 
-  '@img/sharp-libvips-linuxmusl-arm64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linuxmusl-arm64@1.3.4': {}
 
-  '@img/sharp-libvips-linuxmusl-x64@1.3.4':
-    optional: true
+  '@img/sharp-libvips-linuxmusl-x64@1.3.4': {}
 
   '@img/sharp-linux-arm64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-arm64': 1.3.4
-    optional: true
 
   '@img/sharp-linux-arm@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-arm': 1.3.4
-    optional: true
 
   '@img/sharp-linux-ppc64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-ppc64': 1.3.4
-    optional: true
 
   '@img/sharp-linux-riscv64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-riscv64': 1.3.4
-    optional: true
 
   '@img/sharp-linux-s390x@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-s390x': 1.3.4
-    optional: true
 
   '@img/sharp-linux-x64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-x64': 1.3.4
-    optional: true
 
   '@img/sharp-linuxmusl-arm64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linuxmusl-arm64': 1.3.4
-    optional: true
 
   '@img/sharp-linuxmusl-x64@0.35.5':
     optionalDependencies:
       '@img/sharp-libvips-linuxmusl-x64': 1.3.4
-    optional: true
 
   '@img/sharp-wasm32@0.35.5':
     dependencies:
       '@emnapi/runtime': 1.11.3
-    optional: true
 
   '@img/sharp-webcontainers-wasm32@0.35.5':
     dependencies:
       '@img/sharp-wasm32': 0.35.5
-    optional: true
 
-  '@img/sharp-win32-arm64@0.35.5':
-    optional: true
+  '@img/sharp-win32-arm64@0.35.5': {}
 
-  '@img/sharp-win32-ia32@0.35.5':
-    optional: true
+  '@img/sharp-win32-ia32@0.35.5': {}
 
-  '@img/sharp-win32-x64@0.35.5':
-    optional: true
+  '@img/sharp-win32-x64@0.35.5': {}
 
   '@joplin/turndown-plugin-gfm@1.0.68': {}
 
@@ -8123,50 +8099,35 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@koromix/koffi-darwin-arm64@3.1.1':
-    optional: true
+  '@koromix/koffi-darwin-arm64@3.1.1': {}
 
-  '@koromix/koffi-darwin-x64@3.1.1':
-    optional: true
+  '@koromix/koffi-darwin-x64@3.1.1': {}
 
-  '@koromix/koffi-freebsd-arm64@3.1.1':
-    optional: true
+  '@koromix/koffi-freebsd-arm64@3.1.1': {}
 
-  '@koromix/koffi-freebsd-ia32@3.1.1':
-    optional: true
+  '@koromix/koffi-freebsd-ia32@3.1.1': {}
 
-  '@koromix/koffi-freebsd-x64@3.1.1':
-    optional: true
+  '@koromix/koffi-freebsd-x64@3.1.1': {}
 
-  '@koromix/koffi-linux-arm64@3.1.1':
-    optional: true
+  '@koromix/koffi-linux-arm64@3.1.1': {}
 
-  '@koromix/koffi-linux-ia32@3.1.1':
-    optional: true
+  '@koromix/koffi-linux-ia32@3.1.1': {}
 
-  '@koromix/koffi-linux-loong64@3.1.1':
-    optional: true
+  '@koromix/koffi-linux-loong64@3.1.1': {}
 
-  '@koromix/koffi-linux-riscv64@3.1.1':
-    optional: true
+  '@koromix/koffi-linux-riscv64@3.1.1': {}
 
-  '@koromix/koffi-linux-x64@3.1.1':
-    optional: true
+  '@koromix/koffi-linux-x64@3.1.1': {}
 
-  '@koromix/koffi-openbsd-ia32@3.1.1':
-    optional: true
+  '@koromix/koffi-openbsd-ia32@3.1.1': {}
 
-  '@koromix/koffi-openbsd-x64@3.1.1':
-    optional: true
+  '@koromix/koffi-openbsd-x64@3.1.1': {}
 
-  '@koromix/koffi-win32-arm64@3.1.1':
-    optional: true
+  '@koromix/koffi-win32-arm64@3.1.1': {}
 
-  '@koromix/koffi-win32-ia32@3.1.1':
-    optional: true
+  '@koromix/koffi-win32-ia32@3.1.1': {}
 
-  '@koromix/koffi-win32-x64@3.1.1':
-    optional: true
+  '@koromix/koffi-win32-x64@3.1.1': {}
 
   '@mixmark-io/domino@2.2.0': {}
 
@@ -8457,41 +8418,29 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.2.0
 
-  '@vscode/ripgrep-darwin-arm64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-darwin-arm64@1.18.0': {}
 
-  '@vscode/ripgrep-darwin-x64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-darwin-x64@1.18.0': {}
 
-  '@vscode/ripgrep-linux-arm64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-arm64@1.18.0': {}
 
-  '@vscode/ripgrep-linux-arm@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-arm@1.18.0': {}
 
-  '@vscode/ripgrep-linux-ia32@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-ia32@1.18.0': {}
 
-  '@vscode/ripgrep-linux-ppc64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-ppc64@1.18.0': {}
 
-  '@vscode/ripgrep-linux-riscv64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-riscv64@1.18.0': {}
 
-  '@vscode/ripgrep-linux-s390x@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-s390x@1.18.0': {}
 
-  '@vscode/ripgrep-linux-x64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-linux-x64@1.18.0': {}
 
-  '@vscode/ripgrep-win32-arm64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-win32-arm64@1.18.0': {}
 
-  '@vscode/ripgrep-win32-ia32@1.18.0':
-    optional: true
+  '@vscode/ripgrep-win32-ia32@1.18.0': {}
 
-  '@vscode/ripgrep-win32-x64@1.18.0':
-    optional: true
+  '@vscode/ripgrep-win32-x64@1.18.0': {}
 
   '@vscode/ripgrep@1.18.0':
     optionalDependencies:
@@ -9313,17 +9262,13 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  sherpa-onnx-darwin-arm64@1.13.8:
-    optional: true
+  sherpa-onnx-darwin-arm64@1.13.8: {}
 
-  sherpa-onnx-darwin-x64@1.13.8:
-    optional: true
+  sherpa-onnx-darwin-x64@1.13.8: {}
 
-  sherpa-onnx-linux-arm64@1.13.8:
-    optional: true
+  sherpa-onnx-linux-arm64@1.13.8: {}
 
-  sherpa-onnx-linux-x64@1.13.8:
-    optional: true
+  sherpa-onnx-linux-x64@1.13.8: {}
 
   sherpa-onnx-node@1.13.8:
     optionalDependencies:
@@ -9334,11 +9279,9 @@ snapshots:
       sherpa-onnx-win-ia32: 1.13.8
       sherpa-onnx-win-x64: 1.13.8
 
-  sherpa-onnx-win-ia32@1.13.8:
-    optional: true
+  sherpa-onnx-win-ia32@1.13.8: {}
 
-  sherpa-onnx-win-x64@1.13.8:
-    optional: true
+  sherpa-onnx-win-x64@1.13.8: {}
 
   siginfo@2.0.0: {}
 

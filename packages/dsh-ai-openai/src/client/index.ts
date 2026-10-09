@@ -9,6 +9,7 @@ import { ENTRY_ID, PROVIDER_ID } from '../ids.ts'
 import { OpenAiCardController } from './controller.ts'
 import { OpenAiCard } from './OpenAiCard.tsx'
 import { OpenAiConnections } from './OpenAiConnections.tsx'
+import { OpenAiLlm } from './LlmEditor.tsx'
 import { dictionaries, type OpenAiLocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -37,6 +38,15 @@ export function apply(ctx: Context): void {
         label: () => t('connectionsNav'), locale: NAMESPACE, inject: () => controller.inject(),
       }, OpenAiConnections as never))),
     'dsh-ai-openai: connections section',
+  )
+
+  ctx.effect(
+    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('ai.provider.llm', () =>
+      ctx.slots.register({
+        name: 'ai.provider.llm', id: `llm:${PROVIDER_ID}`, order: 0,
+        label: () => t('label'), locale: NAMESPACE, inject: () => controller.inject(),
+      }, OpenAiLlm as never))),
+    'dsh-ai-openai: llm provider entry',
   )
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
