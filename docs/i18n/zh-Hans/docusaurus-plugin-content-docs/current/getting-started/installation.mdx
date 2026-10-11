@@ -1,0 +1,28 @@
+---
+title: 安装
+sidebar_position: 1
+---
+
+先安装主插件，再安装需要使用的提供方插件：
+
+```bash
+dsh plugin --profile <配置档案> add dsh-ai-providers
+dsh plugin --profile <配置档案> add dsh-ai-openai
+dsh plugin --profile <配置档案> add dsh-ai-jina-cohere
+```
+
+安装后重启该配置档案。DSH 会将插件加入配置并加载其设置页面。
+
+## 软件包分工
+
+`dsh-ai-providers` 管理运行时服务和提供方选择，本身不调用厂商 API。各提供方插件在运行时向其注册具体实现。
+
+只需安装实际使用的提供方包。`dsh-ai-core` 是插件开发所需的类型和接口包，运行时包会自动引入它。
+
+## 环境要求
+
+- DeepSeek Harness 0.2.x
+- Node.js 22 或更高版本
+- 如需图形化配置，应使用带 Web 界面的 DSH 配置档案
+
+OpenAI 插件同时支持 OpenAI 和兼容服务器。实际可用能力取决于服务器实现了哪些端点。

@@ -1,0 +1,26 @@
+{
+  "version.label": {
+    "message": "当前版本",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Getting started": {
+    "message": "入门",
+    "description": "The label for category 'Getting started' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Concepts": {
+    "message": "核心概念",
+    "description": "The label for category 'Concepts' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.For plugin authors": {
+    "message": "插件使用方",
+    "description": "The label for category 'For plugin authors' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.For provider authors": {
+    "message": "提供方开发者",
+    "description": "The label for category 'For provider authors' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "参考",
+    "description": "The label for category 'Reference' in sidebar 'docs'"
+  }
+}

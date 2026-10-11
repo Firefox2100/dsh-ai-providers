@@ -1,0 +1,34 @@
+---
+title: Configuration
+sidebar_position: 2
+---
+
+Open **Settings → AI Providers** in DSH. Configuration has three layers.
+
+## 1. Create reusable connections
+
+A connection contains a stable ID, display name, base URL, and a reference to a credential stored by DSH. The secret is handled by DSH's credential service. The plugin configuration stores only the reference and never returns the secret to the browser. Leave the credential reference empty for a server that does not require authentication.
+
+Connections are reusable across capabilities. For example, one LocalAI connection can serve embeddings, speech, images, and language models.
+
+## 2. Configure vendor capabilities
+
+Each vendor plugin exposes its own settings. Select a connection and configure the model or capability-specific options. OpenAI-compatible defaults are provided, but compatible servers often use different model and voice names.
+
+Removing a connection does not delete the referenced credential. This prevents one plugin from deleting a secret that another configuration may still use.
+
+## 3. Select active services
+
+Choose one registered provider for each capability:
+
+- embedding;
+- reranking;
+- text-to-speech;
+- API speech-to-text;
+- image generation.
+
+The selection takes effect without restarting the profile. Selecting **Disabled** removes that capability service from the context. Language-model routes are different: every configured vendor route remains available to DSH.
+
+## Built-in speech-to-text
+
+DSH may provide its own `speechToText` registry. The plugin contributes the selected API transcription provider to that registry when it is available. Its provider-neutral file-transcription service remains available as `apiSpeechToText`; live API transcription is exposed separately as `streamingSpeechToText` when supported.

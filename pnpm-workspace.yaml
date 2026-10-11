@@ -1,10 +1,13 @@
 packages:
   - packages/*
+  - docs
 
 # Only types and library code are consumed here; none of DSH's native install scripts are needed.
 allowBuilds:
   '@deepseek-ai/dsh-subprocess-local': false
   '@google/genai': false
+  '@swc/core': true
+  core-js: true
   koffi: false
   node-pty: false
   protobufjs: false

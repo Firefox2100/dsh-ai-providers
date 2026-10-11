@@ -1,0 +1,24 @@
+---
+sidebar_position: 1
+title: DSH AI Providers
+---
+
+DSH AI Providers 为 [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness) 插件提供常用 AI 能力的统一接口：
+
+- 文本嵌入与重排；
+- 文本转语音与语音转文本；
+- 图像生成；
+- OpenAI 兼容的语言模型路由。
+
+安装主插件及所需的提供方插件，在 DSH 设置界面中配置可复用连接，并为各项能力选择提供方。其他插件随后可通过 Cordis 上下文使用所选服务。
+
+## 包含的软件包
+
+| 软件包 | 用途 |
+| --- | --- |
+| `dsh-ai-core` | 与提供方无关的接口、错误和公共类型 |
+| `dsh-ai-providers` | 提供方注册、服务选择、设置界面、API 路由及并发控制 |
+| `dsh-ai-openai` | OpenAI 兼容的嵌入、LLM、TTS、STT 和图像生成 |
+| `dsh-ai-jina-cohere` | Jina 与 Cohere 兼容的重排服务 |
+
+请从[安装](./getting-started/installation)开始。如果正在集成其他插件，可直接阅读[使用服务](./consumers/using-services)。

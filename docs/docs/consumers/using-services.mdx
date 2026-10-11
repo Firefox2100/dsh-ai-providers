@@ -1,0 +1,51 @@
+---
+title: Using services in another plugin
+sidebar_position: 1
+---
+
+Depend on `dsh-ai-core` for types and declare the runtime service you require through Cordis injection.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import type {} from 'dsh-ai-core'
+
+export const inject = ['embeddings']
+
+export function apply(ctx: Context) {
+  ctx.on('ready', async () => {
+    const {vectors} = await ctx.embeddings.embed(['first document', 'second document'])
+    ctx.logger.info('received %d vectors', vectors.length)
+  })
+}
+```
+
+Use optional injection when your plugin can operate without the capability:
+
+```ts
+export const inject = { optional: ['streamingSpeechToText'] }
+```
+
+Do not import a vendor package from a consumer plugin. The selected service hides credentials, endpoints, and vendor-specific transport.
+
+## Call priority and cancellation
+
+Capability calls accept shared call options where supported:
+
+```ts
+const result = await ctx.rerankers.rerank(query, documents, {
+  priority: 'background',
+  signal: abortController.signal,
+})
+```
+
+Use foreground priority for work blocking an active user interaction. Use background priority for indexing, prefetching, and maintenance. Pass an `AbortSignal` whenever the caller has a meaningful cancellation lifecycle.
+
+## Streams
+
+Consume or explicitly cancel returned streams. The concurrency gate holds capacity until a stream completes or is discarded.
+
+For live transcription, first check whether `ctx.streamingSpeechToText` is present. Start a session, send audio chunks in order, consume transcript events, then close or abort the session according to the core contract.
+
+## Handling failures
+
+Catch `AiError` and branch on its category. Treat message text as diagnostic information, not as an API contract. Preserve the error cause when wrapping it for your own plugin.

@@ -1,0 +1,28 @@
+---
+title: Installation
+sidebar_position: 1
+---
+
+Install the main plugin, then install each vendor implementation you intend to use:
+
+```bash
+dsh plugin --profile <profile> add dsh-ai-providers
+dsh plugin --profile <profile> add dsh-ai-openai
+dsh plugin --profile <profile> add dsh-ai-jina-cohere
+```
+
+Restart the profile after installation. DSH adds the plugins to the profile configuration and loads their settings pages.
+
+## Package roles
+
+`dsh-ai-providers` owns the runtime services and provider selection. It does not make vendor API calls by itself. Vendor plugins register implementations with it at runtime.
+
+Install only the vendor packages you need. `dsh-ai-core` is a development dependency for plugin authors and is pulled in by the runtime packages.
+
+## Requirements
+
+- DeepSeek Harness 0.2.x
+- Node.js 22 or later
+- A DSH profile with the web UI for interactive configuration
+
+The OpenAI plugin works with OpenAI and compatible servers. Compatibility depends on which endpoints the server implements.

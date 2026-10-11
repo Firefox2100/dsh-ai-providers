@@ -1,0 +1,20 @@
+---
+title: Package reference
+sidebar_position: 1
+---
+
+## `dsh-ai-core`
+
+Public contracts for embeddings, reranking, speech, images, providers, call options, and normalized errors. Consumer and vendor plugins should import shared types from this package.
+
+## `dsh-ai-providers`
+
+The runtime coordination plugin provides the provider registry, selected capability services, settings and authenticated configuration APIs, health probes, DSH language-model route registration, concurrency scheduling, and embedding deduplication.
+
+## `dsh-ai-openai`
+
+An OpenAI-compatible provider for embeddings, language-model chat and streaming, TTS, file and live STT, and image generation. Compatible servers may implement only a subset. Enable and select only the capabilities exposed by the server.
+
+## `dsh-ai-jina-cohere`
+
+Reranking implementations for Jina and Cohere compatible `/rerank` APIs. Connections and credentials are reusable in the same way as OpenAI connections.

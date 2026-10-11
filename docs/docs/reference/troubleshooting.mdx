@@ -1,0 +1,28 @@
+---
+title: Troubleshooting
+sidebar_position: 2
+---
+
+## A capability service is unavailable
+
+Confirm that the vendor plugin is installed and loaded, then select a provider for the capability in **Settings → AI Providers**. Selecting **Disabled** intentionally removes the service.
+
+## Authentication fails
+
+Check that the connection refers to the intended DSH credential and that the server expects bearer authentication. An empty credential reference sends no API key.
+
+## A compatible server rejects a model or voice
+
+OpenAI compatibility does not imply identical model or voice catalogues. Enter the exact identifiers supported by the server. Voice discovery is optional and may return no entries.
+
+## Calls remain queued
+
+Inspect the concurrency status in settings. A call may be waiting on more than one matching rule. Check the rule limits, reserved foreground capacity, and the oldest queued call. Cancelling the caller removes a queued request.
+
+## A stream consumes capacity indefinitely
+
+Ensure the consumer reads, cancels, or discards the stream. `maxHold` can release scheduler accounting as a safeguard, but it does not guarantee cancellation of the remote request.
+
+## Live transcription is missing
+
+`streamingSpeechToText` is registered only when the selected API provider implements live transcription. File transcription may still be available through `apiSpeechToText`, and DSH's built-in speech-to-text providers remain separate options.

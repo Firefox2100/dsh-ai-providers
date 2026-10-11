@@ -1,0 +1,40 @@
+---
+title: Creating or extending a provider
+sidebar_position: 1
+---
+
+A vendor plugin translates provider-neutral contracts into one vendor's API. Use `dsh-ai-openai` and `dsh-ai-jina-cohere` as implementation references.
+
+## 1. Define validated configuration
+
+Use a Schemastery `Config` schema for connections, model names, and capability options. Keep secrets in DSH's credential service; store only credential references in plugin configuration.
+
+Normalize and validate base URLs at the configuration boundary. Reject unsupported protocols and malformed values before making a request.
+
+## 2. Implement capability factories
+
+Create an `AiProvider` with a stable ID and one factory for each supported capability. A factory receives enough context to resolve current configuration and returns the core interface implementation.
+
+Unsupported capabilities should be absent, not represented by methods that always fail. Optional operations such as voice discovery may return an empty result when the vendor has no discovery endpoint.
+
+## 3. Register through the context
+
+Register with `ctx.aiProviders` inside the plugin scope. Use `ctx.effect()` when registration returns or requires a disposer, so hot reload removes the provider cleanly.
+
+```ts
+ctx.effect(() => ctx.aiProviders.register(provider))
+```
+
+Give errors stable `AiError` categories and preserve the vendor response as diagnostic context without exposing credentials.
+
+## 4. Expose settings metadata
+
+Describe reusable connections and capability options for the settings UI. Supply English and Simplified Chinese labels. Mark startup-only options explicitly; other configuration should support live updates.
+
+Language-model integrations may also expose route factories and localized request options. Route IDs must remain stable because other DSH configuration can refer to them.
+
+## 5. Test the contract
+
+Test request and response mapping, credential resolution, base URL handling, abort propagation, stream cleanup, error normalization, malformed responses, live configuration changes, and unload cleanup.
+
+Run the workspace tests and type checks before publishing. Avoid asserting only against a public cloud service; compatible local servers are an important supported use case.

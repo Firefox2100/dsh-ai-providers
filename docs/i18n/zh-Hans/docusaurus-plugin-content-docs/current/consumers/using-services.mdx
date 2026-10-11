@@ -1,0 +1,51 @@
+---
+title: 在其他插件中使用服务
+sidebar_position: 1
+---
+
+使用 `dsh-ai-core` 中的类型，并通过 Cordis 注入声明所需的运行时服务。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import type {} from 'dsh-ai-core'
+
+export const inject = ['embeddings']
+
+export function apply(ctx: Context) {
+  ctx.on('ready', async () => {
+    const {vectors} = await ctx.embeddings.embed(['第一份文档', '第二份文档'])
+    ctx.logger.info('received %d vectors', vectors.length)
+  })
+}
+```
+
+如果缺少该能力时插件仍可运行，请使用可选注入：
+
+```ts
+export const inject = { optional: ['streamingSpeechToText'] }
+```
+
+使用方插件不应导入具体提供方包。所选服务会隐藏凭据、端点和厂商传输细节。
+
+## 优先级与取消
+
+支持的能力调用可接收公共调用选项：
+
+```ts
+const result = await ctx.rerankers.rerank(query, documents, {
+  priority: 'background',
+  signal: abortController.signal,
+})
+```
+
+阻塞当前用户操作的工作使用前台优先级；索引、预取和维护任务使用后台优先级。当调用方具有明确的取消生命周期时，应传入 `AbortSignal`。
+
+## 流
+
+请完整消费或明确取消返回的流。流完成或被丢弃之前，并发门控会持续占用容量。
+
+实时转录前先检查 `ctx.streamingSpeechToText` 是否存在。按照核心接口创建会话、依次发送音频块、消费转录事件，最后关闭或中止会话。
+
+## 处理失败
+
+捕获 `AiError` 并根据其分类处理。错误消息只用于诊断，不属于稳定 API。包装错误时应保留原始原因。

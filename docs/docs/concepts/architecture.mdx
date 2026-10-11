@@ -1,0 +1,38 @@
+---
+title: Architecture
+sidebar_position: 1
+---
+
+The project separates contracts, selection, and vendor implementations.
+
+| Layer | Responsibility |
+| --- | --- |
+| Core | Defines capability contracts and provider-neutral errors |
+| Registry | Accepts provider registrations and selects active services |
+| Vendor plugin | Resolves vendor configuration and performs API calls |
+| Consumer plugin | Uses the selected service without depending on a vendor |
+
+## Provider lifecycle
+
+A vendor plugin registers an `AiProvider` with `ctx.aiProviders`. A provider has a stable ID, a display label, optional settings metadata, and factories for its supported capabilities. Registration is scoped through Cordis, so unloading the plugin removes the provider.
+
+The main plugin creates service facades for the selected providers:
+
+| Context service | Capability |
+| --- | --- |
+| `ctx.embeddings` | Embeddings |
+| `ctx.rerankers` | Reranking |
+| `ctx.textToSpeech` | Text-to-speech |
+| `ctx.apiSpeechToText` | File transcription |
+| `ctx.streamingSpeechToText` | Live transcription, when supported |
+| `ctx.imageGeneration` | Image generation |
+
+The facades resolve the current provider on each call. Configuration changes therefore take effect without rebuilding dependent plugins.
+
+## Language-model routes
+
+Language models are registered as DSH model routes rather than as a single selected service. This lets multiple configured routes coexist. Vendor-level request options can be described to the UI with localized labels and defaults.
+
+## Error model
+
+Provider failures are normalized as `AiError` values with a stable category such as `authentication`, `rate_limit`, `invalid_request`, or `unavailable`. Consumers can handle these categories without parsing vendor response text.

@@ -1,0 +1,28 @@
+---
+title: Concurrency control
+sidebar_position: 2
+---
+
+The main plugin includes a shared concurrency gate. It limits work across providers and capabilities before a request reaches a vendor.
+
+## Rules
+
+Each rule defines `max`, the maximum concurrent calls; `reserve`, places reserved for foreground work; and matching language-model routes and capabilities.
+
+A call may match several rules. It starts only when every matching rule has capacity, and it holds no capacity while waiting. Calls that match no rule start immediately.
+
+Foreground work is scheduled before background work. Calls retain FIFO order within the same priority. Background work can use at most `max - reserve` places; foreground work may use the full limit.
+
+## Time limits
+
+`maxWait` limits how long a call may remain queued. Expiry rejects the call with an `unavailable` `AiError`. A value of zero disables the limit.
+
+`maxHold` protects the scheduler from a call that never releases its place. When it expires, the gate releases its accounting and logs a warning; it does not guarantee that the underlying vendor request is aborted.
+
+Streaming language-model and TTS calls retain their place until the stream ends, errors, is cancelled, or is discarded. File transcription is gated; live streaming transcription uses its own long-lived session interface.
+
+## Embedding optimisation
+
+Embedding requests can be deduplicated and batched. Equivalent pending requests share work, and prefetch calls may retain a result briefly for a later foreground caller. The cache key includes the provider, model, and request options, so results do not cross configurations.
+
+The settings page shows active calls, queue lengths, the oldest wait, and running calls for each rule.

@@ -1,0 +1,24 @@
+---
+sidebar_position: 1
+title: DSH AI Providers
+---
+
+DSH AI Providers gives [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness) plugins a shared interface for common AI capabilities:
+
+- embeddings and reranking;
+- text-to-speech and speech-to-text;
+- image generation;
+- OpenAI-compatible language-model routes.
+
+Install the main plugin and one or more vendor plugins. Configure reusable connections in the DSH settings UI, select a provider for each capability, then consume the selected service from the Cordis context.
+
+## Included packages
+
+| Package | Purpose |
+| --- | --- |
+| `dsh-ai-core` | Provider-neutral contracts, errors, and shared types |
+| `dsh-ai-providers` | Provider registry, selected services, settings UI, API routes, and concurrency control |
+| `dsh-ai-openai` | OpenAI-compatible embeddings, LLM, TTS, STT, and image generation |
+| `dsh-ai-jina-cohere` | Jina and Cohere compatible reranking |
+
+Start with [Installation](./getting-started/installation), or go directly to [Using services](./consumers/using-services) if you are integrating another plugin.
