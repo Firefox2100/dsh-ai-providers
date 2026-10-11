@@ -1,0 +1,42 @@
+---
+title: Embeddings
+sidebar_position: 1
+---
+
+The embedding service converts text into vectors for semantic search, clustering, and memory retrieval. It is available as `ctx.embeddings` when an embedding provider is selected.
+
+## Use the service
+
+```ts
+import type {Context} from '@deepseek-ai/cordis'
+import type {} from 'dsh-ai-core'
+
+export const inject = ['embeddings']
+
+export async function index(ctx: Context, texts: string[]) {
+  const result = await ctx.embeddings.embed(texts, {
+    inputType: 'document',
+    priority: 'background',
+  })
+  return result.vectors
+}
+```
+
+`embed()` returns vectors in input order, the responding model, vector dimensions, and token usage when reported. Empty strings are rejected. `embedOne()` is a convenience for one string.
+
+Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content when the model distinguishes them. Never compare vectors from different models or dimensions. `cosineSimilarity()` from `dsh-ai-core` validates dimensions before comparing two vectors.
+
+## Prefetch and batching
+
+`prefetch(texts, options)` starts background preparation without returning a promise. The selected service can deduplicate it with a later equivalent `embed()` call and retain the result for the configured hold period.
+
+The OpenAI-compatible provider splits large input arrays according to its configured batch size. This is transport batching; the returned vectors remain in the original order.
+
+## OpenAI-compatible options
+
+| Option | Meaning |
+| --- | --- |
+| `dimensions` | Requested vector length for models that support shortening |
+| `user` | Optional end-user identifier sent to the API |
+
+The provider calls `POST /embeddings`.

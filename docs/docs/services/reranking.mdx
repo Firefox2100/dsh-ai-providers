@@ -1,0 +1,23 @@
+---
+title: Reranking
+sidebar_position: 2
+---
+
+Reranking scores a short candidate list against a query. Use it after a cheaper search, not as a replacement for indexing or retrieval. The selected service is `ctx.rerankers`.
+
+```ts
+const answer = await ctx.rerankers.rerank(
+  'Which document describes the harbour?',
+  candidates,
+  {topN: 5, signal},
+)
+
+const ordered = answer.results.map(({index, score}) => ({
+  document: candidates[index],
+  score,
+}))
+```
+
+Results are sorted best first. Each row contains the original document index and a score from 0 to 1. Scores are comparable within one call only. `topN` asks the provider to return only the strongest results; omitting it requests all documents.
+
+The official Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside 0–1, the provider maps every score through a logistic function while preserving order.

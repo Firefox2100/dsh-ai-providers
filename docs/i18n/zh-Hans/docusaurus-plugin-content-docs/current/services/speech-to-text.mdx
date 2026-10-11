@@ -1,0 +1,41 @@
+---
+title: 语音转文本
+sidebar_position: 5
+---
+
+语音转文本分为完成录音和实时流式两套接口。
+
+## 完成录音
+
+所选 API 服务为 `ctx.apiSpeechToText`。DSH 内置 `speechToText` 注册表启用时，本插件也会向其中注册该服务，因此 DSH 语音输入可以将其与内置提供方一同使用。
+
+```ts
+const transcript = await ctx.apiSpeechToText.transcribe(
+  {audio: wavBytes, language: 'zh'},
+  signal,
+)
+```
+
+结果包含文本、录音时长 `audioSeconds` 和请求耗时 `inferenceSeconds`。语言使用 `auto` 时不发送语言提示。OpenAI 兼容提供方将字节以 `recording.wav` 上传至 `POST /audio/transcriptions`。
+
+## 实时流式转录
+
+只有所选提供方实现实时转录时，`ctx.streamingSpeechToText` 才存在，因此应使用可选注入。
+
+```ts
+const session = await ctx.streamingSpeechToText.startStreaming({
+  language: 'zh',
+  format: 'pcm16',
+  signal,
+})
+
+for await (const event of session.events) {
+  if (event.type === 'delta') showPartial(event.text)
+  if (event.type === 'final') acceptTranscript(event.text)
+  if (event.type === 'error') throw event.error
+}
+```
+
+使用 `session.append(chunk)` 发送音频，调用 `session.commit()` 请求转录当前缓冲区，结束时调用 `session.close()`。
+
+OpenAI 兼容实现使用 Realtime 转录 WebSocket。支持 `pcm16`（默认 24 kHz 单声道）、`g711_ulaw` 和 `g711_alaw`，还可传入词汇或风格 `prompt` 及会话模型覆盖。实时会话为长连接，不经过请求并发门控。

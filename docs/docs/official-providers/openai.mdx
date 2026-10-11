@@ -1,0 +1,50 @@
+---
+title: OpenAI-compatible
+sidebar_position: 1
+---
+
+`dsh-ai-openai` is the officially maintained general-purpose provider package. It supports OpenAI itself and compatible servers such as LocalAI, subject to the endpoints each server implements.
+
+## Capabilities
+
+| Capability | Endpoint |
+| --- | --- |
+| Language models | `POST /chat/completions`, `GET /models` for discovery |
+| Embeddings | `POST /embeddings` |
+| Text-to-speech | `POST /audio/speech`, optional `GET /audio/voices` |
+| File transcription | `POST /audio/transcriptions` |
+| Live transcription | `/realtime?intent=transcription` WebSocket |
+| Image generation | `POST /images/generations` and `/images/edits` |
+
+## Connections
+
+Create one or more reusable connections in the provider card. Each has an ID, name, base URL, and DSH credential reference. The default connection targets `https://api.openai.com/v1` and refers to `OPENAI_API_KEY`.
+
+A connection can be shared by all capabilities, or each capability can select a different connection. This is useful when language models, speech, and images are hosted by different compatible servers.
+
+Base URLs must include the API prefix expected before the endpoint paths. For example, use `http://localhost:8080/v1` for a server whose embeddings endpoint is `/v1/embeddings`.
+
+## Capability defaults
+
+| Setting | Default |
+| --- | --- |
+| Embedding model | `text-embedding-3-small` |
+| TTS model / voice / format / speed | `gpt-4o-mini-tts` / `alloy` / `mp3` / `1` |
+| File STT model | `whisper-1` |
+| Realtime STT model | `gpt-4o-mini-transcribe` |
+| Image model / size / quality / format | `gpt-image-1` / `1024x1024` / `auto` / `png` |
+| Request timeout | 60 seconds |
+| Embedding batch size | 64 texts |
+| LLM idle timeout | 5 minutes |
+
+Compatible servers frequently use different model and voice IDs. Replace defaults with the server's exact identifiers. A missing voice-list endpoint is valid; enter the voice ID manually.
+
+## Language-model routes
+
+Language models are configured as named routes. A route selects a connection and lists models, sampling defaults, reasoning behavior, extra headers, and compatibility options. Multiple routes may use the same connection, and all configured routes are active simultaneously.
+
+## Selection
+
+After configuring the provider, select **OpenAI-compatible** separately in each capability tab you want it to serve. Language-model routes need no capability selection.
+
+See the individual service pages for request options and result contracts.

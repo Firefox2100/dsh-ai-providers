@@ -5,13 +5,20 @@ import type { Config, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiSampling
 import { PROVIDER_ID } from '../ids.ts'
 import { connectionHeaders, validateConnection, type OpenAiConnection } from '../connection.ts'
 import { httpError } from './errors.ts'
-import { wireBody } from './serialize.ts'
+import { imageRefsOf, wireBody, type WireImages } from './serialize.ts'
 import { sseData } from './sse.ts'
 import { translate } from './translate.ts'
+
+/** What of DSH's attachment service a request needs: the stored bytes of a picture a message cites. */
+export interface ImageReader {
+  readImage(ref: never, signal?: AbortSignal): Promise<{ ref: { mediaType: string }; data: Uint8Array }>
+}
 
 export interface OpenAiLlmDeps {
   config: Config
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
+  /** The attachment service, when there is one: without it, or for a model not declared as able to see (`vision`), pictures are told to the model as text. */
+  images?: () => ImageReader | undefined
   fetch?: typeof fetch
 }
 
@@ -85,7 +92,7 @@ export class OpenAiLlmService extends LlmService {
 
   private async * generate(call: LlmCall): AsyncGenerator<StreamChunk> {
     const { route, connection } = this.configOf(call.options.provider)
-    const body = wireBody(call, { maxTokensField: route.maxCompletionTokens === true ? 'max_completion_tokens' : 'max_tokens', replayReasoning: route.replayReasoning === true })
+    const body = wireBody(call, { maxTokensField: route.maxCompletionTokens === true ? 'max_completion_tokens' : 'max_tokens', replayReasoning: route.replayReasoning === true }, await this.pictures(call))
     const consumer = new AbortController()
     const signal = call.options.signal === undefined ? consumer.signal : AbortSignal.any([consumer.signal, call.options.signal])
     const idleMs = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())
@@ -122,6 +129,23 @@ export class OpenAiLlmService extends LlmService {
       clearTimeout(timer)
       consumer.abort()
     }
+  }
+
+  /** The pictures the request carries, read from the attachment service, for a model that is declared to see them. */
+  private async pictures(call: LlmCall): Promise<WireImages> {
+    const wanted = imageRefsOf(call.options)
+    const reader = this.deps.images?.()
+    if (wanted.length === 0 || reader === undefined || call.model?.inputs?.includes('image') !== true) return new Map()
+    const found = new Map<string, string>()
+    for (const message of call.options.messages) {
+      if (message.role !== 'user' && message.role !== 'developer' && message.role !== 'tool') continue
+      for (const block of message.content) {
+        if (block.type !== 'image' || found.has(String(block.attachment.attachmentId))) continue
+        const stored = await reader.readImage(block.attachment as never, call.options.signal)
+        found.set(String(block.attachment.attachmentId), `data:${stored.ref.mediaType};base64,${Buffer.from(stored.data).toString('base64')}`)
+      }
+    }
+    return found
   }
 
   private failed(error: unknown, call: LlmCall, timedOut: boolean, idleMs: number, baseUrl: string): unknown {

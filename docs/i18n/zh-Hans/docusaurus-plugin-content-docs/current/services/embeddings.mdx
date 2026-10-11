@@ -1,0 +1,42 @@
+---
+title: 文本嵌入
+sidebar_position: 1
+---
+
+文本嵌入服务将文本转换为向量，用于语义搜索、聚类和记忆检索。选择嵌入提供方后，可通过 `ctx.embeddings` 使用。
+
+## 使用服务
+
+```ts
+import type {Context} from '@deepseek-ai/cordis'
+import type {} from 'dsh-ai-core'
+
+export const inject = ['embeddings']
+
+export async function index(ctx: Context, texts: string[]) {
+  const result = await ctx.embeddings.embed(texts, {
+    inputType: 'document',
+    priority: 'background',
+  })
+  return result.vectors
+}
+```
+
+`embed()` 按输入顺序返回向量、实际响应的模型、向量维度，以及提供方报告的 token 用量。空字符串会被拒绝。`embedOne()` 用于处理单个字符串。
+
+如果模型区分两类输入，搜索问题使用 `inputType: 'query'`，被索引内容使用 `inputType: 'document'`。不同模型或维度的向量不得比较。`dsh-ai-core` 的 `cosineSimilarity()` 会在比较前验证维度。
+
+## 预取与分批
+
+`prefetch(texts, options)` 在后台准备结果，不返回 Promise。所选服务可将其与随后相同的 `embed()` 调用去重，并在配置的保留期内复用结果。
+
+OpenAI 兼容提供方会按配置的批大小拆分大型输入数组；返回顺序仍与原始输入一致。
+
+## OpenAI 兼容选项
+
+| 选项 | 含义 |
+| --- | --- |
+| `dimensions` | 支持缩短向量的模型所使用的目标维度 |
+| `user` | 发送给 API 的可选最终用户标识 |
+
+该提供方调用 `POST /embeddings`。

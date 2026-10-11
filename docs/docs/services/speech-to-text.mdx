@@ -1,0 +1,41 @@
+---
+title: Speech-to-text
+sidebar_position: 5
+---
+
+Speech-to-text has separate completed-recording and live-streaming interfaces.
+
+## Completed recordings
+
+The selected API service is `ctx.apiSpeechToText`. It also registers with DSH's built-in `speechToText` registry when that registry is enabled, so DSH Voice Input can use it alongside built-in providers.
+
+```ts
+const transcript = await ctx.apiSpeechToText.transcribe(
+  {audio: wavBytes, language: 'en'},
+  signal,
+)
+```
+
+The result contains `text`, recording duration in `audioSeconds`, and request duration in `inferenceSeconds`. Use language `auto` to omit a language hint. The OpenAI-compatible provider uploads the bytes as `recording.wav` to `POST /audio/transcriptions`.
+
+## Live streaming
+
+`ctx.streamingSpeechToText` exists only when the selected provider implements live transcription. Inject it as optional.
+
+```ts
+const session = await ctx.streamingSpeechToText.startStreaming({
+  language: 'en',
+  format: 'pcm16',
+  signal,
+})
+
+for await (const event of session.events) {
+  if (event.type === 'delta') showPartial(event.text)
+  if (event.type === 'final') acceptTranscript(event.text)
+  if (event.type === 'error') throw event.error
+}
+```
+
+Send audio with `session.append(chunk)`, call `session.commit()` to request transcription of the current buffer, and call `session.close()` when finished.
+
+The OpenAI-compatible implementation uses the Realtime transcription WebSocket. Its formats are `pcm16` (24 kHz mono by default), `g711_ulaw`, and `g711_alaw`. It also accepts a vocabulary/style `prompt` and a per-session model override. Live sessions are long-lived and do not pass through the request concurrency gate.

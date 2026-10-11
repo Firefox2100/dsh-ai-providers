@@ -1,0 +1,32 @@
+---
+title: 图像生成
+sidebar_position: 6
+---
+
+所选图像服务为 `ctx.imageGeneration`。它返回自包含的 `Blob`，而不是远程 URL。
+
+```ts
+const result = await ctx.imageGeneration.generate('冬季风暴中的灯塔', {
+  count: 1,
+  references: [{data: portrait, description: '保留此角色'}],
+  signal,
+})
+
+const [{data, mediaType, revisedPrompt}] = result.images
+```
+
+`count` 必须是正整数。参考图包含图像 Blob 和可选的提供方无关说明；提供方可能另有限制。
+
+## OpenAI 兼容选项
+
+| 选项 | 含义 |
+| --- | --- |
+| `size` | 提供方支持的尺寸，例如 `1024x1024` |
+| `quality` | `auto`、`low`、`medium`、`high` 等质量设置 |
+| `style` | `vivid`、`natural` 等提供方专属风格 |
+| `background` | `auto`、`opaque` 或 `transparent` |
+| `outputFormat` | `png`、`jpeg` 或 `webp` |
+| `outputCompression` | 0 到 100 的整数 |
+| `user` | 可选最终用户标识 |
+
+无参考图时以 JSON 调用 `POST /images/generations`；有参考图时以 multipart 表单调用 `POST /images/edits`。Base64 响应会直接转换为 Blob，URL 响应会在调用结束前下载。

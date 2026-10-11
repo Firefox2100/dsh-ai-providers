@@ -1,0 +1,32 @@
+---
+title: Image generation
+sidebar_position: 6
+---
+
+The selected image service is `ctx.imageGeneration`. It returns self-contained `Blob` objects rather than remote URLs.
+
+```ts
+const result = await ctx.imageGeneration.generate('A lighthouse in a winter storm', {
+  count: 1,
+  references: [{data: portrait, description: 'Preserve this character'}],
+  signal,
+})
+
+const [{data, mediaType, revisedPrompt}] = result.images
+```
+
+`count` must be a positive integer. References contain an image blob and an optional provider-neutral description. A provider may impose its own count and input limits.
+
+## OpenAI-compatible options
+
+| Option | Meaning |
+| --- | --- |
+| `size` | Provider-supported size such as `1024x1024` |
+| `quality` | Provider-supported quality such as `auto`, `low`, `medium`, or `high` |
+| `style` | Provider-specific style such as `vivid` or `natural` |
+| `background` | `auto`, `opaque`, or `transparent` |
+| `outputFormat` | `png`, `jpeg`, or `webp` |
+| `outputCompression` | Integer from 0 to 100 |
+| `user` | Optional end-user identifier |
+
+Requests without references call `POST /images/generations` with JSON. Requests with references call `POST /images/edits` as multipart form data. Base64 responses become blobs directly; URL responses are downloaded before the call completes.

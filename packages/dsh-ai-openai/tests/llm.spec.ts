@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { LlmCall } from 'dsh-ai-core'
 import { translate } from '../src/llm/translate.ts'
-import { wireBody, wireMessages } from '../src/llm/serialize.ts'
+import { imageRefsOf, wireBody, wireMessages } from '../src/llm/serialize.ts'
 import { OpenAiLlmService } from '../src/llm/service.ts'
 import { sseData } from '../src/llm/sse.ts'
 
@@ -147,5 +147,32 @@ describe('the service', () => {
     const { service } = make(() => Response.json({ data: [{ id: 'a', context_length: 4096 }, 'b', { name: 'no id' }] }))
     expect(service.routes()).toMatchObject([{ id: 'local', name: 'Local', models: [{ id: 'big', inputs: ['text'] }] }])
     expect(await service.discover('local')).toEqual([{ id: 'a', name: 'a', contextWindow: 4096 }, { id: 'b', name: 'b' }])
+  })
+
+  describe('pictures', () => {
+    const picture = { type: 'image', attachment: { attachmentId: 'sha256:abc', mediaType: 'image/png', bytes: 3, width: 1, height: 1 } }
+    const withPicture = { ...options(), messages: [{ role: 'user', content: [{ type: 'text', text: 'What is this?' }, picture] }] } as never
+
+    it('lists the pictures a request cites', () => {
+      expect(imageRefsOf(withPicture)).toEqual([{ attachmentId: 'sha256:abc', mediaType: 'image/png' }])
+    })
+
+    it('sends a picture the model can see as an image part, and tells one it cannot see as text', () => {
+      expect(wireMessages(withPicture, { replayReasoning: false }, new Map([['sha256:abc', 'data:image/png;base64,AAAA']]))[0]).toEqual({ role: 'user', content: [{ type: 'text', text: 'What is this?' }, { type: 'image_url', image_url: { url: 'data:image/png;base64,AAAA' } }] })
+      expect(wireMessages(withPicture, { replayReasoning: false })[0]).toEqual({ role: 'user', content: 'What is this?\n\n[an image that this model cannot see]' })
+    })
+
+    it('sends the pictures of a tool result in a user message after the tool messages, since the API takes them nowhere else', () => {
+      const result = { ...options(), messages: [
+        { role: 'assistant', content: [{ type: 'tool-call', id: 'c1', name: 'search', arguments: '{}' }, { type: 'tool-call', id: 'c2', name: 'search', arguments: '{}' }] },
+        { role: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'found' }, picture] },
+        { role: 'tool', toolCallId: 'c2', content: [{ type: 'text', text: 'nothing' }] },
+        { role: 'user', content: [{ type: 'text', text: 'go on' }] },
+      ] } as never
+      const wire = wireMessages(result, { replayReasoning: false }, new Map([['sha256:abc', 'data:image/png;base64,AAAA']]))
+      expect(wire.map(message => message.role)).toEqual(['assistant', 'tool', 'tool', 'user', 'user'])
+      expect(wire[1]).toEqual({ role: 'tool', tool_call_id: 'c1', content: 'found\n\n[a picture, shown below]' })
+      expect(wire[3]).toEqual({ role: 'user', content: [{ type: 'text', text: 'The pictures that the tool results above refer to:' }, { type: 'image_url', image_url: { url: 'data:image/png;base64,AAAA' } }] })
+    })
   })
 })

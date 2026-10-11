@@ -1,0 +1,44 @@
+---
+title: Language models
+sidebar_position: 3
+---
+
+Language models integrate with DSH's model router. They are not a single selected capability service: every configured route from every loaded provider is available at the same time. Chats select a model as `route/model`.
+
+## Configure a route
+
+In **Settings → AI Providers → Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.
+
+Each model can declare:
+
+- display name and context window;
+- default output-token limit;
+- image input support;
+- named reasoning levels and a default level;
+- sampling overrides.
+
+Route-level sampling applies to every model unless overridden at model or request level. Supported controls include temperature, top-p, top-k, min-p, frequency and presence penalties, repetition penalty, seed, stop strings, output limit, tool choice, and additional JSON body fields.
+
+## OpenAI-compatible behavior
+
+The official provider streams `POST /chat/completions` and translates DSH messages, images, tool definitions, tool calls, reasoning, usage, and finish reasons. Route options cover several compatibility differences:
+
+| Setting | Purpose |
+| --- | --- |
+| `maxCompletionTokens` | Send `max_completion_tokens` instead of `max_tokens` |
+| `replayReasoning` | Include earlier reasoning when sending history back |
+| `reasoningTags` | Read reasoning from separate fields, explicit tags, or an implicit prefix |
+| `headers` | Add route-specific request headers |
+| `body` | Add provider-specific top-level request fields |
+
+Route, model, request, and registered policy settings are merged before the call. DSH request values remain the most specific.
+
+## Policies
+
+A plugin that knows the purpose of a request can register an `LlmPolicy` through `ctx.aiProviders.policy()`. Policies can adjust sampling and concurrency priority without binding the caller to the OpenAI provider.
+
+## Anthropic-native behavior
+
+The official Anthropic provider uses `POST /messages` with native system prompts, content blocks, tool declarations, tool use and tool results. It translates streamed text, thinking, tool-input JSON, usage, cache usage, and stop reasons into DSH chunks. Image blocks are read from DSH's attachment service and sent as base64 image sources; offloaded images remain text placeholders.
+
+Anthropic supports language models only in this plugin. It does not register embedding, reranking, speech, or image-generation services.

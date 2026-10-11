@@ -1,0 +1,33 @@
+---
+title: 文本转语音
+sidebar_position: 4
+---
+
+所选 TTS 服务为 `ctx.textToSpeech`。它返回 `ReadableStream`，使用方无需等待完整响应即可开始播放或保存。
+
+```ts
+const speech = await ctx.textToSpeech.synthesize('欢迎登船。', {
+  voice: 'alloy',
+  signal,
+})
+
+const response = new Response(speech.audio, {
+  headers: {'content-type': speech.mediaType},
+})
+```
+
+结果包含音频流、媒体类型和模型。必须消费或取消该流；流完成或被丢弃前会持续占用并发容量。
+
+`voices()` 返回可发现的声音。空列表表示提供方无法枚举声音，此时 UI 应允许手动填写声音 ID。
+
+## OpenAI 兼容选项
+
+| 选项 | 含义 |
+| --- | --- |
+| `voice` | 声音 ID，覆盖配置默认值 |
+| `responseFormat` | `mp3`、`opus`、`aac`、`flac`、`wav` 或 `pcm` |
+| `speed` | 0.25 到 4 的语速 |
+| `instructions` | 模型支持时使用的朗读指令 |
+| `user` | 可选最终用户标识 |
+
+合成调用 `POST /audio/speech`。声音发现调用 `GET /audio/voices`；HTTP 404 或 405 视为不支持，并返回空列表。

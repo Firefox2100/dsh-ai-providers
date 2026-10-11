@@ -2,6 +2,10 @@ packages:
   - packages/*
   - docs
 
+overrides:
+  '@types/react': 18.3.31
+  '@types/react-dom': 18.3.7
+
 # Only types and library code are consumed here; none of DSH's native install scripts are needed.
 allowBuilds:
   '@deepseek-ai/dsh-subprocess-local': false

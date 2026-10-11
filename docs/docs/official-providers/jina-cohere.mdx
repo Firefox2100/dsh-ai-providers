@@ -1,0 +1,29 @@
+---
+title: Jina and Cohere
+sidebar_position: 2
+---
+
+`dsh-ai-jina-cohere` is the officially maintained reranking provider. It supports the common `POST /rerank` shape used by Jina AI, Cohere, and compatible servers including some LocalAI and vLLM deployments.
+
+## Configure a connection
+
+Create one or more connections with an ID, name, base URL, and DSH credential reference. The default is:
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `https://api.jina.ai/v1` |
+| Credential reference | `JINA_API_KEY` |
+| Model | `jina-reranker-v2-base-multilingual` |
+| Timeout | 60 seconds |
+
+For Cohere or a compatible server, change the base URL, credential reference, and model. The base URL must be the prefix immediately before `/rerank`.
+
+Then open the reranking capability tab and select **Jina / Cohere compatible** as the active provider.
+
+## Compatibility behavior
+
+Requests contain `model`, `query`, `documents`, optional `top_n`, and `return_documents: false`. Responses may use either `relevance_score` or `score`. Token usage is read from Jina- or Cohere-style response fields when present.
+
+The service validates empty queries and documents, sorts results by descending score, and normalizes raw logits to the service contract's 0–1 range.
+
+See [Reranking](../services/reranking) for consumer usage.

@@ -15,6 +15,16 @@ sidebar_position: 1
 
 提供 OpenAI 兼容的嵌入、语言模型对话与流、TTS、文件与实时 STT，以及图像生成。兼容服务器可能只实现其中一部分；应只启用并选择服务器实际提供的能力。
 
+端点和配置请参阅 [OpenAI 兼容](../official-providers/openai)。
+
 ## `dsh-ai-jina-cohere`
 
 实现 Jina 和 Cohere 兼容的 `/rerank` API。连接与凭据的复用方式和 OpenAI 连接一致。
+
+配置与兼容细节请参阅 [Jina 与 Cohere](../official-providers/jina-cohere)。
+
+## `dsh-ai-anthropic`
+
+Anthropic 原生 Messages API 提供方，提供带流式文本、思考、工具调用、图像输入、用量报告和模型发现的语言模型路由。
+
+配置与原生 API 行为请参阅 [Anthropic](../official-providers/anthropic)。

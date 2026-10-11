@@ -22,5 +22,13 @@
   "sidebar.docs.category.Reference": {
     "message": "参考",
     "description": "The label for category 'Reference' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Services": {
+    "message": "服务",
+    "description": "The label for category 'Services' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Official providers": {
+    "message": "官方提供方",
+    "description": "The label for category 'Official providers' in sidebar 'docs'"
   }
 }

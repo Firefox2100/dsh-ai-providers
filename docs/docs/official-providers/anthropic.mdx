@@ -1,0 +1,61 @@
+---
+title: Anthropic
+sidebar_position: 2
+---
+
+`dsh-ai-anthropic` is the officially maintained native Anthropic provider. It uses the Messages API directly rather than translating requests through an OpenAI-compatible endpoint.
+
+## Supported capability
+
+| Capability | Native endpoint |
+| --- | --- |
+| Language models | `POST /messages` |
+| Model discovery | `GET /models` |
+
+Anthropic does not provide embedding, reranking, TTS, STT, or image-generation APIs, so this package does not register those services.
+
+## Configure a connection
+
+Install the package and open **Settings → Anthropic connections**. The default connection uses:
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `https://api.anthropic.com/v1` |
+| Credential reference | `ANTHROPIC_API_KEY` |
+| API version | `2023-06-01` |
+| Stream silence limit | 5 minutes |
+
+The secret is stored through DSH's credential service. Native requests authenticate with `x-api-key` and carry the configured `anthropic-version` header. Additional route headers can be used for beta features when required.
+
+## Configure routes and models
+
+Create a named route, select a connection, and add exact Anthropic model IDs. The provider can discover accessible models from `/models`, or IDs can be entered manually. Each model can declare its context window, output limit, vision support, and reasoning levels.
+
+Reasoning levels are native request fragments. For example, a model supporting adaptive thinking can use a level body such as:
+
+```json
+{
+  "thinking": {"type": "adaptive"},
+  "output_config": {"effort": "high"}
+}
+```
+
+Keep these fields aligned with the selected model. Anthropic changes thinking controls between model generations.
+
+## Native request mapping
+
+The provider supports:
+
+- top-level system prompts;
+- text and image content;
+- native tool declarations, `tool_use`, and `tool_result` blocks;
+- streamed text, thinking, and tool input;
+- prompt-cache read and write usage;
+- `temperature`, `top_p`, `top_k`, stop sequences, output limits, and tool choice;
+- additional native request fields through route or model configuration.
+
+Files remain tool-readable text handles. Offloaded images remain placeholders. Non-offloaded images are read from DSH's attachment service and sent as base64 sources.
+
+## Errors and cancellation
+
+HTTP and stream failures are mapped to DSH language-model failure classes, including authentication, rate limiting, overload, invalid requests, context overflow, timeout, and cancellation. `retry-after` and Anthropic request IDs are retained when the response provides them.

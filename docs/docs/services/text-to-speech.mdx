@@ -1,0 +1,33 @@
+---
+title: Text-to-speech
+sidebar_position: 4
+---
+
+The selected TTS service is `ctx.textToSpeech`. It returns a `ReadableStream`, so consumers can start playback or persistence before the full response arrives.
+
+```ts
+const speech = await ctx.textToSpeech.synthesize('Welcome aboard.', {
+  voice: 'alloy',
+  signal,
+})
+
+const response = new Response(speech.audio, {
+  headers: {'content-type': speech.mediaType},
+})
+```
+
+The result includes the audio stream, media type, and model. Consume or cancel the stream: concurrency capacity remains held until the stream completes or is discarded.
+
+`voices()` returns discoverable voices. An empty list means the provider cannot enumerate them and the UI should allow a manually entered voice ID.
+
+## OpenAI-compatible options
+
+| Option | Meaning |
+| --- | --- |
+| `voice` | Voice ID; overrides the configured default |
+| `responseFormat` | `mp3`, `opus`, `aac`, `flac`, `wav`, or `pcm` |
+| `speed` | Speaking speed from 0.25 to 4 |
+| `instructions` | Delivery guidance for models that support it |
+| `user` | Optional end-user identifier |
+
+Synthesis calls `POST /audio/speech`. Voice discovery calls `GET /audio/voices`; HTTP 404 or 405 is treated as unsupported and returns an empty list.

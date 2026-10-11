@@ -37,7 +37,7 @@ beforeEach(async () => {
   }
   ctx.plugin({ name: 'vendor', inject: vendor.inject, apply: (scope: Context) => { vendor.apply(scope, vendorConfig as never) } } as never, {} as never)
   await settle()
-  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: { get: () => '' }, rerank: { get: () => selection.value }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 } } as never) } } as never, {} as never)
+  ctx.plugin({ name: 'main', apply: (scope: Context) => { providers.apply(scope, { embedding: { get: () => '' }, rerank: { get: () => selection.value }, tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 } } as never) } } as never, {} as never)
   await settle()
 })
 afterEach(async () => {

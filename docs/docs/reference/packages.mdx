@@ -15,6 +15,16 @@ The runtime coordination plugin provides the provider registry, selected capabil
 
 An OpenAI-compatible provider for embeddings, language-model chat and streaming, TTS, file and live STT, and image generation. Compatible servers may implement only a subset. Enable and select only the capabilities exposed by the server.
 
+See [OpenAI-compatible](../official-providers/openai) for endpoints and configuration.
+
 ## `dsh-ai-jina-cohere`
 
 Reranking implementations for Jina and Cohere compatible `/rerank` APIs. Connections and credentials are reusable in the same way as OpenAI connections.
+
+See [Jina and Cohere](../official-providers/jina-cohere) for configuration and compatibility details.
+
+## `dsh-ai-anthropic`
+
+The native Anthropic Messages API provider. It supplies language-model routes with streaming text, thinking, tool use, image input, usage reporting, and model discovery.
+
+See [Anthropic](../official-providers/anthropic) for configuration and native API behavior.

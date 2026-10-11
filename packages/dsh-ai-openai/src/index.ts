@@ -8,7 +8,7 @@ import { OpenAiEmbeddingService } from './embedding.ts'
 import { OpenAiTtsService } from './tts.ts'
 import { OpenAiSttService } from './stt.ts'
 import { OpenAiImageGenerationService } from './image.ts'
-import { OpenAiLlmService } from './llm/service.ts'
+import { OpenAiLlmService, type ImageReader } from './llm/service.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
 import { resolveConnection } from './connection.ts'
 
@@ -82,7 +82,7 @@ export function apply(ctx: Context, config: Config): void {
       stt: () => new OpenAiSttService({ config, connection: () => resolveConnection(config, 'stt'), credentials: () => ctx.get('credentials') }),
       image: () => new OpenAiImageGenerationService({ config, connection: () => resolveConnection(config, 'image'), credentials: () => ctx.get('credentials') }),
     },
-    llm: () => new OpenAiLlmService({ config, credentials: () => ctx.get('credentials') }),
+    llm: () => new OpenAiLlmService({ config, credentials: () => ctx.get('credentials'), images: () => (ctx as unknown as { get(name: 'attachments'): ImageReader | undefined }).get('attachments') }),
     requestOptions: { embedding: EMBEDDING_REQUEST_OPTIONS, tts: TTS_REQUEST_OPTIONS, stt: STT_REQUEST_OPTIONS, image: IMAGE_REQUEST_OPTIONS },
   }), 'dsh-ai-openai: provider')
 }

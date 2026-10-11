@@ -27,6 +27,23 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Services',
+      items: [
+        'services/embeddings',
+        'services/reranking',
+        'services/language-models',
+        'services/text-to-speech',
+        'services/speech-to-text',
+        'services/image-generation',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Official providers',
+      items: ['official-providers/openai', 'official-providers/anthropic', 'official-providers/jina-cohere'],
+    },
+    {
+      type: 'category',
       label: 'For plugin authors',
       items: ['consumers/using-services'],
     },
