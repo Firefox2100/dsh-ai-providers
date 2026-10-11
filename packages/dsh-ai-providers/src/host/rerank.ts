@@ -1,9 +1,11 @@
+import type { RequestGate } from './gate.ts'
 import { AiError, RerankService, type AiProviderRegistry, type RerankOptions, type RerankResult } from 'dsh-ai-core'
 
 interface Source {
   /** The id of the selected provider; empty for none. */
   selected: () => string
   registry: Pick<AiProviderRegistry, 'get'>
+  gate?: RequestGate
 }
 
 const NAME_OF_NONE = 'none'
@@ -34,7 +36,7 @@ export class ConfiguredRerank extends RerankService {
     if (query.trim() === '') throw new AiError('invalid-input', 'the query is empty')
     if (documents.length === 0) return { results: [], model: service.model }
     if (options.topN !== undefined && (!Number.isInteger(options.topN) || options.topN < 1)) throw new AiError('invalid-input', 'topN must be a whole number from 1')
-    const answer = await service.rerank(query, documents, options)
+    const answer = this.source.gate === undefined ? await service.rerank(query, documents, options) : await this.source.gate.run({ capability: 'rerank', priority: options.priority, signal: options.signal }, () => service.rerank(query, documents, options))
     const seen = new Set<number>()
     for (const { index, score } of answer.results) {
       if (!Number.isInteger(index) || index < 0 || index >= documents.length || seen.has(index)) throw new AiError('unavailable', `${service.provider} scored a document that was not given, or twice (position ${index})`)

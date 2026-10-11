@@ -6,6 +6,7 @@ import { registerApi } from './host/http.ts'
 import { AiProviders } from './host/registry.ts'
 import { AiServices } from './host/services.ts'
 import { LlmRoutes } from './host/llm.ts'
+import { RequestGate } from './host/gate.ts'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-llm'
 
@@ -21,13 +22,17 @@ export { ConfiguredTts } from './host/tts.ts'
 export { ConfiguredStt } from './host/stt.ts'
 export { ConfiguredImageGeneration } from './host/image.ts'
 export { AiServices } from './host/services.ts'
+export { RequestGate, type GateRequest, type GateRule, type GateStatus } from './host/gate.ts'
 export { AiLlmAdapter, LlmRoutes, mergeSampling } from './host/llm.ts'
 export const name = 'dsh-ai-providers'
 
 export function apply(ctx: Context, config: Config): void {
   const registry = new AiProviders(ctx)
-  const services = new AiServices(ctx, registry, config)
-  const llm = new LlmRoutes(ctx, registry, (message) => { ctx.logger.warn(message) })
+  const gate = new RequestGate({ rules: () => config.limits.get(), maxWaitMs: () => config.maxWaitSeconds.get() * 1000, maxHoldMs: () => config.maxHoldSeconds.get() * 1000, onForced: (request, ms) => { ctx.logger.warn(`a ${request.capability} call${request.route === undefined ? '' : ` on ${request.route}`} held its place for ${Math.round(ms / 1000)} s and was let go of`) } })
+  registry.gate = gate
+  ctx.on('loader/volatile-update', () => { gate.pump() })
+  const services = new AiServices(ctx, registry, config, gate)
+  const llm = new LlmRoutes(ctx, registry, (message) => { ctx.logger.warn(message) }, gate)
   registerLlm(ctx, registry, llm)
   registerApi(ctx, { registry, services, llm })
   registerDshSpeechProvider(ctx, services, registry)

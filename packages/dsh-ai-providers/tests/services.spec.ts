@@ -8,7 +8,7 @@ let selection: Record<'embedding' | 'rerank' | 'tts' | 'stt' | 'image', string>
 const config = (embedding: string, rerank = '', tts = '', stt = '') => {
   selection = { embedding, rerank, tts, stt, image: '' }
   const field = (key: keyof typeof selection) => ({ get: () => selection[key] })
-  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), holdSeconds: { get: () => 300 } }
+  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 } }
 }
 
 beforeEach(() => { ctx = new Context() })

@@ -1,5 +1,6 @@
 import { Service, type Context } from '@deepseek-ai/cordis'
 import type { AiProvider, AiProviderRegistry, Capability, LlmPolicy } from 'dsh-ai-core'
+import type { RequestGate } from './gate.ts'
 
 /**
  * The registry vendor plugins register their providers in. A registration is an effect of the
@@ -9,6 +10,9 @@ export class AiProviders extends Service implements AiProviderRegistry {
   private readonly providers = new Map<string, AiProvider>()
   private readonly listeners = new Set<() => void>()
   private readonly llmPolicies: LlmPolicy[] = []
+
+  /** Holds back calls to a shared resource that is busy; set by the plugin that owns the limits. */
+  gate: RequestGate | undefined
 
   constructor(ctx: Context) {
     super(ctx, 'aiProviders')

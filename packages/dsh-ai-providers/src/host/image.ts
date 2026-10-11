@@ -1,6 +1,7 @@
+import type { RequestGate } from './gate.ts'
 import { AiError, ImageGenerationService, type AiProviderRegistry, type ImageGenerationOptions, type ImageGenerationResult } from 'dsh-ai-core'
 
-interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'> }
+interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'>; gate?: RequestGate }
 const NONE = 'none'
 
 export class ConfiguredImageGeneration extends ImageGenerationService {
@@ -14,7 +15,7 @@ export class ConfiguredImageGeneration extends ImageGenerationService {
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     if (prompt.trim() === '') throw new AiError('invalid-input', 'the image prompt is empty')
     if (options.count !== undefined && (!Number.isInteger(options.count) || options.count < 1)) throw new AiError('invalid-input', 'count must be a whole number from 1')
-    const answer = await service.generate(prompt, options)
+    const answer = this.source.gate === undefined ? await service.generate(prompt, options) : await this.source.gate.run({ capability: 'image', priority: options.priority, signal: options.signal }, () => service.generate(prompt, options))
     if (answer.images.length === 0) throw new AiError('unavailable', `${service.provider} returned no images`)
     for (const image of answer.images) {
       if (image.data.size === 0 || image.mediaType.trim() === '') throw new AiError('unavailable', `${service.provider} returned an empty image or no media type`)

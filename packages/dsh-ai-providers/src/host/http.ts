@@ -3,7 +3,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
 // Type-only: declares `ctx.webServer` and `ctx.credentials`.
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type ConcurrencyPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from 'dsh-ai-core'
 import type { LlmRoutes } from './llm.ts'
 import type { AiProviders } from './registry.ts'
 import type { AiServices } from './services.ts'
@@ -143,6 +143,15 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
         try { found = await owner.service.discover(owner.route.id) }
         catch (error) { throw new HttpError(502, error instanceof Error ? error.message : String(error)) }
         const payload: LlmDiscoverPayload = { models: found.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens } })) }
+        send(res, 200, payload)
+      },
+    },
+    [AI_API_ROUTES.concurrency]: {
+      GET: async (_req, res) => {
+        const payload: ConcurrencyPayload = {
+          limits: registry.gate?.status() ?? [],
+          routes: deps.llm.routes.owners().map(({ route }) => ({ id: route.id, name: route.name })),
+        }
         send(res, 200, payload)
       },
     },

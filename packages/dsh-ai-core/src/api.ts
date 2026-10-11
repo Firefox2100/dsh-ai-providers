@@ -86,6 +86,24 @@ export interface LlmDiscoverPayload {
   models: { id: string; name: string; contextWindow?: number; maxTokens?: number }[]
 }
 
+/** What one limit of the gate serves and keeps waiting right now. */
+export interface ConcurrencyStatus {
+  id: string
+  max: number
+  active: number
+  queued: { foreground: number; background: number }
+  /** How long the call that has waited longest has waited, in milliseconds. */
+  oldestWaitMs: number
+  /** What holds the places now, longest first. */
+  running: { capability: string; route?: string; priority: string; ms: number }[]
+}
+
+/** `GET /ai-api/concurrency`: the state of each configured limit, and the language model routes a limit can name. */
+export interface ConcurrencyPayload {
+  limits: ConcurrencyStatus[]
+  routes: { id: string; name: string }[]
+}
+
 export const AI_API_ROUTES = {
   capabilities: '/capabilities',
   credentials: '/credentials',
@@ -93,4 +111,5 @@ export const AI_API_ROUTES = {
   llm: '/llm',
   llmProbe: '/llm/probe',
   llmDiscover: '/llm/discover',
+  concurrency: '/concurrency',
 } as const

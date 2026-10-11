@@ -3,6 +3,7 @@ import { LlmAdapter, LlmError, ProviderRequestId, attributionHeaders } from '@de
 import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from 'dsh-ai-core'
 import type { AiProviders } from './registry.ts'
+import type { RequestGate } from './gate.ts'
 
 export interface RouteOwner {
   provider: AiProvider
@@ -39,7 +40,7 @@ export function mergeSampling(...layers: readonly (LlmSampling | undefined)[]): 
  * that apply to it; the service only has to speak its endpoint's wire.
  */
 export class AiLlmAdapter extends LlmAdapter {
-  constructor(private readonly registry: AiProviders) { super() }
+  constructor(private readonly registry: AiProviders, private readonly gate?: RequestGate) { super() }
 
   /** The routes served now, with who serves them. */
   owners(): RouteOwner[] {
@@ -76,10 +77,13 @@ export class AiLlmAdapter extends LlmAdapter {
   override async * stream(options: GenerateOptions): AsyncGenerator<StreamChunk> {
     const { service, route } = this.ownerOf(options.provider)
     const model = route.models.find(candidate => candidate.id === options.model)
-    const policies = this.registry.policies().map(policy => policy({ options, route: route.id, model: options.model }))
+    const answers = this.registry.policies().map(policy => policy({ options, route: route.id, model: options.model }))
+    const priority = answers.map(answer => answer?.priority).findLast(found => found !== undefined)
+    const policies = answers.map((answer) => { if (answer === undefined) return undefined; const { priority: _priority, ...sampling } = answer; return sampling })
     const call: LlmCall = { options, route, model, sampling: mergeSampling(route.sampling, model?.sampling, ...policies, requested(options, model)), headers: attributionHeaders() }
     try {
-      yield * service.stream(call)
+      // The route is held for the whole stream: the model is generating until its last chunk.
+      yield * (this.gate === undefined ? service.stream(call) : this.gate.stream({ capability: 'llm', route: route.id, priority, signal: options.signal }, () => service.stream(call)))
     } catch (error) {
       if (error instanceof LlmRequestError) {
         const { status, retryAfterMs, requestId } = error.facts
@@ -123,8 +127,8 @@ export class LlmRoutes {
   private readonly problems = new Map<string, string>()
   private readonly adapter: AiLlmAdapter
 
-  constructor(private readonly ctx: Context, registry: AiProviders, private readonly onProblem: (message: string) => void) {
-    this.adapter = new AiLlmAdapter(registry)
+  constructor(private readonly ctx: Context, registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate) {
+    this.adapter = new AiLlmAdapter(registry, gate)
   }
 
   get routes(): AiLlmAdapter { return this.adapter }

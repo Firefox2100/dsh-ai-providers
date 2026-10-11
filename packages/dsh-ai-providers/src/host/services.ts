@@ -9,6 +9,7 @@ import { ConfiguredTts } from './tts.ts'
 import { ConfiguredStt } from './stt.ts'
 import { ConfiguredImageGeneration } from './image.ts'
 import type { AiProviders } from './registry.ts'
+import type { RequestGate } from './gate.ts'
 
 /**
  * Puts the configured services on the context. `ctx.embeddings` (and likewise `ctx.rerankers`) is
@@ -23,18 +24,19 @@ export class AiServices {
   readonly stt: ConfiguredStt
   readonly image: ConfiguredImageGeneration
 
-  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config) {
+  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config, gate?: RequestGate) {
     for (const capability of CAPABILITIES) ctx.provide(SERVICE_NAMES[capability])
     ctx.provide('streamingSpeechToText')
     this.embedding = new ConfiguredEmbedding({
       selected: () => config.embedding.get(),
       registry,
       holdMs: () => config.holdSeconds.get() * 1000,
+      ...gate === undefined ? {} : { gate },
     })
-    this.rerank = new ConfiguredRerank({ selected: () => config.rerank.get(), registry })
-    this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry })
-    this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry })
-    this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry })
+    this.rerank = new ConfiguredRerank({ selected: () => config.rerank.get(), registry, ...gate === undefined ? {} : { gate } })
+    this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry, ...gate === undefined ? {} : { gate } })
+    this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry, ...gate === undefined ? {} : { gate } })
+    this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry, ...gate === undefined ? {} : { gate } })
     this.sync()
     ctx.effect(() => registry.subscribe(() => { this.sync() }), 'dsh-ai-providers: providers changed')
     ctx.on('loader/volatile-update', () => { this.sync() })

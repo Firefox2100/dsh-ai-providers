@@ -1,3 +1,4 @@
+import type { RequestGate } from './gate.ts'
 import { AiError, EmbeddingService, type AiProviderRegistry, type EmbedOptions, type EmbeddingResult } from 'dsh-ai-core'
 
 interface Source {
@@ -6,6 +7,7 @@ interface Source {
   registry: Pick<AiProviderRegistry, 'get'>
   /** How long a prepared vector waits to be retrieved, in milliseconds. */
   holdMs: () => number
+  gate?: RequestGate
 }
 
 /** A vector with the model that made it. */
@@ -101,9 +103,10 @@ export class ConfiguredEmbedding extends EmbeddingService {
 
   /** Send these texts to the provider in one call, and share the answer with everyone waiting for one of them. */
   private compute(prefix: string, texts: string[], service: EmbeddingService, options: EmbedOptions, hold: boolean): void {
-    const { signal: _signal, ...request } = options
+    const { signal: _signal, priority, ...request } = options
     // The call is shared, so it does not stop when one caller does: callers stop waiting instead.
-    const call = service.embed(texts, request).then((answer) => {
+    const start = (): Promise<EmbeddingResult> => service.embed(texts, request)
+    const call = (this.source.gate === undefined ? start() : this.source.gate.run({ capability: 'embedding', priority }, start)).then((answer) => {
       if (answer.vectors.length !== texts.length) throw new AiError('unavailable', `${service.provider} returned ${answer.vectors.length} vectors for ${texts.length} texts`)
       return answer
     })
@@ -128,7 +131,7 @@ export class ConfiguredEmbedding extends EmbeddingService {
 
   /** What tells two requests apart besides the text: who computes them, with which model and which options. */
   private prefixOf(current: { id: string; service: EmbeddingService }, options: EmbedOptions): string {
-    const { signal: _signal, ...request } = options
+    const { signal: _signal, priority: _priority, ...request } = options
     return `${current.id}\u0000${current.service.model}\u0000${JSON.stringify(sorted(request))}\u0000`
   }
 

@@ -1,6 +1,6 @@
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { AiError, type AiErrorCode } from './errors.ts'
-import { AiService } from './service.ts'
+import { AiService, type RequestPriority } from './service.ts'
 
 /**
  * Controls of one model request beyond what DSH's own request carries. Every field is optional and absent means
@@ -69,9 +69,9 @@ export interface LlmCall {
 /**
  * Decides controls for a request from what is known about it: the session, the purpose, the tools, the route. A consumer that knows
  * what a request is for (a story's characters think differently from its narrator) registers one.
- * It answers only what it wants to change; the answers of all policies are merged in registration order.
+ * It answers only what it wants to change; the answers of all policies are merged in registration order. `priority` says where the request stands when its route is busy.
  */
-export type LlmPolicy = (request: { options: GenerateOptions; route: string; model: string }) => LlmSampling | undefined
+export type LlmPolicy = (request: { options: GenerateOptions; route: string; model: string }) => (LlmSampling & { priority?: RequestPriority }) | undefined
 
 /** The failure classes DSH's retry and compaction act on. */
 export const LLM_FAILURE_CODES = ['AUTH', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'INVALID_REQUEST', 'CONTEXT_WINDOW_EXCEEDED', 'QUOTA', 'EMPTY_RESPONSE', 'ABORTED', 'UNSUPPORTED_CONTENT'] as const
