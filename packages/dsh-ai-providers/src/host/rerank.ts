@@ -1,5 +1,5 @@
 import type { RequestGate } from './gate.ts'
-import { AiError, RerankService, type AiProviderRegistry, type RerankOptions, type RerankResult } from 'dsh-ai-core'
+import { AiError, RerankService, type AiProviderRegistry, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
 
 interface Source {
   /** The id of the selected provider; empty for none. */

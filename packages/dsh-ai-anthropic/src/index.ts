@@ -1,5 +1,5 @@
 import type {Context} from '@deepseek-ai/cordis'
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 import type {} from '@deepseek-ai/dsh-credentials'
 import {Config} from './config.ts'
 import {AnthropicLlmService} from './llm/service.ts'
@@ -11,7 +11,7 @@ export {AnthropicLlmService} from './llm/service.ts'
 export {wireBody, wireConversation} from './llm/serialize.ts'
 export {translate} from './llm/translate.ts'
 export {ENTRY_ID, PROVIDER_ID} from './ids.ts'
-export const name = 'dsh-ai-anthropic'
+export const name = '@dsh-ai-providers/anthropic'
 export const inject = ['aiProviders']
 
 export function apply(ctx: Context, config: Config): void {

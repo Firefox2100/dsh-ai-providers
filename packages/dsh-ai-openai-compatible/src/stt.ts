@@ -1,7 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, SttService, httpFailure, readJson, type SpeechInput, type SpeechProviderInfo, type SttLiveEvent, type SttLiveOptions, type SttLiveSession, type Transcript } from 'dsh-ai-core'
+import { AiError, SttService, httpFailure, readJson, type SpeechInput, type SpeechProviderInfo, type SttLiveEvent, type SttLiveOptions, type SttLiveSession, type Transcript } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
-import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export interface OpenAiLiveSttOptions extends SttLiveOptions { model?: string }
@@ -58,12 +57,12 @@ class OpenAiLiveSession implements SttLiveSession {
 export class OpenAiSttService extends SttService {
   readonly provider: string
   private readonly send: typeof fetch
-  constructor(private readonly deps: OpenAiSttDeps) { super(); this.provider = deps.provider ?? PROVIDER_ID; this.send = deps.fetch ?? fetch }
+  constructor(private readonly deps: OpenAiSttDeps) { super(); this.provider = deps.provider ?? 'openai'; this.send = deps.fetch ?? fetch }
   get model(): string { return this.deps.config.sttModel.get() }
   get info(): SpeechProviderInfo {
     const hostname = new URL(this.deps.connection().baseUrl).hostname
     const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
-    return { id: PROVIDER_ID, name: 'OpenAI compatible', location: local ? 'host-local' : 'cloud', languages: ['auto', 'zh', 'en', 'yue', 'ja', 'ko'] }
+    return { id: this.provider, name: 'OpenAI compatible', location: local ? 'host-local' : 'cloud', languages: ['auto', 'zh', 'en', 'yue', 'ja', 'ko'] }
   }
 
   async transcribe(input: SpeechInput, signal: AbortSignal): Promise<Transcript> {

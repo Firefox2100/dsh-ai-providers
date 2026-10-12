@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { OpenAiEmbeddingService } from '../src/embedding.ts'
+import { OpenAiEmbeddingService } from '@dsh-ai-providers/openai-compatible'
 
 interface Seen { path: string; auth: string | undefined; body: { model: string; input: string[]; dimensions?: number; user?: string } }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { OpenAiTtsService } from '../src/tts.ts'
+import { OpenAiTtsService } from '@dsh-ai-providers/openai-compatible'
 
 interface Seen { url: string; auth?: string; body?: Record<string, unknown> }
 

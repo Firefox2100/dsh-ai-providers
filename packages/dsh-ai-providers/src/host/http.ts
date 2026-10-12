@@ -3,7 +3,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
 // Type-only: declares `ctx.webServer` and `ctx.credentials`.
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type ConcurrencyPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type ConcurrencyPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from '@dsh-ai-providers/core'
 import type { LlmRoutes } from './llm.ts'
 import type { AiProviders } from './registry.ts'
 import type { AiServices } from './services.ts'

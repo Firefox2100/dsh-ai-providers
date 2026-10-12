@@ -9,7 +9,7 @@ sidebar_position: 1
 
 ```ts
 import type {Context} from '@deepseek-ai/cordis'
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 
 export const inject = ['embeddings']
 
@@ -24,7 +24,7 @@ export async function index(ctx: Context, texts: string[]) {
 
 `embed()` 按输入顺序返回向量、实际响应的模型、向量维度，以及提供方报告的 token 用量。空字符串会被拒绝。`embedOne()` 用于处理单个字符串。
 
-如果模型区分两类输入，搜索问题使用 `inputType: 'query'`，被索引内容使用 `inputType: 'document'`。不同模型或维度的向量不得比较。`dsh-ai-core` 的 `cosineSimilarity()` 会在比较前验证维度。
+如果模型区分两类输入，搜索问题使用 `inputType: 'query'`，被索引内容使用 `inputType: 'document'`。不同模型或维度的向量不得比较。`@dsh-ai-providers/core` 的 `cosineSimilarity()` 会在比较前验证维度。
 
 ## 预取与分批
 

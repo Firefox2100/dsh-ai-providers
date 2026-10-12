@@ -1,5 +1,5 @@
 import type {ContentBlock, FinishReason, StreamChunk, TokenUsage} from '@deepseek-ai/dsh-llm'
-import {LlmRequestError} from 'dsh-ai-core'
+import {LlmRequestError} from '@dsh-ai-providers/core'
 import {streamError} from './errors.ts'
 
 interface OpenBlock {index: number; type: 'text' | 'reasoning' | 'tool-call'; text: string; id: string; name: string}

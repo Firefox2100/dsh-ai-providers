@@ -1,4 +1,4 @@
-import { AiError, type Capability, type RequestPriority } from 'dsh-ai-core'
+import { AiError, type Capability, type RequestPriority } from '@dsh-ai-providers/core'
 
 /** One shared resource and how many calls may use it at once (a GPU that serves one image or a few chats at a time). */
 export interface GateRule {

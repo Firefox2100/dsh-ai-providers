@@ -1,5 +1,5 @@
 import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError } from 'dsh-ai-core'
+import { AiError } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
 
 export interface JinaCohereConnection { baseUrl: string; apiKeyRef: string }

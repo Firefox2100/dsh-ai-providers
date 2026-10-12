@@ -1,8 +1,8 @@
 import type { ContentBlock, FinishReason, StreamChunk, TokenUsage } from '@deepseek-ai/dsh-llm'
-import { LlmRequestError } from 'dsh-ai-core'
+import { LlmRequestError } from '@dsh-ai-providers/core'
 import { streamError } from './errors.ts'
 
-/** How the reasoning of a model is marked in its text when the endpoint does not separate it: not at all, by `<think>` tags, or as text that starts inside a think block. */
+/** How reasoning is marked when a compatible endpoint does not return it separately. */
 export type ReasoningTags = 'none' | 'tags' | 'implicit'
 
 const OPEN = '<think>'

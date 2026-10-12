@@ -1,7 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, ImageGenerationService, httpFailure, readJson, type ImageGenerationOptions, type ImageGenerationResult } from 'dsh-ai-core'
+import { AiError, ImageGenerationService, httpFailure, readJson, type ImageGenerationOptions, type ImageGenerationResult } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
-import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export type OpenAiImageFormat = 'png' | 'jpeg' | 'webp'
@@ -36,7 +35,7 @@ const MEDIA_TYPES: Record<OpenAiImageFormat, string> = { png: 'image/png', jpeg:
 export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiImageOptions> {
   readonly provider: string
   private readonly send: typeof fetch
-  constructor(private readonly deps: OpenAiImageDeps) { super(); this.provider = deps.provider ?? PROVIDER_ID; this.send = deps.fetch ?? fetch }
+  constructor(private readonly deps: OpenAiImageDeps) { super(); this.provider = deps.provider ?? 'openai'; this.send = deps.fetch ?? fetch }
   get model(): string { return this.deps.config.imageModel.get() }
 
   async generate(prompt: string, options: OpenAiImageOptions = {}): Promise<ImageGenerationResult> {

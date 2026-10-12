@@ -1,4 +1,4 @@
-import {LlmRequestError, type LlmFailureCode} from 'dsh-ai-core'
+import {LlmRequestError, type LlmFailureCode} from '@dsh-ai-providers/core'
 
 const CONTEXT = /context|too many tokens|prompt is too long|input is too long/i
 const QUOTA = /credit|billing|quota|balance/i

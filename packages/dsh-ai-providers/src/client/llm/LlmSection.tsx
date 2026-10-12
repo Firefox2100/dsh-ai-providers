@@ -1,6 +1,6 @@
 import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import type {} from 'dsh-ai-core/slots'
+import type {} from '@dsh-ai-providers/core/slots'
 import type { LlmFace } from './controller.ts'
 import css from './LlmSection.module.css'
 

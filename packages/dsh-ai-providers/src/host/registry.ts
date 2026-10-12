@@ -1,5 +1,5 @@
 import { Service, type Context } from '@deepseek-ai/cordis'
-import type { AiProvider, AiProviderRegistry, Capability, LlmPolicy } from 'dsh-ai-core'
+import type { AiProvider, AiProviderRegistry, Capability, LlmPolicy } from '@dsh-ai-providers/core'
 import type { RequestGate } from './gate.ts'
 
 /**

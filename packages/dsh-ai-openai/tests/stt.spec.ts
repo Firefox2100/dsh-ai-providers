@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { OpenAiSttService } from '../src/stt.ts'
+import { OpenAiSttService } from '@dsh-ai-providers/openai-compatible'
 
 class FakeSocket {
   sent: Record<string, unknown>[] = []

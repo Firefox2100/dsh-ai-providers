@@ -1,8 +1,7 @@
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, LlmRequestError, LlmService, readJson, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from 'dsh-ai-core'
+import { AiError, LlmRequestError, LlmService, readJson, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
 import type { Config, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiSamplingConfig } from '../config.ts'
-import { PROVIDER_ID } from '../ids.ts'
 import { connectionHeaders, validateConnection, type OpenAiConnection } from '../connection.ts'
 import { httpError } from './errors.ts'
 import { imageRefsOf, wireBody, type WireImages } from './serialize.ts'
@@ -50,7 +49,7 @@ export class OpenAiLlmService extends LlmService {
 
   constructor(private readonly deps: OpenAiLlmDeps) {
     super()
-    this.provider = deps.provider ?? PROVIDER_ID
+    this.provider = deps.provider ?? 'openai'
     this.send = deps.fetch ?? fetch
   }
 

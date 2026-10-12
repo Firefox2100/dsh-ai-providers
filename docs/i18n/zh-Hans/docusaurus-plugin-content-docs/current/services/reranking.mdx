@@ -20,4 +20,4 @@ const ordered = answer.results.map(({index, score}) => ({
 
 结果按相关度从高到低排列。每项包含原文档索引和 0 到 1 的分数；分数只适合在同一次调用中比较。`topN` 要求提供方只返回最相关的若干项，省略则请求全部文档。
 
-官方 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0–1 的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
+本项目维护的 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0–1 的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。

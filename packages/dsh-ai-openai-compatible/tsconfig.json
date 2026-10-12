@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": ["node"],
+    "paths": {"@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"]}
+  },
+  "include": ["src", "tsdown.config.ts"]
+}

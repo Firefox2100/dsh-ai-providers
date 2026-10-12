@@ -1,5 +1,5 @@
 import type { RequestGate } from './gate.ts'
-import { AiError, ImageGenerationService, type AiProviderRegistry, type ImageGenerationOptions, type ImageGenerationResult } from 'dsh-ai-core'
+import { AiError, ImageGenerationService, type AiProviderRegistry, type ImageGenerationOptions, type ImageGenerationResult } from '@dsh-ai-providers/core'
 
 interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'>; gate?: RequestGate }
 const NONE = 'none'

@@ -1,6 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from 'dsh-ai-core'
-import { connectionHeaders, validateConnection } from 'dsh-ai-openai'
+import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
+import { connectionHeaders, validateConnection } from '@dsh-ai-providers/openai-compatible'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 

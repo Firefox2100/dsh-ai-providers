@@ -3,7 +3,7 @@ import type { Capability } from './capabilities.ts'
 
 /**
  * The slot a vendor's client plugin fills to put its configuration into the main plugin's settings
- * tab of a capability. Import this file type-only (`import type {} from 'dsh-ai-core/slots'`).
+ * tab of a capability. Import this file type-only (`import type {} from '@dsh-ai-providers/core/slots'`).
  *
  * A vendor registers one entry per capability it offers, in the slot of that capability (`providerSlotName(capability)`), with `id` set to
  * `providerSlotId(capability, providerId)`, `order` and `label` (what the provider is called in the

@@ -3,22 +3,19 @@ title: Installation
 sidebar_position: 1
 ---
 
-Install the main plugin, then install each vendor implementation you intend to use:
+Install the bundle into the target profile:
 
 ```bash
-dsh plugin --profile <profile> add dsh-ai-providers
-dsh plugin --profile <profile> add dsh-ai-openai
-dsh plugin --profile <profile> add dsh-ai-anthropic
-dsh plugin --profile <profile> add dsh-ai-jina-cohere
+dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-Restart the profile after installation. DSH adds the plugins to the profile configuration and loads their settings pages.
+The bundle includes the runtime plus the OpenAI, LocalAI, Anthropic, and Jina/Cohere packages. Restart the profile after installation. DSH adds the plugins to the profile configuration and loads their settings pages.
 
 ## Package roles
 
-`dsh-ai-providers` owns the runtime services and provider selection. It does not make vendor API calls by itself. Vendor plugins register implementations with it at runtime.
+`@dsh-ai-providers/runtime` owns the runtime services and provider selection. It does not make vendor API calls by itself. Vendor plugins register implementations with it at runtime.
 
-Install only the vendor packages you need. `dsh-ai-core` is a development dependency for plugin authors and is pulled in by the runtime packages.
+For a custom deployment, install `@dsh-ai-providers/runtime` and only the desired provider packages. `@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. `@dsh-ai-providers/openai-compatible` is an implementation library shared by the OpenAI and LocalAI packages; it is not loaded as a DSH plugin.
 
 ## Requirements
 

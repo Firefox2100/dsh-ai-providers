@@ -1,5 +1,5 @@
 import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { Capability } from 'dsh-ai-core'
+import type { Capability } from '@dsh-ai-providers/core'
 import type { Dictionaries } from '../i18n.ts'
 
 export type CapabilityLocaleKey =

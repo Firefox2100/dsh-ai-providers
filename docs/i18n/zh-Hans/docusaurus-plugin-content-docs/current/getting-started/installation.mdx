@@ -3,22 +3,19 @@ title: 安装
 sidebar_position: 1
 ---
 
-先安装主插件，再安装需要使用的提供方插件：
+将软件包组合安装到目标配置档案：
 
 ```bash
-dsh plugin --profile <配置档案> add dsh-ai-providers
-dsh plugin --profile <配置档案> add dsh-ai-openai
-dsh plugin --profile <配置档案> add dsh-ai-anthropic
-dsh plugin --profile <配置档案> add dsh-ai-jina-cohere
+dsh plugin --profile <配置档案> add @dsh-ai-providers/all
 ```
 
-安装后重启该配置档案。DSH 会将插件加入配置并加载其设置页面。
+软件包组合包含运行时以及 OpenAI、LocalAI、Anthropic 和 Jina/Cohere 软件包。安装后重启该配置档案。DSH 会将插件加入配置并加载其设置页面。
 
 ## 软件包分工
 
-`dsh-ai-providers` 管理运行时服务和提供方选择，本身不调用厂商 API。各提供方插件在运行时向其注册具体实现。
+`@dsh-ai-providers/runtime` 管理运行时服务和提供方选择，本身不调用厂商 API。各提供方插件在运行时向其注册具体实现。
 
-只需安装实际使用的提供方包。`dsh-ai-core` 是插件开发所需的类型和接口包，运行时包会自动引入它。
+自定义部署可安装 `@dsh-ai-providers/runtime` 和所需的提供方软件包。`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库，不会作为 DSH 插件加载。
 
 ## 环境要求
 

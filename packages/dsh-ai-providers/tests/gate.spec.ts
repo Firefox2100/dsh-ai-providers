@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AiError } from 'dsh-ai-core'
+import { AiError } from '@dsh-ai-providers/core'
 import { RequestGate, type GateRule } from '../src/host/gate.ts'
 
 const gpu: GateRule = { id: 'gpu', max: 1, routes: ['local'], capabilities: ['image', 'tts'] }

@@ -16,22 +16,26 @@ DSH AI Providers 为 [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-
 
 | 软件包 | 用途 |
 | --- | --- |
-| `dsh-ai-core` | 与提供方无关的接口、错误和公共类型 |
-| `dsh-ai-providers` | 提供方注册、服务选择、设置界面、API 路由及并发控制 |
-| `dsh-ai-openai` | OpenAI 兼容的嵌入、LLM、TTS、STT 和图像生成 |
-| `dsh-ai-localai` | LocalAI 嵌入、重排、LLM、TTS、STT 和图像生成 |
-| `dsh-ai-anthropic` | Anthropic 原生语言模型 |
-| `dsh-ai-jina-cohere` | Jina 与 Cohere 兼容的重排服务 |
+| `@dsh-ai-providers/core` | 与提供方无关的接口、错误和公共类型 |
+| `@dsh-ai-providers/openai-compatible` | 共享的 OpenAI 兼容协议实现；不是插件 |
+| `@dsh-ai-providers/runtime` | 提供方注册、服务选择、设置界面、API 路由及并发控制 |
+| `@dsh-ai-providers/openai` | OpenAI 兼容的嵌入、LLM、TTS、STT 和图像生成 |
+| `@dsh-ai-providers/localai` | LocalAI 嵌入、重排、LLM、TTS、STT 和图像生成 |
+| `@dsh-ai-providers/anthropic` | Anthropic 原生语言模型 |
+| `@dsh-ai-providers/jina-cohere` | Jina 与 Cohere 兼容的重排服务 |
+| `@dsh-ai-providers/all` | 仅含元数据的完整软件包组合 |
 
 请从[安装](./getting-started/installation)开始。如果正在集成其他插件，可直接阅读[使用服务](./consumers/using-services)。
 
-## 官方维护的提供方
+## 本项目维护的提供方
 
-本项目目前维护三个提供方软件包：
+这些软件包由 Firefox2100 在本独立项目中维护，并非 DeepSeek Harness 官方软件包，也不由 DSH 维护者维护或认可。
 
-- [`dsh-ai-openai`](./official-providers/openai)：OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成；
-- [`dsh-ai-localai`](./official-providers/localai)：LocalAI 专用的语言模型、嵌入、重排、语音和图像生成；
-- [`dsh-ai-anthropic`](./official-providers/anthropic)：通过 Anthropic 原生 Messages API 使用语言模型；
-- [`dsh-ai-jina-cohere`](./official-providers/jina-cohere)：兼容 Jina 和 Cohere 的重排服务。
+本项目目前维护四个提供方软件包：
+
+- [`@dsh-ai-providers/openai`](./official-providers/openai)：OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成；
+- [`@dsh-ai-providers/localai`](./official-providers/localai)：LocalAI 专用的语言模型、嵌入、重排、语音和图像生成；
+- [`@dsh-ai-providers/anthropic`](./official-providers/anthropic)：通过 Anthropic 原生 Messages API 使用语言模型；
+- [`@dsh-ai-providers/jina-cohere`](./official-providers/jina-cohere)：兼容 Jina 和 Cohere 的重排服务。
 
 第三方提供方插件也可实现相同接口，并出现在同一个设置界面中。

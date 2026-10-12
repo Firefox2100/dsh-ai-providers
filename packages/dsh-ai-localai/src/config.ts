@@ -1,8 +1,8 @@
 import type { Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { Config as OpenAiConfig, type Config as OpenAiConfigType } from 'dsh-ai-openai'
+import { Config as OpenAiConfig, type Config as OpenAiCompatibleConfig } from '@dsh-ai-providers/openai-compatible/config'
 
-export interface Config extends OpenAiConfigType {
+export interface Config extends OpenAiCompatibleConfig {
   rerankConnection: Volatile<string>
   rerankModel: Volatile<string>
   rerankBody: Volatile<Record<string, unknown>>

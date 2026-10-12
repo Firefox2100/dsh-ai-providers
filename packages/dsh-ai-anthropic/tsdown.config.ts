@@ -4,7 +4,7 @@ import pkg from './package.json' with {type: 'json'}
 const shared = new Set(['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis', '@deepseek-ai/dsh-client-store', '@deepseek-ai/dsh-client-ui-slots', '@deepseek-ai/dsh-client-ui-primitives'])
 const host: UserConfig = {
   name: `${pkg.name}/host`, entry: {index: 'src/index.ts'}, outDir: 'lib', format: 'esm', platform: 'node', target: 'es2024', dts: false, clean: false, sourcemap: true, fixedExtension: false,
-  deps: {neverBundle: specifier => specifier.startsWith('@deepseek-ai/') || specifier === 'dsh-ai-core'},
+  deps: {neverBundle: specifier => specifier.startsWith('@deepseek-ai/') || specifier === '@dsh-ai-providers/core'},
 }
 const client: UserConfig = {
   name: `${pkg.name}/client`, entry: {client: 'src/client/index.ts'}, outDir: 'lib', format: 'cjs', platform: 'browser', target: 'es2024', dts: false, clean: false, sourcemap: true, fixedExtension: false,

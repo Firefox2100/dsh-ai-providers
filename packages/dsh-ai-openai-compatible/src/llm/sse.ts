@@ -1,4 +1,4 @@
-/** The `data:` payloads of a server-sent event stream, one per event, without the framing. `[DONE]` is passed through as is. */
+/** The `data:` payloads of a compatible server-sent event stream, without framing. `[DONE]` is passed through. */
 export async function * sseData(body: ReadableStream<Uint8Array>, activity: () => void = () => undefined, signal?: AbortSignal): AsyncGenerator<string> {
   const reader = body.getReader()
   const aborted = signal === undefined ? undefined : new Promise<never>((_, reject) => { signal.addEventListener('abort', () => { reject(signal.reason) }, { once: true }) })

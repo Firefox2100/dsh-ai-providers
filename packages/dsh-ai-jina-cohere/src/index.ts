@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: declares `ctx.aiProviders` (from the main plugin) and `ctx.credentials`.
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 import type {} from '@deepseek-ai/dsh-credentials'
 import { Config } from './config.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
@@ -10,7 +10,7 @@ import { resolveConnection } from './connection.ts'
 export { Config } from './config.ts'
 export { JinaCohereRerankService } from './rerank.ts'
 export { ENTRY_ID, PROVIDER_ID } from './ids.ts'
-export const name = 'dsh-ai-jina-cohere'
+export const name = '@dsh-ai-providers/jina-cohere'
 
 /** Waits for the main plugin, so a profile without it loads this one without registering anything. */
 export const inject = ['aiProviders']

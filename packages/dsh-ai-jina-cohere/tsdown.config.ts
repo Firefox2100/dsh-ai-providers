@@ -74,7 +74,7 @@ const host: UserConfig = {
   sourcemap: true,
   fixedExtension: false,
   // The core library is a dependency of the plugin; DSH's own packages must be the host's instances.
-  deps: { neverBundle: specifier => specifier.startsWith('@deepseek-ai/') || specifier === 'dsh-ai-core' },
+  deps: { neverBundle: specifier => specifier.startsWith('@deepseek-ai/') || specifier === '@dsh-ai-providers/core' },
 }
 
 const client: UserConfig = {

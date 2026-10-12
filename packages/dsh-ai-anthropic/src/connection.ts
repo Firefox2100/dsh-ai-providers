@@ -1,5 +1,5 @@
 import {credentialRef, type CredentialProvider} from '@deepseek-ai/dsh-credentials'
-import {AiError} from 'dsh-ai-core'
+import {AiError} from '@dsh-ai-providers/core'
 import type {AnthropicConnectionConfig} from './config.ts'
 
 export interface AnthropicConnection {baseUrl: string; apiKeyRef: string}

@@ -9,8 +9,8 @@ import {
   type SettingsFormScope,
   type SettingsFormShell,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { AI_API_PREFIX, AI_API_ROUTES, parseProviderSlotId, providerSlotName, type CapabilitiesPayload, type Capability, type ProbeResult } from 'dsh-ai-core'
-import type {} from 'dsh-ai-core/slots'
+import { AI_API_PREFIX, AI_API_ROUTES, parseProviderSlotId, providerSlotName, type CapabilitiesPayload, type Capability, type ProbeResult } from '@dsh-ai-providers/core'
+import type {} from '@dsh-ai-providers/core/slots'
 
 export interface ProviderEntry {
   id: string

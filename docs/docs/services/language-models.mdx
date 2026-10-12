@@ -21,7 +21,7 @@ Route-level sampling applies to every model unless overridden at model or reques
 
 ## OpenAI-compatible behavior
 
-The official provider streams `POST /chat/completions` and translates DSH messages, images, tool definitions, tool calls, reasoning, usage, and finish reasons. Route options cover several compatibility differences:
+The project-maintained OpenAI provider streams `POST /chat/completions` and translates DSH messages, images, tool definitions, tool calls, reasoning, usage, and finish reasons. Route options cover several compatibility differences:
 
 | Setting | Purpose |
 | --- | --- |
@@ -39,6 +39,6 @@ A plugin that knows the purpose of a request can register an `LlmPolicy` through
 
 ## Anthropic-native behavior
 
-The official Anthropic provider uses `POST /messages` with native system prompts, content blocks, tool declarations, tool use and tool results. It translates streamed text, thinking, tool-input JSON, usage, cache usage, and stop reasons into DSH chunks. Image blocks are read from DSH's attachment service and sent as base64 image sources; offloaded images remain text placeholders.
+The project-maintained Anthropic provider uses `POST /messages` with native system prompts, content blocks, tool declarations, tool use and tool results. It translates streamed text, thinking, tool-input JSON, usage, cache usage, and stop reasons into DSH chunks. Image blocks are read from DSH's attachment service and sent as base64 image sources; offloaded images remain text placeholders.
 
 Anthropic supports language models only in this plugin. It does not register embedding, reranking, speech, or image-generation services.

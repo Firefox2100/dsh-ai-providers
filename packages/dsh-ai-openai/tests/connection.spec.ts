@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveConnection } from '../src/connection.ts'
+import { resolveConnection } from '@dsh-ai-providers/openai-compatible'
 
 const field = <T>(value: T) => ({ get: () => value })
 const config = (selected: string, connections: unknown[]) => ({

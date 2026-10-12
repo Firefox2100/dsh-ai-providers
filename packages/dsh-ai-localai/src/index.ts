@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-credentials'
-import type {} from 'dsh-ai-core'
-import { OpenAiEmbeddingService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, resolveConnection } from 'dsh-ai-openai'
+import type {} from '@dsh-ai-providers/core'
+import { OpenAiEmbeddingService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, resolveConnection } from '@dsh-ai-providers/openai-compatible'
 import { Config } from './config.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
 import { LocalAiImageGenerationService } from './image.ts'
@@ -11,7 +11,7 @@ export { Config } from './config.ts'
 export { LocalAiRerankService } from './rerank.ts'
 export { LocalAiImageGenerationService, type LocalAiImageOptions } from './image.ts'
 export { ENTRY_ID, PROVIDER_ID } from './ids.ts'
-export const name = 'dsh-ai-localai'
+export const name = '@dsh-ai-providers/localai'
 
 export const inject = ['aiProviders']
 

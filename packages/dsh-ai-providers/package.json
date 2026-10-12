@@ -1,7 +1,8 @@
 {
-  "name": "dsh-ai-providers",
-  "version": "0.0.0",
+  "name": "@dsh-ai-providers/runtime",
+  "version": "0.1.1",
   "description": "DSH plugin that selects and exposes embedding, reranking, speech, and image generation providers.",
+  "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -21,6 +22,12 @@
       "platform": "web"
     }
   },
+  "engines": {"node": ">=22"},
+  "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-providers"},
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/intro",
+  "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
+  "keywords": ["deepseek-harness", "dsh", "ai-provider"],
+  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
@@ -30,7 +37,9 @@
   "files": [
     "lib/*.js",
     "lib/client.js",
-    "lib/client.js.map"
+    "lib/client.js.map",
+    "README.md",
+    "LICENSE"
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
@@ -39,7 +48,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.4",
-    "dsh-ai-core": "workspace:*"
+    "@dsh-ai-providers/core": "workspace:0.1.1"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",

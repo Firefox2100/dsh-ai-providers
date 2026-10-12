@@ -1,5 +1,5 @@
 import type { RequestGate } from './gate.ts'
-import { AiError, SttService, supportsStreamingStt, type AiProviderRegistry, type SpeechInput, type SpeechProviderInfo, type SttLiveOptions, type SttLiveSession, type Transcript } from 'dsh-ai-core'
+import { AiError, SttService, supportsStreamingStt, type AiProviderRegistry, type SpeechInput, type SpeechProviderInfo, type SttLiveOptions, type SttLiveSession, type Transcript } from '@dsh-ai-providers/core'
 
 interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'>; gate?: RequestGate }
 const NONE = 'none'

@@ -1,7 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, TtsService, httpFailure, readJson, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from 'dsh-ai-core'
+import { AiError, TtsService, httpFailure, readJson, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
-import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 export type OpenAiSpeechFormat = 'mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm'
@@ -36,7 +35,7 @@ export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
 
   constructor(private readonly deps: OpenAiTtsDeps) {
     super()
-    this.provider = deps.provider ?? PROVIDER_ID
+    this.provider = deps.provider ?? 'openai'
     this.send = deps.fetch ?? fetch
   }
 

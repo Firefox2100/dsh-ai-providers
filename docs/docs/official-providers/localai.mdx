@@ -2,7 +2,9 @@
 title: LocalAI
 ---
 
-`dsh-ai-localai` is the officially maintained first-class provider for [LocalAI](https://localai.io/). It keeps LocalAI separate from the general OpenAI-compatible provider so a profile can expose LocalAI-specific controls and capabilities without presenting them as OpenAI features.
+`@dsh-ai-providers/localai` is the first-class [LocalAI](https://localai.io/) provider maintained by Firefox2100 as part of this project. It keeps LocalAI separate from the general OpenAI-compatible provider so a profile can expose LocalAI-specific controls and capabilities without presenting them as OpenAI features. It is not an official DSH or LocalAI package.
+
+The package depends on the provider-neutral `@dsh-ai-providers/openai-compatible` transport library, not on the OpenAI provider plugin. The LocalAI and OpenAI plugins can therefore evolve and be installed independently while sharing the protocol implementation they genuinely have in common.
 
 ## Capabilities
 
@@ -39,4 +41,4 @@ These services use the corresponding OpenAI-compatible LocalAI endpoints. Model 
 
 ## Choosing this package
 
-Use `dsh-ai-localai` for LocalAI deployments. Keep `dsh-ai-openai` for OpenAI or other compatible servers. Both packages may be installed together because they register different provider IDs.
+Use `@dsh-ai-providers/localai` for LocalAI deployments. Keep `@dsh-ai-providers/openai` for OpenAI or other compatible servers. Both packages may be installed together because they register different provider IDs.

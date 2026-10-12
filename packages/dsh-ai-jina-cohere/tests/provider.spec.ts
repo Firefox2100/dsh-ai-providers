@@ -1,6 +1,6 @@
 import { Context } from '@deepseek-ai/cordis'
-import { AiProviders } from 'dsh-ai-providers'
-import { RerankService } from 'dsh-ai-core'
+import { AiProviders } from '@dsh-ai-providers/runtime'
+import { RerankService } from '@dsh-ai-providers/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
 

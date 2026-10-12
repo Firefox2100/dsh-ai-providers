@@ -9,7 +9,7 @@ The embedding service converts text into vectors for semantic search, clustering
 
 ```ts
 import type {Context} from '@deepseek-ai/cordis'
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 
 export const inject = ['embeddings']
 
@@ -24,7 +24,7 @@ export async function index(ctx: Context, texts: string[]) {
 
 `embed()` returns vectors in input order, the responding model, vector dimensions, and token usage when reported. Empty strings are rejected. `embedOne()` is a convenience for one string.
 
-Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content when the model distinguishes them. Never compare vectors from different models or dimensions. `cosineSimilarity()` from `dsh-ai-core` validates dimensions before comparing two vectors.
+Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content when the model distinguishes them. Never compare vectors from different models or dimensions. `cosineSimilarity()` from `@dsh-ai-providers/core` validates dimensions before comparing two vectors.
 
 ## Prefetch and batching
 

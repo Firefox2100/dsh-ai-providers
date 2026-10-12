@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import type { LlmCall } from 'dsh-ai-core'
-import { translate } from '../src/llm/translate.ts'
-import { imageRefsOf, wireBody, wireMessages } from '../src/llm/serialize.ts'
-import { OpenAiLlmService } from '../src/llm/service.ts'
-import { sseData } from '../src/llm/sse.ts'
+import type { LlmCall } from '@dsh-ai-providers/core'
+import { imageRefsOf, OpenAiLlmService, sseData, translate, wireBody, wireMessages } from '@dsh-ai-providers/openai-compatible'
 
 async function * events(...items: unknown[]): AsyncGenerator<string> {
   for (const item of items) yield typeof item === 'string' ? item : JSON.stringify(item)

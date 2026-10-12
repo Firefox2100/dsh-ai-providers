@@ -4,10 +4,12 @@
     "lib": ["ES2024"],
     "types": ["node"],
     "paths": {
-      "dsh-ai-core": ["../dsh-ai-core/src/index.ts"],
-      "dsh-ai-providers": ["../dsh-ai-providers/src/index.ts"]
+      "@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"],
+      "@dsh-ai-providers/openai-compatible": ["../dsh-ai-openai-compatible/src/index.ts"],
+      "@dsh-ai-providers/openai-compatible/config": ["../dsh-ai-openai-compatible/src/config.ts"],
+      "@dsh-ai-providers/runtime": ["../dsh-ai-providers/src/index.ts"]
     }
   },
-  "include": ["src", "tests", "tsdown.config.ts"],
+  "include": ["src", "tests", "tsdown.config.ts", "../dsh-ai-openai-compatible/src/ws.d.ts"],
   "exclude": ["src/client"]
 }

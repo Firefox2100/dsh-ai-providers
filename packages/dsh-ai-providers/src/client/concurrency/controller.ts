@@ -9,7 +9,7 @@ import {
   type SettingsFormScope,
   type SettingsFormShell,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { AI_API_PREFIX, AI_API_ROUTES, CAPABILITIES, type Capability, type ConcurrencyPayload, type ConcurrencyStatus } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, CAPABILITIES, type Capability, type ConcurrencyPayload, type ConcurrencyStatus } from '@dsh-ai-providers/core'
 
 /** One shared resource and how many calls it serves at once, as the plugin's configuration holds it. */
 export interface LimitRule {

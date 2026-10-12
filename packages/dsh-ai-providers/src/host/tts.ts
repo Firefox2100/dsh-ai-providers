@@ -1,5 +1,5 @@
 import type { RequestGate } from './gate.ts'
-import { AiError, TtsService, type AiProviderRegistry, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from 'dsh-ai-core'
+import { AiError, TtsService, type AiProviderRegistry, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from '@dsh-ai-providers/core'
 
 interface Source {
   selected: () => string

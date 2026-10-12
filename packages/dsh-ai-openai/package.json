@@ -1,7 +1,8 @@
 {
-  "name": "dsh-ai-openai",
-  "version": "0.0.0",
-  "description": "OpenAI-compatible embedding, speech, and image generation provider for dsh-ai-providers.",
+  "name": "@dsh-ai-providers/openai",
+  "version": "0.1.1",
+  "description": "OpenAI language, embedding, speech, and image provider for DSH.",
+  "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
   "types": "src/index.ts",
@@ -10,6 +11,12 @@
     "./client": "./lib/client.js",
     "./package.json": "./package.json"
   },
+  "engines": {"node": ">=22"},
+  "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-openai"},
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/openai",
+  "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
+  "keywords": ["deepseek-harness", "dsh", "openai", "ai-provider"],
+  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
   "dsh": {
     "engines": {
       "dsh": ">=0.2.0-rc.2 <0.3.0"
@@ -31,16 +38,19 @@
   "files": [
     "lib/*.js",
     "lib/client.js",
-    "lib/client.js.map"
+    "lib/client.js.map",
+    "src",
+    "README.md",
+    "LICENSE"
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.3.0",
-    "dsh-ai-core": "workspace:*"
+    "@dsh-ai-providers/core": "workspace:0.1.1"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.4",
-    "ws": "^8.22.0"
+    "@dsh-ai-providers/openai-compatible": "workspace:0.1.1"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
@@ -53,8 +63,8 @@
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
-    "dsh-ai-core": "workspace:*",
-    "dsh-ai-providers": "workspace:*",
+    "@dsh-ai-providers/core": "workspace:0.1.1",
+    "@dsh-ai-providers/openai-compatible": "workspace:0.1.1",
     "lightningcss": "^1.33.0",
     "react": "^18.3.1",
     "tsdown": "^0.22.2",

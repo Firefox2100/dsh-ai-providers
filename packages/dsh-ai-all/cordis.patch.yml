@@ -1,0 +1,11 @@
+- insert:
+    - id: ai-providers
+      name: '@dsh-ai-providers/runtime'
+    - id: ai-openai
+      name: '@dsh-ai-providers/openai'
+    - id: ai-anthropic
+      name: '@dsh-ai-providers/anthropic'
+    - id: ai-jina-cohere
+      name: '@dsh-ai-providers/jina-cohere'
+    - id: ai-localai
+      name: '@dsh-ai-providers/localai'

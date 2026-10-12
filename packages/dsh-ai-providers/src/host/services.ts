@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: declares the `loader/volatile-update` event.
 import type {} from '@deepseek-ai/cordis-plugin-loader'
-import { CAPABILITIES, SERVICE_NAMES, type Capability } from 'dsh-ai-core'
+import { CAPABILITIES, SERVICE_NAMES, type Capability } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
 import { ConfiguredEmbedding } from './embedding.ts'
 import { ConfiguredRerank } from './rerank.ts'

@@ -22,12 +22,14 @@ This monorepo supplies shared contracts, runtime provider selection, concurrency
 
 | Package | Purpose |
 | --- | --- |
-| `dsh-ai-core` | Provider-neutral service contracts, errors, and shared types |
-| `dsh-ai-providers` | Provider registry, service selection, concurrency control, API routes, and settings UI |
-| `dsh-ai-openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
-| `dsh-ai-localai` | LocalAI language models, embeddings, reranking, TTS, file and live STT, and image generation |
-| `dsh-ai-anthropic` | Language models through Anthropic's native Messages API |
-| `dsh-ai-jina-cohere` | Reranking through Jina- and Cohere-compatible APIs |
+| `@dsh-ai-providers/core` | Provider-neutral service contracts, errors, and shared types |
+| `@dsh-ai-providers/openai-compatible` | Reusable OpenAI-compatible wire transports; not a plugin |
+| `@dsh-ai-providers/runtime` | Provider registry, service selection, concurrency control, API routes, and settings UI |
+| `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
+| `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, TTS, file and live STT, and image generation |
+| `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
+| `@dsh-ai-providers/jina-cohere` | Reranking through Jina- and Cohere-compatible APIs |
+| `@dsh-ai-providers/all` | Metadata-only DSH bundle containing the runtime and every provider maintained by this project |
 
 See the individual provider guides for configuration and supported features:
 
@@ -38,16 +40,15 @@ See the individual provider guides for configuration and supported features:
 
 ## Installation
 
-Install the main plugin and only the vendor packages you need:
+Install the bundle into a DSH profile:
 
 ```bash
-dsh plugin --profile <profile> add dsh-ai-providers
-dsh plugin --profile <profile> add dsh-ai-openai
-dsh plugin --profile <profile> add dsh-ai-anthropic
-dsh plugin --profile <profile> add dsh-ai-jina-cohere
+dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-Restart the profile, then configure connections, routes, and active services under **Settings → AI Providers**.
+The bundle installs the runtime and all vendor packages maintained by this project. Restart the profile, then configure connections, routes, and active services under **Settings → AI Providers**. Individual packages may also be installed separately for a custom deployment.
+
+This is an independent project maintained by Firefox2100. It is not an official DeepSeek Harness project and is not maintained or endorsed by the DSH maintainers.
 
 ## Development
 
@@ -58,7 +59,10 @@ pnpm install
 pnpm run typecheck
 pnpm run test
 pnpm run build
+pnpm run release:check
 ```
+
+See [Contributing](./CONTRIBUTING.md) for branch and release policy.
 
 ## License
 

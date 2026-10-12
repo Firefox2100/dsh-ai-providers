@@ -1,9 +1,9 @@
-import { LlmRequestError, type LlmFailureCode } from 'dsh-ai-core'
+import { LlmRequestError, type LlmFailureCode } from '@dsh-ai-providers/core'
 
 const CONTEXT = /context[_ ]?(?:length|window)|maximum context|too many tokens|exceeds? (?:the )?(?:model'?s? )?(?:maximum|max|context)|prompt is too long|input is too long|reduce the length/i
 const QUOTA = /insufficient[_ ]quota|exceeded your current quota|out of credit|billing|balance/i
 
-/** The seconds or date in a `Retry-After` header, as milliseconds. */
+/** The seconds or date in a compatible API's `Retry-After` header, as milliseconds. */
 export function retryAfterMs(header: string | null): number | undefined {
   if (header === null) return undefined
   const seconds = Number(header)

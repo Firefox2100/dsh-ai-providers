@@ -1,6 +1,6 @@
 import { Context } from '@deepseek-ai/cordis'
 import LlmRuntime, { LlmAdapter, LlmError, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
-import { LlmRequestError } from 'dsh-ai-core'
+import { LlmRequestError } from '@dsh-ai-providers/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AiProviders } from '../src/host/registry.ts'
 import { LlmRoutes, mergeSampling } from '../src/host/llm.ts'

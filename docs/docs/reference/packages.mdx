@@ -3,34 +3,42 @@ title: Package reference
 sidebar_position: 1
 ---
 
-## `dsh-ai-core`
+## `@dsh-ai-providers/core`
 
 Public contracts for embeddings, reranking, speech, images, providers, call options, and normalized errors. Consumer and vendor plugins should import shared types from this package.
 
-## `dsh-ai-providers`
+## `@dsh-ai-providers/openai-compatible`
+
+Protocol-level OpenAI-compatible transports, request serialization, stream parsing, connection validation, and service implementations. It has no DSH plugin entry point. The OpenAI and LocalAI plugins compose it without depending on each other.
+
+## `@dsh-ai-providers/runtime`
 
 The runtime coordination plugin provides the provider registry, selected capability services, settings and authenticated configuration APIs, health probes, DSH language-model route registration, concurrency scheduling, and embedding deduplication.
 
-## `dsh-ai-openai`
+## `@dsh-ai-providers/openai`
 
 An OpenAI-compatible provider for embeddings, language-model chat and streaming, TTS, file and live STT, and image generation. Compatible servers may implement only a subset. Enable and select only the capabilities exposed by the server.
 
 See [OpenAI-compatible](../official-providers/openai) for endpoints and configuration.
 
-### `dsh-ai-localai`
+### `@dsh-ai-providers/localai`
 
 A first-class LocalAI provider for language models, embeddings, reranking, TTS, file and live STT, and image generation. It adds LocalAI defaults, native request fields, and reranking while reusing the tested OpenAI-compatible transports.
 
 See [LocalAI](../official-providers/localai) for configuration and native controls.
 
-## `dsh-ai-jina-cohere`
+## `@dsh-ai-providers/jina-cohere`
 
 Reranking implementations for Jina and Cohere compatible `/rerank` APIs. Connections and credentials are reusable in the same way as OpenAI connections.
 
 See [Jina and Cohere](../official-providers/jina-cohere) for configuration and compatibility details.
 
-## `dsh-ai-anthropic`
+## `@dsh-ai-providers/anthropic`
 
 The native Anthropic Messages API provider. It supplies language-model routes with streaming text, thinking, tool use, image input, usage reporting, and model discovery.
 
 See [Anthropic](../official-providers/anthropic) for configuration and native API behavior.
+
+## `@dsh-ai-providers/all`
+
+The metadata-only DSH bundle. It installs the runtime and all four provider plugins maintained by this project.

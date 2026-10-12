@@ -1,6 +1,6 @@
 import type {SnapshotStore} from '@deepseek-ai/dsh-client-store'
 import {SettingsFormModel, settingsNumberField, settingsTextField, type SettingsFormActions, type SettingsFormScope, type SettingsFormShell} from '@deepseek-ai/dsh-client-ui-primitives'
-import {AI_API_PREFIX, AI_API_ROUTES, type CredentialsPayload} from 'dsh-ai-core'
+import {AI_API_PREFIX, AI_API_ROUTES, type CredentialsPayload} from '@dsh-ai-providers/core'
 import type {AnthropicConnectionConfig, AnthropicLlmRouteConfig} from '../config.ts'
 
 interface Settings {connections?: AnthropicConnectionConfig[]; llmRoutes?: AnthropicLlmRouteConfig[]; anthropicVersion?: string; llmIdleTimeoutMs?: number}

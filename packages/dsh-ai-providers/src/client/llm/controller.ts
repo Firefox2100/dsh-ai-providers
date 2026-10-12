@@ -1,5 +1,5 @@
 import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
-import { AI_API_PREFIX, AI_API_ROUTES, type LlmPayload, type LlmProbeResult, type LlmRouteSummary } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, type LlmPayload, type LlmProbeResult, type LlmRouteSummary } from '@dsh-ai-providers/core'
 
 export interface LlmState {
   status: 'loading' | 'ready' | 'failed'

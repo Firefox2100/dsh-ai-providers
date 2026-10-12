@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import type {GenerateOptions, StreamChunk} from '@deepseek-ai/dsh-llm'
-import type {LlmCall} from 'dsh-ai-core'
+import type {LlmCall} from '@dsh-ai-providers/core'
 import {wireBody, wireConversation} from '../src/llm/serialize.ts'
 import {translate} from '../src/llm/translate.ts'
 import {AnthropicLlmService} from '../src/llm/service.ts'

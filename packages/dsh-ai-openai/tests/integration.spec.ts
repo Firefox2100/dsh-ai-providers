@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { Context } from '@deepseek-ai/cordis'
-import * as providers from 'dsh-ai-providers'
+import * as providers from '@dsh-ai-providers/runtime'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as openai from '../src/index.ts'
 

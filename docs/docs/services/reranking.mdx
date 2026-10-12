@@ -20,4 +20,4 @@ const ordered = answer.results.map(({index, score}) => ({
 
 Results are sorted best first. Each row contains the original document index and a score from 0 to 1. Scores are comparable within one call only. `topN` asks the provider to return only the strongest results; omitting it requests all documents.
 
-The official Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside 0–1, the provider maps every score through a logistic function while preserving order.
+The project-maintained Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside 0–1, the provider maps every score through a logistic function while preserving order.

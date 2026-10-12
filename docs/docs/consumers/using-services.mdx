@@ -3,11 +3,11 @@ title: Using services in another plugin
 sidebar_position: 1
 ---
 
-Depend on `dsh-ai-core` for types and declare the runtime service you require through Cordis injection.
+Depend on `@dsh-ai-providers/core` for types and declare the runtime service you require through Cordis injection.
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 
 export const inject = ['embeddings']
 

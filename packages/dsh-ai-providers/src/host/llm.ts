@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { LlmAdapter, LlmError, ProviderRequestId, attributionHeaders } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from 'dsh-ai-core'
+import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from '@dsh-ai-providers/core'
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
 

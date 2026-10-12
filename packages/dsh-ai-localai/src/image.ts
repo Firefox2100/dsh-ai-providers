@@ -1,6 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, ImageGenerationService, httpFailure, readJson, type ImageGenerationOptions, type ImageGenerationResult, type GeneratedImage } from 'dsh-ai-core'
-import { connectionHeaders, type OpenAiConnection } from 'dsh-ai-openai'
+import { AiError, ImageGenerationService, httpFailure, readJson, type ImageGenerationOptions, type ImageGenerationResult, type GeneratedImage } from '@dsh-ai-providers/core'
+import { connectionHeaders, type OpenAiConnection } from '@dsh-ai-providers/openai-compatible'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 

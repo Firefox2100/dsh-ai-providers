@@ -39,7 +39,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Official providers',
+      label: 'Project-maintained providers',
       items: ['official-providers/openai', 'official-providers/localai', 'official-providers/anthropic', 'official-providers/jina-cohere'],
     },
     {

@@ -1,5 +1,5 @@
 import type {ContentBlock, GenerateOptions, RequestMessage} from '@deepseek-ai/dsh-llm'
-import type {LlmCall, LlmReasoningLevel, LlmSampling} from 'dsh-ai-core'
+import type {LlmCall, LlmReasoningLevel, LlmSampling} from '@dsh-ai-providers/core'
 
 type WireBlock = {type: 'text'; text: string} | {type: 'image'; source: {type: 'base64'; media_type: string; data: string}} | {type: 'tool_use'; id: string; name: string; input: unknown} | {type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean}
 export interface AnthropicWireMessage {role: 'user' | 'assistant'; content: WireBlock[]}

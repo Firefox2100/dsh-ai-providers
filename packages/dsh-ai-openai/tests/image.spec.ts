@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { OpenAiImageGenerationService } from '../src/image.ts'
+import { OpenAiImageGenerationService } from '@dsh-ai-providers/openai-compatible'
 
 const PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
 

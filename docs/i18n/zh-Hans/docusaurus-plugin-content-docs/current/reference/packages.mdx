@@ -3,34 +3,42 @@ title: 软件包参考
 sidebar_position: 1
 ---
 
-## `dsh-ai-core`
+## `@dsh-ai-providers/core`
 
 提供嵌入、重排、语音、图像、提供方、调用选项和统一错误的公共接口。使用方和提供方插件都应从此包导入共享类型。
 
-## `dsh-ai-providers`
+## `@dsh-ai-providers/openai-compatible`
+
+提供 OpenAI 兼容协议的传输、请求序列化、流解析、连接校验及服务实现。它没有 DSH 插件入口；OpenAI 与 LocalAI 插件通过组合使用它，彼此不产生依赖。
+
+## `@dsh-ai-providers/runtime`
 
 运行时协调插件，提供注册表、所选能力服务、设置及认证配置 API、健康检查、DSH 语言模型路由、并发调度和嵌入去重。
 
-## `dsh-ai-openai`
+## `@dsh-ai-providers/openai`
 
 提供 OpenAI 兼容的嵌入、语言模型对话与流、TTS、文件与实时 STT，以及图像生成。兼容服务器可能只实现其中一部分；应只启用并选择服务器实际提供的能力。
 
 端点和配置请参阅 [OpenAI 兼容](../official-providers/openai)。
 
-### `dsh-ai-localai`
+### `@dsh-ai-providers/localai`
 
 LocalAI 专用提供方，涵盖语言模型、嵌入、重排、TTS、文件及实时 STT 和图像生成。它复用经过测试的 OpenAI 兼容传输层，同时加入 LocalAI 默认值、原生请求字段和重排。
 
 配置与原生控制项请参阅 [LocalAI](../official-providers/localai)。
 
-## `dsh-ai-jina-cohere`
+## `@dsh-ai-providers/jina-cohere`
 
 实现 Jina 和 Cohere 兼容的 `/rerank` API。连接与凭据的复用方式和 OpenAI 连接一致。
 
 配置与兼容细节请参阅 [Jina 与 Cohere](../official-providers/jina-cohere)。
 
-## `dsh-ai-anthropic`
+## `@dsh-ai-providers/anthropic`
 
 Anthropic 原生 Messages API 提供方，提供带流式文本、思考、工具调用、图像输入、用量报告和模型发现的语言模型路由。
 
 配置与原生 API 行为请参阅 [Anthropic](../official-providers/anthropic)。
+
+## `@dsh-ai-providers/all`
+
+仅含元数据的 DSH 软件包组合，用于安装运行时及四个由本项目维护的提供方插件。

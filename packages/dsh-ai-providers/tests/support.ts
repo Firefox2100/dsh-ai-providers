@@ -1,5 +1,5 @@
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from 'dsh-ai-core'
+import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {

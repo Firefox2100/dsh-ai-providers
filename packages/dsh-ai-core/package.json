@@ -1,7 +1,8 @@
 {
-  "name": "dsh-ai-core",
-  "version": "0.0.0",
+  "name": "@dsh-ai-providers/core",
+  "version": "0.1.1",
   "description": "Shared contracts for embedding, reranking, text-to-speech, speech-to-text, and image generation providers for DSH.",
+  "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -19,15 +20,18 @@
   "engines": {
     "node": ">=22"
   },
+  "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-core"},
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
+  "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
+  "keywords": ["deepseek-harness", "dsh", "ai-provider"],
+  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",

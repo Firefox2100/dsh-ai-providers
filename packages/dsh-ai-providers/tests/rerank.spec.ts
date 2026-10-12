@@ -1,4 +1,4 @@
-import { AiError } from 'dsh-ai-core'
+import { AiError } from '@dsh-ai-providers/core'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { ConfiguredRerank } from '../src/host/rerank.ts'
 import { FakeRerank, providerOf } from './support.ts'

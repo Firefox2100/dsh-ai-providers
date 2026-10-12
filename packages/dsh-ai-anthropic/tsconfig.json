@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {"lib": ["ES2024"], "types": ["node"], "paths": {"dsh-ai-core": ["../dsh-ai-core/src/index.ts"], "dsh-ai-providers": ["../dsh-ai-providers/src/index.ts"]}},
+  "compilerOptions": {"lib": ["ES2024"], "types": ["node"], "paths": {"@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"], "@dsh-ai-providers/runtime": ["../dsh-ai-providers/src/index.ts"]}},
   "include": ["src", "tests", "tsdown.config.ts"],
   "exclude": ["src/client"]
 }

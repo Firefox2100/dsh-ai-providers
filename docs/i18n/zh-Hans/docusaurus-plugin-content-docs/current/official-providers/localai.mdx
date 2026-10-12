@@ -2,7 +2,9 @@
 title: LocalAI
 ---
 
-`dsh-ai-localai` 是本项目官方维护的 [LocalAI](https://localai.io/) 专用提供方。它与通用 OpenAI 兼容提供方分开，使配置可以暴露 LocalAI 特有的控制项和能力，而不会把它们误作 OpenAI 功能。
+`@dsh-ai-providers/localai` 是 Firefox2100 在本项目中维护的 [LocalAI](https://localai.io/) 专用提供方。它与通用 OpenAI 兼容提供方分开，使配置可以暴露 LocalAI 特有的控制项和能力，而不会把它们误作 OpenAI 功能。它不是 DSH 或 LocalAI 官方软件包。
+
+该软件包依赖与提供方无关的 `@dsh-ai-providers/openai-compatible` 传输库，而不依赖 OpenAI 提供方插件。因此，LocalAI 与 OpenAI 插件可以独立安装和演进，同时复用两者确实共有的协议实现。
 
 ## 能力
 
@@ -39,4 +41,4 @@ LocalAI 原生或后端专用选项（例如约束语法及采样器控制）可
 
 ## 何时选用
 
-LocalAI 部署应使用 `dsh-ai-localai`；OpenAI 或其他兼容服务器继续使用 `dsh-ai-openai`。两者提供方 ID 不同，可以同时安装。
+LocalAI 部署应使用 `@dsh-ai-providers/localai`；OpenAI 或其他兼容服务器继续使用 `@dsh-ai-providers/openai`。两者提供方 ID 不同，可以同时安装。

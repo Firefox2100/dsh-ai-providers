@@ -9,7 +9,7 @@ import {
   type SettingsFormShell,
   type SettingsFieldSpec,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { AI_API_PREFIX, AI_API_ROUTES, type CredentialsPayload } from 'dsh-ai-core'
+import { AI_API_PREFIX, AI_API_ROUTES, type CredentialsPayload } from '@dsh-ai-providers/core'
 import type { JinaCohereConnectionConfig } from '../config.ts'
 
 /** The fields of the provider's configuration this form edits. */

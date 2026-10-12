@@ -1,5 +1,5 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from 'dsh-ai-core'
+import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
 import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type JinaCohereConnection } from './connection.ts'

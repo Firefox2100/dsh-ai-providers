@@ -1,7 +1,7 @@
 import type { ContentBlock, GenerateOptions, RequestMessage } from '@deepseek-ai/dsh-llm'
-import type { LlmCall, LlmReasoningLevel, LlmSampling } from 'dsh-ai-core'
+import type { LlmCall, LlmReasoningLevel, LlmSampling } from '@dsh-ai-providers/core'
 
-/** A part of a message that carries a picture, as the endpoint takes it. */
+/** A part of a message that carries a picture in the compatible wire format. */
 export type WirePart = { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
 
 /** The pictures of a request, by the id of the attachment, as data URLs a vision model can be sent. */

@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: declares `ctx.aiProviders` and `ctx.embeddings`.
-import type {} from 'dsh-ai-core'
+import type {} from '@dsh-ai-providers/core'
 import { Config } from './host/config.ts'
 import { registerApi } from './host/http.ts'
 import { AiProviders } from './host/registry.ts'
@@ -24,7 +24,7 @@ export { ConfiguredImageGeneration } from './host/image.ts'
 export { AiServices } from './host/services.ts'
 export { RequestGate, type GateRequest, type GateRule, type GateStatus } from './host/gate.ts'
 export { AiLlmAdapter, LlmRoutes, mergeSampling } from './host/llm.ts'
-export const name = 'dsh-ai-providers'
+export const name = '@dsh-ai-providers/runtime'
 
 export function apply(ctx: Context, config: Config): void {
   const registry = new AiProviders(ctx)

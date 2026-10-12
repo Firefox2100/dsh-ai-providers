@@ -1,6 +1,6 @@
 import { SettingsForm, SettingsValueField } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import type {} from 'dsh-ai-core/slots'
+import type {} from '@dsh-ai-providers/core/slots'
 import type { OpenAiCardFace } from './controller.ts'
 import { formLabels } from './locales.ts'
 

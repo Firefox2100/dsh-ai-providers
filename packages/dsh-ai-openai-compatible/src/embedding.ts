@@ -1,7 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, EmbeddingService, httpFailure, readJson, type EmbedOptions, type EmbeddingResult } from 'dsh-ai-core'
+import { AiError, EmbeddingService, httpFailure, readJson, type EmbedOptions, type EmbeddingResult } from '@dsh-ai-providers/core'
 import type { Config } from './config.ts'
-import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
 /**
@@ -40,7 +39,7 @@ export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions>
 
   constructor(private readonly deps: OpenAiEmbeddingDeps) {
     super()
-    this.provider = deps.provider ?? PROVIDER_ID
+    this.provider = deps.provider ?? 'openai'
     this.send = deps.fetch ?? fetch
   }
 
