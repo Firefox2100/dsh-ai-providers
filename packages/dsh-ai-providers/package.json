@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/runtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "DSH plugin that selects and exposes embedding, reranking, speech, and image generation providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -13,6 +13,9 @@
   "dsh": {
     "engines": {
       "dsh": ">=0.2.0-rc.2 <0.3.0"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
     },
     "client": {
       "inject": [
@@ -38,17 +41,18 @@
     "lib/*.js",
     "lib/client.js",
     "lib/client.js.map",
+    "cordis.patch.yml",
     "README.md",
     "LICENSE"
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.3.0",
-    "@deepseek-ai/dsh-llm": "0.2.0-rc.2"
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.4"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.1.1"
+    "@dsh-ai-providers/core": "workspace:0.1.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
@@ -61,6 +65,7 @@
     "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2",
     "@deepseek-ai/dsh-host-webserver": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.4",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
     "lightningcss": "^1.33.0",

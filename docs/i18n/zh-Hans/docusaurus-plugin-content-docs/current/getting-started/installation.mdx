@@ -15,7 +15,16 @@ dsh plugin --profile <配置档案> add @dsh-ai-providers/all
 
 `@dsh-ai-providers/runtime` 管理运行时服务和提供方选择，本身不调用厂商 API。各提供方插件在运行时向其注册具体实现。
 
-自定义部署可安装 `@dsh-ai-providers/runtime` 和所需的提供方软件包。`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库，不会作为 DSH 插件加载。
+自定义部署应先启用运行时，再添加所需的提供方软件包：
+
+```bash
+dsh plugin --profile <配置档案> add @dsh-ai-providers/runtime
+dsh plugin --profile <配置档案> add @dsh-ai-providers/localai
+```
+
+每个厂商软件包都依赖运行时软件包，因此其模块会一并安装；但 DSH 会显式启用各个 bundle 层，安装厂商软件包不会自动启用运行时 bundle。每个厂商 bundle 只添加自身条目，因此可以组合任意数量的提供方，而不会重复加载运行时。
+
+`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库，不会作为 DSH 插件加载。
 
 ## 环境要求
 

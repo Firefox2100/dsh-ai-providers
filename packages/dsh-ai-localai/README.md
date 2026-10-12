@@ -9,8 +9,11 @@ It supports LocalAI's OpenAI-compatible endpoints while retaining LocalAI-specif
 Install [`@dsh-ai-providers/all`](https://www.npmjs.com/package/@dsh-ai-providers/all) for the complete project-maintained bundle, or add this package alongside the runtime in a custom deployment:
 
 ```bash
+dsh plugin --profile <profile> add @dsh-ai-providers/runtime
 dsh plugin --profile <profile> add @dsh-ai-providers/localai
 ```
+
+The runtime command activates the shared registry and settings surface. Installing this package also downloads the runtime as a package dependency, but DSH activates bundle layers explicitly, so both commands are required.
 
 [Provider documentation](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/localai) · [Configuration](https://firefox2100.github.io/dsh-ai-providers/docs/getting-started/configuration) · [Source](https://github.com/Firefox2100/dsh-ai-providers) · [Issues](https://github.com/Firefox2100/dsh-ai-providers/issues)
 

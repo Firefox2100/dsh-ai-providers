@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/all",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Complete Firefox2100-maintained AI provider bundle for DeepSeek Harness.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -17,10 +17,10 @@
   "files": ["cordis.patch.yml", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@dsh-ai-providers/runtime": "workspace:0.1.1",
-    "@dsh-ai-providers/openai": "workspace:0.1.1",
-    "@dsh-ai-providers/anthropic": "workspace:0.1.1",
-    "@dsh-ai-providers/jina-cohere": "workspace:0.1.1",
-    "@dsh-ai-providers/localai": "workspace:0.1.1"
+    "@dsh-ai-providers/runtime": "workspace:0.1.2",
+    "@dsh-ai-providers/openai": "workspace:0.1.2",
+    "@dsh-ai-providers/anthropic": "workspace:0.1.2",
+    "@dsh-ai-providers/jina-cohere": "workspace:0.1.2",
+    "@dsh-ai-providers/localai": "workspace:0.1.2"
   }
 }

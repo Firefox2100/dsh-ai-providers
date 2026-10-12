@@ -1,0 +1,3 @@
+- insert:
+    - id: ai-openai
+      name: '@dsh-ai-providers/openai'

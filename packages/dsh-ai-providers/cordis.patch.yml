@@ -1,0 +1,3 @@
+- insert:
+    - id: ai-providers
+      name: '@dsh-ai-providers/runtime'

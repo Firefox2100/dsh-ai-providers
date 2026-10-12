@@ -35,13 +35,38 @@ for (const { folder, name } of releasePackages) {
     }
   }
 
+  for (const dependency of Object.keys(manifest.dependencies ?? {})) {
+    if (dependency.startsWith('@deepseek-ai/')) throw new Error(`${name}: ${dependency} must be a peer dependency`)
+  }
+
   if (manifest.main) await access(resolve(directory, manifest.main))
   if (manifest.types) await access(resolve(directory, manifest.types))
 }
 
 await access(resolve(root, 'LICENSE'))
 
-const bundle = JSON.parse(await readFile(resolve(root, 'packages/dsh-ai-all/package.json'), 'utf8'))
-if (bundle.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error('@dsh-ai-providers/all: missing DSH bundle declaration')
-await access(resolve(root, 'packages/dsh-ai-all/cordis.patch.yml'))
+for (const folder of ['dsh-ai-all', 'dsh-ai-providers', 'dsh-ai-openai', 'dsh-ai-anthropic', 'dsh-ai-jina-cohere', 'dsh-ai-localai']) {
+  const manifest = JSON.parse(await readFile(resolve(root, 'packages', folder, 'package.json'), 'utf8'))
+  if (manifest.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error(`${manifest.name}: missing DSH bundle declaration`)
+  if (!manifest.files.includes('cordis.patch.yml')) throw new Error(`${manifest.name}: cordis.patch.yml must be published`)
+  await access(resolve(root, 'packages', folder, 'cordis.patch.yml'))
+}
+
+const standaloneBundles = [
+  ['dsh-ai-providers', '@dsh-ai-providers/runtime', 'ai-providers'],
+  ['dsh-ai-openai', '@dsh-ai-providers/openai', 'ai-openai'],
+  ['dsh-ai-anthropic', '@dsh-ai-providers/anthropic', 'ai-anthropic'],
+  ['dsh-ai-jina-cohere', '@dsh-ai-providers/jina-cohere', 'ai-jina-cohere'],
+  ['dsh-ai-localai', '@dsh-ai-providers/localai', 'ai-localai'],
+]
+for (const [folder, name, id] of standaloneBundles) {
+  const directory = resolve(root, 'packages', folder)
+  const manifest = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8'))
+  const expected = `- insert:\n    - id: ${id}\n      name: '${name}'\n`
+  if (await readFile(resolve(directory, 'cordis.patch.yml'), 'utf8') !== expected) throw new Error(`${name}: standalone bundle must insert only its own plugin row`)
+  if (name !== '@dsh-ai-providers/runtime' && manifest.dependencies?.['@dsh-ai-providers/runtime'] !== `workspace:${version}`) {
+    throw new Error(`${name}: vendor bundle must install @dsh-ai-providers/runtime without inserting its row`)
+  }
+}
+
 console.log(`Release metadata and build outputs are valid for ${releasePackages.length} packages at ${version}.`)

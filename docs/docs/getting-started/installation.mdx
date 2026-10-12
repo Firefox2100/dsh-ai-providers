@@ -15,7 +15,16 @@ The bundle includes the runtime plus the OpenAI, LocalAI, Anthropic, and Jina/Co
 
 `@dsh-ai-providers/runtime` owns the runtime services and provider selection. It does not make vendor API calls by itself. Vendor plugins register implementations with it at runtime.
 
-For a custom deployment, install `@dsh-ai-providers/runtime` and only the desired provider packages. `@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. `@dsh-ai-providers/openai-compatible` is an implementation library shared by the OpenAI and LocalAI packages; it is not loaded as a DSH plugin.
+For a custom deployment, activate the runtime first and then add only the desired provider packages:
+
+```bash
+dsh plugin --profile <profile> add @dsh-ai-providers/runtime
+dsh plugin --profile <profile> add @dsh-ai-providers/localai
+```
+
+Every vendor package depends on the runtime package so its module is installed, but DSH activates bundle layers explicitly: installing a vendor does not implicitly enable the runtime bundle. Each vendor bundle contributes only its own row, so any number of providers can be combined without loading the runtime twice.
+
+`@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. `@dsh-ai-providers/openai-compatible` is an implementation library shared by the OpenAI and LocalAI packages; it is not loaded as a DSH plugin.
 
 ## Requirements
 
