@@ -18,6 +18,7 @@ export { OpenAiTtsService, type OpenAiSpeechFormat, type OpenAiTtsOptions } from
 export { OpenAiSttService, type OpenAiLiveSttOptions } from './stt.ts'
 export { OpenAiImageGenerationService, type OpenAiImageFormat, type OpenAiImageOptions } from './image.ts'
 export { OpenAiLlmService } from './llm/service.ts'
+export { connectionHeaders, resolveConnection, validateConnection, type OpenAiConnection } from './connection.ts'
 export { wireBody, wireMessages } from './llm/serialize.ts'
 export { translate } from './llm/translate.ts'
 export { ENTRY_ID, PROVIDER_ID } from './ids.ts'

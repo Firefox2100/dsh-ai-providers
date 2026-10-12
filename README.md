@@ -25,12 +25,14 @@ This monorepo supplies shared contracts, runtime provider selection, concurrency
 | `dsh-ai-core` | Provider-neutral service contracts, errors, and shared types |
 | `dsh-ai-providers` | Provider registry, service selection, concurrency control, API routes, and settings UI |
 | `dsh-ai-openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
+| `dsh-ai-localai` | LocalAI language models, embeddings, reranking, TTS, file and live STT, and image generation |
 | `dsh-ai-anthropic` | Language models through Anthropic's native Messages API |
 | `dsh-ai-jina-cohere` | Reranking through Jina- and Cohere-compatible APIs |
 
 See the individual provider guides for configuration and supported features:
 
 - [OpenAI-compatible](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/openai)
+- [LocalAI](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/localai)
 - [Anthropic](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/anthropic)
 - [Jina and Cohere](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina-cohere)
 

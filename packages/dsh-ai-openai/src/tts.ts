@@ -16,8 +16,10 @@ export interface OpenAiTtsOptions extends TtsOptions {
 
 export interface OpenAiTtsDeps {
   config: Config
+  provider?: string
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   connection: () => OpenAiConnection
+  body?: () => Readonly<Record<string, unknown>>
   fetch?: typeof fetch
 }
 
@@ -29,11 +31,12 @@ const MEDIA_TYPES: Record<OpenAiSpeechFormat, string> = {
 
 /** Speech audio from `POST {baseUrl}/audio/speech`, streamed without collecting it in memory. */
 export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
 
   constructor(private readonly deps: OpenAiTtsDeps) {
     super()
+    this.provider = deps.provider ?? PROVIDER_ID
     this.send = deps.fetch ?? fetch
   }
 
@@ -87,7 +90,7 @@ export class OpenAiTtsService extends TtsService<OpenAiTtsOptions> {
     try {
       response = await this.send(`${root}/audio/speech`, {
         method: 'POST', headers, signal,
-        body: JSON.stringify({ model, input: text, voice, response_format: responseFormat, speed, ...(options.instructions === undefined ? {} : { instructions: options.instructions }), ...(options.user === undefined ? {} : { user: options.user }) }),
+        body: JSON.stringify({ ...this.deps.body?.(), model, input: text, voice, response_format: responseFormat, speed, ...(options.instructions === undefined ? {} : { instructions: options.instructions }), ...(options.user === undefined ? {} : { user: options.user }) }),
       })
     } catch (error) {
       if ((options.signal as AbortSignal | undefined)?.aborted === true) throw new AiError('cancelled', 'cancelled', { cause: error })

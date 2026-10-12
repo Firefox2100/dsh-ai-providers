@@ -16,6 +16,7 @@ export interface ImageReader {
 
 export interface OpenAiLlmDeps {
   config: Config
+  provider?: string
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   /** The attachment service, when there is one: without it, or for a model not declared as able to see (`vision`), pictures are told to the model as text. */
   images?: () => ImageReader | undefined
@@ -44,11 +45,12 @@ function routeSpec(route: OpenAiLlmRouteConfig): LlmRouteSpec {
 
 /** Language models behind an OpenAI-compatible `chat/completions` endpoint: the routes of the configuration, each through one of its connections. */
 export class OpenAiLlmService extends LlmService {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
 
   constructor(private readonly deps: OpenAiLlmDeps) {
     super()
+    this.provider = deps.provider ?? PROVIDER_ID
     this.send = deps.fetch ?? fetch
   }
 

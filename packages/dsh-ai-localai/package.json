@@ -1,0 +1,15 @@
+{
+  "name": "dsh-ai-localai",
+  "version": "0.0.0",
+  "description": "First-class LocalAI provider for DSH language, embedding, reranking, speech, and image services.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": { "engines": { "dsh": ">=0.2.0-rc.2 <0.3.0" }, "client": { "inject": ["@deepseek-ai/dsh-client-locale", "@deepseek-ai/dsh-client-ui-settings"], "platform": "web" } },
+  "scripts": { "build": "tsdown", "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json", "test": "vitest run --passWithNoTests" },
+  "files": ["lib/*.js", "lib/*.js.map"],
+  "license": "GPL-3.0-only",
+  "peerDependencies": { "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.3.0", "dsh-ai-core": "workspace:*", "dsh-ai-openai": "workspace:*" },
+  "dependencies": { "@deepseek-ai/schemastery": "^3.18.4" },
+  "devDependencies": { "@deepseek-ai/cordis": "^4.0.4", "@deepseek-ai/dsh-client-locale": "0.2.0-rc.2", "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2", "@deepseek-ai/dsh-client-ui-settings": "0.2.0-rc.2", "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2", "@deepseek-ai/dsh-credentials": "0.2.0-rc.2", "@types/node": "^22.20.0", "@types/react": "~18.3.31", "dsh-ai-core": "workspace:*", "dsh-ai-openai": "workspace:*", "dsh-ai-providers": "workspace:*", "react": "^18.3.1", "tsdown": "^0.22.2", "typescript": "^6.0.3", "vitest": "^4.1.8" }
+}

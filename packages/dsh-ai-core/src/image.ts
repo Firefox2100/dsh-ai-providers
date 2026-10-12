@@ -5,6 +5,8 @@ export interface ImageGenerationOptions extends CallOptions {
   count?: number
   /** Existing images whose identity or composition the result should preserve. */
   references?: ImageReference[]
+  /** Renders larger in a second pass over the first result, when the provider can; providers that cannot ignore it. */
+  highRes?: boolean
 }
 
 export interface ImageReference {

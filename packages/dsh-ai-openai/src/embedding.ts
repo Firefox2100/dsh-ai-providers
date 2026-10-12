@@ -17,9 +17,11 @@ export interface OpenAiEmbedOptions extends EmbedOptions {
 
 export interface OpenAiEmbeddingDeps {
   config: Config
+  provider?: string
   /** The credentials service, looked up on each call: the key is never held. */
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   connection: () => OpenAiConnection
+  body?: () => Readonly<Record<string, unknown>>
   /** Replaceable for tests. */
   fetch?: typeof fetch
 }
@@ -33,11 +35,12 @@ interface EmbeddingsResponse {
 
 /** Embeddings from `POST {baseUrl}/embeddings`. Everything it needs is read from the configuration and the credentials on each call. */
 export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions> {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
 
   constructor(private readonly deps: OpenAiEmbeddingDeps) {
     super()
+    this.provider = deps.provider ?? PROVIDER_ID
     this.send = deps.fetch ?? fetch
   }
 
@@ -82,7 +85,7 @@ export class OpenAiEmbeddingService extends EmbeddingService<OpenAiEmbedOptions>
         method: 'POST',
         headers,
         signal,
-        body: JSON.stringify({ model, input, ...(dimensions > 0 ? { dimensions } : {}), ...(options.user === undefined ? {} : { user: options.user }) }),
+        body: JSON.stringify({ ...this.deps.body?.(), model, input, ...(dimensions > 0 ? { dimensions } : {}), ...(options.user === undefined ? {} : { user: options.user }) }),
       })
     } catch (error) {
       if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled', { cause: error })

@@ -1,0 +1,42 @@
+---
+title: LocalAI
+---
+
+`dsh-ai-localai` is the officially maintained first-class provider for [LocalAI](https://localai.io/). It keeps LocalAI separate from the general OpenAI-compatible provider so a profile can expose LocalAI-specific controls and capabilities without presenting them as OpenAI features.
+
+## Capabilities
+
+The package registers:
+
+- streamed chat and vision language models;
+- embeddings;
+- reranking;
+- text-to-speech;
+- file and live speech-to-text;
+- image generation.
+
+Enable only the services implemented by the models loaded in your LocalAI instance.
+
+## Connection
+
+The default connection is `http://localhost:8080/v1`. Change it when LocalAI runs on another host or behind a proxy. An API key is optional; when authentication is enabled, set a credential name on the connection and store its value through DSH's credential service.
+
+Connections are shared by every capability. Each service selects a connection and an exact model name independently.
+
+## Language models
+
+Language models use LocalAI's OpenAI-compatible `POST /chat/completions` stream. Routes and models support the common sampling fields plus `top_k`, `min_p`, repetition penalty, reasoning handling, custom headers, and arbitrary top-level request fields in `sampling.body`.
+
+Use `sampling.body` for LocalAI-native or backend-specific options such as constrained grammar and backend sampler controls. Route values apply first and model values override them.
+
+## Reranking
+
+Reranking calls `POST /rerank` relative to the configured `/v1` base URL. Set `rerankModel` to the model name served by LocalAI. `rerankBody` is merged into each request for backend-specific parameters; the query, documents, model, `top_n`, and `return_documents` fields remain controlled by the service call.
+
+## Speech, embeddings, and images
+
+These services use the corresponding OpenAI-compatible LocalAI endpoints. Model IDs, voices, formats, and image options depend on the LocalAI backend configuration and should be entered exactly as served. `embeddingBody`, `ttsBody`, and `imageBody` add backend-specific JSON fields while the service keeps ownership of canonical fields such as the input, model, voice, and prompt. Live transcription is available when the deployment provides the compatible realtime WebSocket endpoint.
+
+## Choosing this package
+
+Use `dsh-ai-localai` for LocalAI deployments. Keep `dsh-ai-openai` for OpenAI or other compatible servers. Both packages may be installed together because they register different provider IDs.

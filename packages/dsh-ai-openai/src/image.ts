@@ -17,8 +17,10 @@ export interface OpenAiImageOptions extends ImageGenerationOptions {
 
 export interface OpenAiImageDeps {
   config: Config
+  provider?: string
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   connection: () => OpenAiConnection
+  body?: () => Readonly<Record<string, unknown>>
   fetch?: typeof fetch
 }
 
@@ -32,9 +34,9 @@ const MEDIA_TYPES: Record<OpenAiImageFormat, string> = { png: 'image/png', jpeg:
 
 /** Images from `POST {baseUrl}/images/generations`; URL responses are downloaded so callers receive self-contained data. */
 export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiImageOptions> {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
-  constructor(private readonly deps: OpenAiImageDeps) { super(); this.send = deps.fetch ?? fetch }
+  constructor(private readonly deps: OpenAiImageDeps) { super(); this.provider = deps.provider ?? PROVIDER_ID; this.send = deps.fetch ?? fetch }
   get model(): string { return this.deps.config.imageModel.get() }
 
   async generate(prompt: string, options: OpenAiImageOptions = {}): Promise<ImageGenerationResult> {
@@ -52,6 +54,7 @@ export class OpenAiImageGenerationService extends ImageGenerationService<OpenAiI
     const outputFormat = options.outputFormat ?? this.deps.config.imageOutputFormat.get()
     const headers = await connectionHeaders(connection, this.deps.credentials)
     const fields = {
+      ...this.deps.body?.(),
       model, prompt, n: count,
       size: options.size ?? this.deps.config.imageSize.get(), quality: options.quality ?? this.deps.config.imageQuality.get(),
       output_format: outputFormat, output_compression: compression,

@@ -15,6 +15,7 @@ type SocketFactory = (url: string, headers: Record<string, string>) => SocketLik
 
 export interface OpenAiSttDeps {
   config: Config
+  provider?: string
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   connection: () => OpenAiConnection
   fetch?: typeof fetch
@@ -55,9 +56,9 @@ class OpenAiLiveSession implements SttLiveSession {
 }
 
 export class OpenAiSttService extends SttService {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
-  constructor(private readonly deps: OpenAiSttDeps) { super(); this.send = deps.fetch ?? fetch }
+  constructor(private readonly deps: OpenAiSttDeps) { super(); this.provider = deps.provider ?? PROVIDER_ID; this.send = deps.fetch ?? fetch }
   get model(): string { return this.deps.config.sttModel.get() }
   get info(): SpeechProviderInfo {
     const hostname = new URL(this.deps.connection().baseUrl).hostname

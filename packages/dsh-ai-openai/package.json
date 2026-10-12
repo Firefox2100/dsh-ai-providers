@@ -4,8 +4,9 @@
   "description": "OpenAI-compatible embedding, speech, and image generation provider for dsh-ai-providers.",
   "type": "module",
   "main": "lib/index.js",
+  "types": "src/index.ts",
   "exports": {
-    ".": "./lib/index.js",
+    ".": { "types": "./src/index.ts", "default": "./lib/index.js" },
     "./client": "./lib/client.js",
     "./package.json": "./package.json"
   },

@@ -40,7 +40,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Official providers',
-      items: ['official-providers/openai', 'official-providers/anthropic', 'official-providers/jina-cohere'],
+      items: ['official-providers/openai', 'official-providers/localai', 'official-providers/anthropic', 'official-providers/jina-cohere'],
     },
     {
       type: 'category',
