@@ -2,7 +2,9 @@
 
 Provider-neutral service contracts and shared types for AI integrations in DeepSeek Harness.
 
-It defines the language model, embedding, reranking, text-to-speech, speech-to-text, streaming transcription, and image-generation contracts used by provider and consumer plugins. It contains no provider implementation and registers no DSH plugin.
+It defines the language model, embedding, reranking, text-to-speech, speech-to-text, streaming transcription, and image-generation contracts used by provider and consumer plugins. Consumer plugins can target these contracts while the shared runtime handles user-selected providers, reusable connections, credentials, and concurrency. New vendor packages can therefore be added without redesigning each consumer.
+
+It contains no provider implementation and registers no DSH plugin.
 
 ## Install
 

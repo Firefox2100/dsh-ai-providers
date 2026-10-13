@@ -7,7 +7,7 @@ sidebar_position: 5
 
 ## 完成录音
 
-所选 API 服务为 `ctx.apiSpeechToText`。DSH 内置 `speechToText` 注册表启用时，本插件也会向其中注册该服务，因此 DSH 语音输入可以将其与内置提供方一同使用。
+所选 API 服务为 `ctx.apiSpeechToText`。DSH 的 `speechToText` 注册表启用时，本插件也会向其中注册该服务。若要通过 DSH 语音输入使用它，请保留该注册表，并选择 API 提供方而不是内置的 SenseVoice 提供方。DSH 的默认转录提供方只能选择其中一个。
 
 ```ts
 const transcript = await ctx.apiSpeechToText.transcribe(

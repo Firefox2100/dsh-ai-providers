@@ -31,4 +31,6 @@ The selection takes effect without restarting the profile. Selecting **Disabled*
 
 ## Built-in speech-to-text
 
-DSH may provide its own `speechToText` registry. The plugin contributes the selected API transcription provider to that registry when it is available. Its provider-neutral file-transcription service remains available as `apiSpeechToText`; live API transcription is exposed separately as `streamingSpeechToText` when supported.
+DSH may provide its own `speechToText` registry. Keep that registry enabled if you want to use DSH Voice Input: this plugin contributes the selected API transcription provider to it. In DSH's speech-to-text settings, choose that API-backed provider instead of the built-in SenseVoice provider. Do not leave SenseVoice selected when you intend recordings to use the configured API.
+
+The provider-neutral file-transcription service remains available directly as `apiSpeechToText`; live API transcription is exposed separately as `streamingSpeechToText` when supported.

@@ -11,6 +11,8 @@ dsh plugin --profile <profile> add @dsh-ai-providers/all
 
 The bundle includes the runtime plus the OpenAI, LocalAI, Anthropic, and Jina/Cohere packages. Restart the profile after installation. DSH adds the plugins to the profile configuration and loads their settings pages.
 
+The bundle is infrastructure for other plugins. Installation alone does not add an assistant or make AI requests; configure the desired providers and use a plugin that consumes their services.
+
 ## Package roles
 
 `@dsh-ai-providers/runtime` owns the runtime services and provider selection. It does not make vendor API calls by itself. Vendor plugins register implementations with it at runtime.

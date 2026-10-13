@@ -2,7 +2,9 @@
 
 Native Anthropic Messages API language model support for DeepSeek Harness.
 
-The plugin provides reusable Anthropic connections and credentials, model routes, streaming responses, vision, tool use, reasoning content, usage reporting, and Anthropic-native request controls.
+The plugin plugs Anthropic into the shared runtime, so users configure a connection and DSH-managed credential once and consumer plugins can reuse it. It provides model routes, streaming responses, vision, tool use, reasoning content, usage reporting, and Anthropic-native request controls.
+
+Installing it alone does not add an assistant or invoke Anthropic; a consumer plugin must use its model route.
 
 ## Install
 

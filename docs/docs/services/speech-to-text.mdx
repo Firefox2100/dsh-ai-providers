@@ -7,7 +7,7 @@ Speech-to-text has separate completed-recording and live-streaming interfaces.
 
 ## Completed recordings
 
-The selected API service is `ctx.apiSpeechToText`. It also registers with DSH's built-in `speechToText` registry when that registry is enabled, so DSH Voice Input can use it alongside built-in providers.
+The selected API service is `ctx.apiSpeechToText`. It also registers with DSH's `speechToText` registry when that registry is enabled. To use it through DSH Voice Input, keep the registry enabled and select the API-backed provider instead of the built-in SenseVoice provider. Only one should be selected as DSH's default transcription provider.
 
 ```ts
 const transcript = await ctx.apiSpeechToText.transcribe(

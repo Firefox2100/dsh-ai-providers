@@ -54,7 +54,7 @@ function Hero(): ReactNode {
         </Heading>
         <p className={styles.subtitle}>
           <Translate id="homepage.hero.subtitle">
-            Reusable connections and provider-neutral AI services for DeepSeek Harness plugins.
+            Configure credentials once. Give DeepSeek Harness plugins a shared foundation for models, retrieval, speech, and images.
           </Translate>
         </p>
         <div className={styles.actions}>
@@ -80,7 +80,7 @@ function CapabilityGrid(): ReactNode {
           </Heading>
           <p>
             <Translate id="homepage.capabilities.subtitle">
-              Consumer plugins depend on stable contracts. Vendor plugins handle endpoints, credentials, and transport.
+              Consumer plugins use stable contracts while vendor plugins handle reusable connections, credentials, and transport.
             </Translate>
           </p>
         </div>
@@ -114,6 +114,8 @@ function DesignSummary(): ReactNode {
           <li><Translate id="homepage.design.connections">Reuse one connection across multiple capabilities.</Translate></li>
           <li><Translate id="homepage.design.live">Change selected providers without restarting the profile.</Translate></li>
           <li><Translate id="homepage.design.concurrency">Coordinate foreground and background work with shared concurrency rules.</Translate></li>
+          <li><Translate id="homepage.design.foundation">Install it as infrastructure for other plugins; it makes no AI requests on its own.</Translate></li>
+          <li><Translate id="homepage.design.future">Add more vendors and services without redesigning every consumer plugin.</Translate></li>
         </ul>
       </div>
     </section>
@@ -124,7 +126,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title={translate({id: 'homepage.meta.title', message: 'AI services for DSH plugins'})}
-      description={translate({id: 'homepage.meta.description', message: 'Provider-neutral AI capabilities for DeepSeek Harness plugins.'})}>
+      description={translate({id: 'homepage.meta.description', message: 'Configure credentials once and provide reusable AI capabilities to DeepSeek Harness plugins.'})}>
       <main>
         <Hero />
         <CapabilityGrid />

@@ -5,6 +5,10 @@ sidebar_position: 3
 
 Language models integrate with DSH's model router. They are not a single selected capability service: every configured route from every loaded provider is available at the same time. Chats select a model as `route/model`.
 
+## DSH profile setup
+
+These routes replace the routes supplied by DSH's stock model adapter. Disable the `@deepseek-ai/dsh-llm-pi-ai` plugin row and the stock `ui-settings-models` settings page in the target profile to avoid duplicate routes and two competing model configuration interfaces. Keep DSH's core `llm` service enabled: this project registers its adapter with that service.
+
 ## Configure a route
 
 In **Settings → AI Providers → Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.

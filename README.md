@@ -1,13 +1,26 @@
 # DSH AI Providers
 
-Provider-neutral AI services for [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness).
+Reusable, provider-neutral AI services for [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness).
 
-This monorepo supplies shared contracts, runtime provider selection, concurrency control, and vendor integrations for:
+DSH AI Providers is infrastructure for plugins that need AI capabilities beyond a single model backend. Users register a vendor connection and credential once, then reuse it for every capability that vendor supplies. Consumer plugins call stable services instead of implementing credentials, provider selection, concurrency control, and vendor APIs themselves.
+
+It currently covers:
 
 - language models;
 - embeddings and reranking;
 - text-to-speech and speech-to-text;
 - image generation.
+
+The project is primarily useful to plugin developers and to users of plugins built on it. Installing it alone does not add an assistant or start making AI requests: configure the providers you need, then install or build a plugin that consumes the services.
+
+## Why use it
+
+- Configure a connection and DSH-managed credential once instead of repeating secrets in every feature or plugin.
+- Let users choose or change providers without coupling consumer plugins to vendor-specific APIs.
+- Share capability contracts, live configuration, and concurrency limits across plugins.
+- Retain vendor-specific controls where a common interface would otherwise hide useful behavior.
+
+Additional vendor packages and services will be added as the ecosystem grows. The provider-neutral contracts are the foundation: existing consumer plugins should not need to be redesigned for every new backend.
 
 ## Documentation
 
@@ -47,6 +60,8 @@ dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
 The bundle installs the runtime and all vendor packages maintained by this project. Restart the profile, then configure connections, routes, and active services under **Settings → AI Providers**. Individual packages may also be installed separately for a custom deployment.
+
+To use these language-model routes in place of DSH's stock routes, disable `@deepseek-ai/dsh-llm-pi-ai` and the stock `ui-settings-models` settings page in that profile. Keep DSH's core `llm` service enabled. For DSH Voice Input, keep its speech-to-text registry enabled but select the API-backed provider instead of the built-in SenseVoice provider.
 
 This is an independent project maintained by Firefox2100. It is not an official DeepSeek Harness project and is not maintained or endorsed by the DSH maintainers.
 

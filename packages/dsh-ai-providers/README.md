@@ -1,8 +1,10 @@
 # @dsh-ai-providers/runtime
 
-Provider registry, service selection, concurrency control, API routes, and settings UI for DeepSeek Harness.
+The shared provider runtime for DeepSeek Harness plugins.
 
-This is the provider-neutral DSH runtime. It exposes configured AI services to other plugins and lets users select providers and manage request concurrency. It does not call a vendor API by itself.
+It gives users one place to register reusable connections and DSH-managed credentials, select providers, and manage request concurrency. It exposes provider-neutral AI services to consumer plugins, so each plugin does not need its own vendor configuration and integration layer.
+
+The runtime does not implement a vendor API, add an assistant, or make AI requests by itself. Install at least one vendor package and a plugin that consumes its services. More provider packages and capability contracts are planned for later releases.
 
 ## Install
 

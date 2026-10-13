@@ -31,4 +31,6 @@ sidebar_position: 2
 
 ## DSH 内置语音转文本
 
-DSH 可能提供自己的 `speechToText` 注册表。该注册表存在时，本插件会将当前选择的 API 转录提供方注册到其中。与提供方无关的文件转录服务始终使用 `apiSpeechToText`；如提供方支持实时转录，则另行提供 `streamingSpeechToText`。
+DSH 可能提供自己的 `speechToText` 注册表。若要使用 DSH 语音输入，请保留该注册表：本插件会将当前选择的 API 转录提供方注册到其中。请在 DSH 的语音转文本设置中选择该 API 提供方，而不是内置的 SenseVoice 提供方。需要使用已配置 API 时，不要继续将 SenseVoice 设为默认提供方。
+
+与提供方无关的文件转录服务始终可直接通过 `apiSpeechToText` 使用；如提供方支持实时转录，则另行提供 `streamingSpeechToText`。

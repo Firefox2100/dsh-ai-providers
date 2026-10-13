@@ -11,6 +11,8 @@ dsh plugin --profile <配置档案> add @dsh-ai-providers/all
 
 软件包组合包含运行时以及 OpenAI、LocalAI、Anthropic 和 Jina/Cohere 软件包。安装后重启该配置档案。DSH 会将插件加入配置并加载其设置页面。
 
+该组合是供其他插件使用的基础设施。仅安装它不会增加 AI 助手，也不会发起 AI 请求；请配置所需提供方，并使用会调用这些服务的插件。
+
 ## 软件包分工
 
 `@dsh-ai-providers/runtime` 管理运行时服务和提供方选择，本身不调用厂商 API。各提供方插件在运行时向其注册具体实现。

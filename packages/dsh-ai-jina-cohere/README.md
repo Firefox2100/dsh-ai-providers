@@ -2,7 +2,9 @@
 
 Reranking through Jina- and Cohere-compatible APIs for DeepSeek Harness.
 
-The plugin supports the common `/rerank` request shape used by Jina AI, Cohere, and compatible services. Connections and credentials are reusable, while model and request defaults are configured per provider.
+The plugin supports the common `/rerank` request shape used by Jina AI, Cohere, and compatible services. Users configure connections and DSH-managed credentials once, while model and request defaults remain provider-specific. Any consumer plugin using the shared reranking service can then use the selected backend.
+
+Installing it alone does not perform retrieval or reranking; a consumer plugin must request the service.
 
 ## Install
 

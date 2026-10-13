@@ -348,7 +348,7 @@
     "message": "统一接口，自由选择提供方。"
   },
   "homepage.hero.subtitle": {
-    "message": "为 DeepSeek Harness 插件提供可复用连接及与提供方无关的 AI 服务。"
+    "message": "凭据只需配置一次，为 DeepSeek Harness 插件提供模型、检索、语音与图像的公共基础。"
   },
   "homepage.hero.getStarted": {
     "message": "开始使用"
@@ -360,7 +360,7 @@
     "message": "AI 能力的公共服务层"
   },
   "homepage.capabilities.subtitle": {
-    "message": "使用方插件依赖稳定接口，提供方插件负责端点、凭据和传输细节。"
+    "message": "使用方插件依赖稳定接口，提供方插件负责可复用连接、凭据和传输细节。"
   },
   "homepage.design.label": {
     "message": "为插件而设计"
@@ -377,10 +377,16 @@
   "homepage.design.concurrency": {
     "message": "使用共享并发规则协调前台与后台工作。"
   },
+  "homepage.design.foundation": {
+    "message": "作为其他插件的基础设施安装；它本身不会发起 AI 请求。"
+  },
+  "homepage.design.future": {
+    "message": "持续增加提供方和服务，而无需逐一重构使用方插件。"
+  },
   "homepage.meta.title": {
     "message": "面向 DSH 插件的 AI 服务"
   },
   "homepage.meta.description": {
-    "message": "为 DeepSeek Harness 插件提供与提供方无关的 AI 能力。"
+    "message": "凭据配置一次，为 DeepSeek Harness 插件提供可复用的 AI 能力。"
   }
 }
