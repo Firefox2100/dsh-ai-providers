@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 80" role="img" aria-labelledby="title desc">
+  <title id="title">AI Providers</title>
+  <desc id="desc">Contract backplane symbol with the AI Providers name.</desc>
+  <g transform="translate(8 8)">
+    <rect width="64" height="64" fill="#0c1720"/>
+    <path fill="none" stroke="#d68b45" stroke-width="4" d="M8 18h15v10"/>
+    <rect x="7" y="14" width="8" height="8" fill="#d68b45"/>
+    <rect x="13" y="26" width="43" height="13" fill="#eef2f3"/>
+    <path stroke="#4fb6a6" stroke-width="3" d="M23 39v10M35 39v10M47 39v10"/>
+    <rect x="18" y="48" width="10" height="8" fill="#4fb6a6"/>
+    <rect x="30" y="48" width="10" height="8" fill="#4fb6a6"/>
+    <rect x="42" y="48" width="10" height="8" fill="#4fb6a6"/>
+  </g>
+  <text x="92" y="49" fill="#0c1720" font-family="Ubuntu Sans, system-ui, sans-serif" font-size="36" font-weight="650" letter-spacing="-1">AI Providers</text>
+  <path stroke="#4fb6a6" stroke-width="2" d="M94 62h276"/>
+</svg>

@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'DSH AI Providers',
   tagline: 'Shared AI capabilities for DeepSeek Harness plugins',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
   future: {v4: true},
   url: 'https://firefox2100.github.io',
   baseUrl: '/dsh-ai-providers/',
@@ -39,6 +39,7 @@ const config: Config = {
     colorMode: {respectPrefersColorScheme: true},
     navbar: {
       title: 'DSH AI Providers',
+      logo: {alt: 'AI Providers', src: 'img/logo.svg'},
       items: [
         {
           type: 'docSidebar',
