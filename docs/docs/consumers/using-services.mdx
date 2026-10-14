@@ -27,6 +27,12 @@ export const inject = { optional: ['streamingSpeechToText'] }
 
 Do not import a vendor package from a consumer plugin. The selected service hides credentials, endpoints, and vendor-specific transport.
 
+## Choose required or optional injection
+
+Use required injection when the plugin cannot perform its advertised job without the service. DSH then controls startup order and reports the missing dependency instead of letting the plugin fail on its first call. Use optional injection only when you have a real fallback or can disable the affected feature cleanly.
+
+Capability services identify the active `provider` and `model`. Record those fields when they help diagnose a result, but do not use them to branch into vendor-specific request code. A consumer that needs a vendor extension should make that dependency explicit rather than assuming the selected provider supports it.
+
 ## Call priority and cancellation
 
 Capability calls accept shared call options where supported:
@@ -49,3 +55,22 @@ For live transcription, first check whether `ctx.streamingSpeechToText` is prese
 ## Handling failures
 
 Catch `AiError` and branch on its category. Treat message text as diagnostic information, not as an API contract. Preserve the error cause when wrapping it for your own plugin.
+
+| Code | Consumer response |
+| --- | --- |
+| `not-configured` | Explain which capability must be selected in settings. |
+| `invalid-input` | Correct or report the caller's input; retrying it unchanged will not help. |
+| `unsupported` | Disable the unsupported option or ask for a compatible provider. |
+| `rejected` | Surface a concise configuration, credential, quota, or model error. |
+| `unavailable` | Retry only when the operation is safe to repeat, preferably with backoff. |
+| `cancelled` | End quietly when cancellation was expected; otherwise preserve the cause. |
+
+## Integration checklist
+
+- Depend on `@dsh-ai-providers/core` for contracts, not a vendor implementation.
+- Declare every context service through Cordis injection.
+- Pass `signal` from the lifecycle that owns the request.
+- Mark indexing and maintenance calls as `background`.
+- Fully consume or cancel streams.
+- Treat returned model names, dimensions, token counts, voices, and media metadata as provider results rather than fixed constants.
+- Test `not-configured`, cancellation, unload, and a provider-side failure in addition to the successful path.

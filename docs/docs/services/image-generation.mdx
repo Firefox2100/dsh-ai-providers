@@ -30,3 +30,29 @@ const [{data, mediaType, revisedPrompt}] = result.images
 | `user` | Optional end-user identifier |
 
 Requests without references call `POST /images/generations` with JSON. Requests with references call `POST /images/edits` as multipart form data. Base64 responses become blobs directly; URL responses are downloaded before the call completes.
+
+## Persisting results
+
+Each generated image is complete when `generate()` resolves. Use `mediaType` to choose storage metadata or a file extension, and keep `revisedPrompt` only as optional provenance: not every provider returns one. The result's `model` identifies what actually served the request.
+
+```ts
+for (const [index, image] of result.images.entries()) {
+  await assets.write(`generation-${index}`, image.data, {
+    mediaType: image.mediaType,
+    model: result.model,
+    revisedPrompt: image.revisedPrompt,
+  })
+}
+```
+
+Blob ownership stays with the caller. If results are meant to survive a session, copy them into application storage rather than retaining object URLs, which are browser-process resources and can be revoked.
+
+## References and portability
+
+The shared contract says that references should preserve identity or composition, but providers differ in how strongly they follow them and how many they accept. Keep `description` short and specific to the reference. Do not assume that a request accepted by one image provider will be accepted unchanged by another.
+
+`highRes` requests a second-pass larger render when the provider can perform one. Providers that cannot do so may ignore it, so consumers must inspect the returned image rather than treating the flag as a guaranteed dimension.
+
+## Validation and retries
+
+An empty prompt, invalid count, invalid compression, or unusable reference is `invalid-input`. Unsupported combinations are `unsupported`; policy, model, quota, or credential refusals are `rejected`. Image requests may be expensive and are not automatically idempotent, so retry only when duplicate outputs are acceptable.

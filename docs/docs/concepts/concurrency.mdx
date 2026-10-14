@@ -13,6 +13,10 @@ A call may match several rules. It starts only when every matching rule has capa
 
 Foreground work is scheduled before background work. Calls retain FIFO order within the same priority. Background work can use at most `max - reserve` places; foreground work may use the full limit.
 
+For example, a rule with `max: 4` and `reserve: 1` permits at most three background calls at once. A fourth background call waits, leaving one place available for an interactive request. If four foreground calls are already running, the reserve does not create a fifth place.
+
+Keep rules broad enough to describe a real shared bottleneck. A vendor account limit may match several capabilities; a GPU-backed local route may need a separate rule. Because a request must satisfy every matching rule, overlapping rules can express both limits without duplicating scheduling logic in consumers.
+
 ## Time limits
 
 `maxWait` limits how long a call may remain queued. Expiry rejects the call with an `unavailable` `AiError`. A value of zero disables the limit.
@@ -26,3 +30,11 @@ Streaming language-model and TTS calls retain their place until the stream ends,
 Embedding requests can be deduplicated and batched. Equivalent pending requests share work, and prefetch calls may retain a result briefly for a later foreground caller. The cache key includes the provider, model, and request options, so results do not cross configurations.
 
 The settings page shows active calls, queue lengths, the oldest wait, and running calls for each rule.
+
+## Operational guidance
+
+- Start with measured provider or hardware limits rather than adding a rule for every service.
+- Reserve capacity only where background work can otherwise delay an interaction.
+- Set `maxWait` from the caller's useful lifetime; a result that arrives after its screen is gone is still wasted work.
+- Treat `maxHold` as accounting protection, not request cancellation. Consumers should still pass `AbortSignal`.
+- When a queue grows, inspect the running-call list before increasing `max`: the bottleneck may be an unconsumed stream or a provider slowdown.

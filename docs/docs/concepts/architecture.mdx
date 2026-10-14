@@ -5,6 +5,8 @@ sidebar_position: 1
 
 The project separates contracts, selection, and vendor implementations.
 
+The boundary is intentionally narrower than any one vendor API. It captures the operations consumers can rely on across providers, while request-option metadata gives provider packages room to expose useful differences without forcing those differences into every consumer.
+
 | Layer | Responsibility |
 | --- | --- |
 | Core | Defines capability contracts and provider-neutral errors |
@@ -29,10 +31,24 @@ The main plugin creates service facades for the selected providers:
 
 The facades resolve the current provider on each call. Configuration changes therefore take effect without rebuilding dependent plugins.
 
+## One call through the system
+
+1. A consumer calls a capability service from the Cordis context.
+2. The runtime reads the current provider selection and asks that provider's factory for a service.
+3. The concurrency gate admits the call according to its capability, route, and priority.
+4. The vendor service resolves its current connection and credential reference, then performs the request.
+5. The implementation validates the response and returns the provider-neutral result, or throws `AiError`.
+
+Credentials remain in DSH's credential service. Profile configuration stores references, so neither consumer plugins nor these provider packages need to persist secret values in their own configuration.
+
 ## Language-model routes
 
 Language models are registered as DSH model routes rather than as a single selected service. This lets multiple configured routes coexist. Vendor-level request options can be described to the UI with localized labels and defaults.
 
 ## Error model
 
-Provider failures are normalized as `AiError` values with a stable category such as `authentication`, `rate_limit`, `invalid_request`, or `unavailable`. Consumers can handle these categories without parsing vendor response text.
+Provider failures are normalized as `AiError` values with one of six stable codes: `not-configured`, `unavailable`, `rejected`, `invalid-input`, `unsupported`, or `cancelled`. Consumers can handle these codes without parsing vendor response text. The message and preserved cause remain diagnostic context, not part of the compatibility contract.
+
+## Compatibility boundary
+
+The core package is the dependency boundary for consumers and third-party providers. The runtime and official provider packages can evolve behind it, but changing a core method, result shape, error code, or service name affects every implementation and consumer. New vendor-only controls therefore belong in provider request-option metadata unless they represent behaviour that can be defined consistently across implementations.

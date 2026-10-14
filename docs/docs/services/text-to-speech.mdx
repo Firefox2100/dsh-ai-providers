@@ -31,3 +31,24 @@ The result includes the audio stream, media type, and model. Consume or cancel t
 | `user` | Optional end-user identifier |
 
 Synthesis calls `POST /audio/speech`. Voice discovery calls `GET /audio/voices`; HTTP 404 or 405 is treated as unsupported and returns an empty list.
+
+## Stream ownership
+
+The caller owns the returned stream. For playback, hand it to a component that cancels the reader when playback is replaced or the component unmounts. For persistence, pipe it to the destination and await completion before recording the asset as available.
+
+```ts
+const {audio, mediaType, model} = await ctx.textToSpeech.synthesize(text, {
+  priority: 'foreground',
+  signal,
+})
+
+await audio.pipeTo(destination, {signal})
+```
+
+Do not assume a file extension from the requested format alone. Use the returned `mediaType`, because a compatible server remains responsible for the actual response. The service does not decode, resample, or normalize audio; consumers that require a particular sample rate or container must perform that conversion after synthesis.
+
+## Voice selection
+
+Treat voice IDs as opaque and provider-specific. A stored voice should be associated with the provider and connection that supplied it. When `voices()` returns entries, show `name` and `description` when present but submit the stable `id`. When discovery returns an empty list, validate only that a manual ID is non-empty and let the provider decide whether it exists.
+
+An empty synthesis text is `invalid-input`. Unsupported formats or instructions are `unsupported` when they can be identified before the request; a provider refusal is `rejected`.

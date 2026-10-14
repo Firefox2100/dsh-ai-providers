@@ -31,3 +31,24 @@ const response = new Response(speech.audio, {
 | `user` | 可选最终用户标识 |
 
 合成调用 `POST /audio/speech`。声音发现调用 `GET /audio/voices`；HTTP 404 或 405 视为不支持，并返回空列表。
+
+## 流的所有权
+
+返回流由调用方负责。用于播放时，应交给能在播放被替换或组件卸载时取消读取器的组件；用于持久化时，应将流输送到目标并等待完成，再把资源记录为可用。
+
+```ts
+const {audio, mediaType, model} = await ctx.textToSpeech.synthesize(text, {
+  priority: 'foreground',
+  signal,
+})
+
+await audio.pipeTo(destination, {signal})
+```
+
+不要只根据请求格式推断扩展名，应使用返回的 `mediaType`，因为兼容服务器仍决定实际响应。服务不会解码、重采样或规范化音频；若使用方要求特定采样率或容器，应在合成后自行转换。
+
+## 声音选择
+
+声音 ID 应视为不透明且属于特定提供方。保存声音时，应同时关联提供该声音的提供方与连接。`voices()` 返回条目时，可显示其 `name` 和 `description`，但提交稳定的 `id`。发现结果为空时，只需验证手动 ID 非空，再由提供方判断它是否存在。
+
+空合成文本为 `invalid-input`。若在请求前即可判断格式或指令不受支持，则为 `unsupported`；提供方拒绝则为 `rejected`。

@@ -17,6 +17,8 @@ Create an `AiProvider` with a stable ID and one factory for each supported capab
 
 Unsupported capabilities should be absent, not represented by methods that always fail. Optional operations such as voice discovery may return an empty result when the vendor has no discovery endpoint.
 
+Factories must read live configuration when called. Do not capture a connection, credential value, or model at registration time: doing so makes settings appear to update while requests continue using stale state. Keep the implementation's `provider`, `model`, and `capability` identity accurate because consumers and diagnostics can inspect them.
+
 ## 3. Register through the context
 
 Register with `ctx.aiProviders` inside the plugin scope. Use `ctx.effect()` when registration returns or requires a disposer, so hot reload removes the provider cleanly.
@@ -26,6 +28,8 @@ ctx.effect(() => ctx.aiProviders.register(provider))
 ```
 
 Give errors stable `AiError` categories and preserve the vendor response as diagnostic context without exposing credentials.
+
+Map failures by what the caller can do next: malformed caller data is `invalid-input`; a feature the vendor cannot perform is `unsupported`; credential, quota, and model refusals are `rejected`; transport and server failures are `unavailable`; an aborted request is `cancelled`. Reserve `not-configured` for selection or configuration that prevents the service from being resolved.
 
 ## 4. Expose settings metadata
 
@@ -38,3 +42,14 @@ Language-model integrations may also expose route factories and localized reques
 Test request and response mapping, credential resolution, base URL handling, abort propagation, stream cleanup, error normalization, malformed responses, live configuration changes, and unload cleanup.
 
 Run the workspace tests and type checks before publishing. Avoid asserting only against a public cloud service; compatible local servers are an important supported use case.
+
+## Review before publishing
+
+- The provider ID and every LLM route ID are stable and unique.
+- Configuration stores credential references, never secret values.
+- Every external response is validated before it crosses the core contract.
+- `AbortSignal` reaches the transport, and streams release resources on completion, failure, return, and cancellation.
+- Registration and every listener or timer are scoped through `ctx` and unload cleanly.
+- UI labels and option descriptions exist in English and Simplified Chinese.
+- Provider-specific options are exposed only when the provider implements them.
+- Tests cover a compatible local or stub server so routine verification does not require paid credentials.

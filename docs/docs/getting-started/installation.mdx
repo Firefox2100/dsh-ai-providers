@@ -35,3 +35,19 @@ Every vendor package depends on the runtime package so its module is installed, 
 - A DSH profile with the web UI for interactive configuration
 
 The OpenAI plugin works with OpenAI and compatible servers. Compatibility depends on which endpoints the server implements.
+
+## Verify the installation
+
+After restart, open **Settings → AI Providers**. A complete bundle installation shows reusable connection configuration, capability selectors, concurrency settings, and the settings supplied by each loaded vendor plugin. If a vendor is absent, confirm that its bundle row is enabled in the same profile as the runtime.
+
+Do not test installation by expecting an outbound request. The runtime remains idle until a consumer calls a service. Configure a connection, select its provider for one capability, then use the relevant service page's minimal example or an installed consumer plugin.
+
+## Upgrade and removal
+
+Upgrade the packages together so the runtime, core contract, and project-maintained providers stay on the same release. Restart the profile after changing installed package versions or bundle activation.
+
+Removing a provider package removes its registered implementations and settings page. It does not remove credentials from DSH's credential store. Before removing the runtime, update or remove plugins that declare its services as required Cordis injections; otherwise DSH will correctly report the missing dependency.
+
+## Profile isolation
+
+Installation targets only the named DSH profile. Repeat the command for each profile that should expose these services, and configure its provider selections independently. Credential references may point to credentials managed by DSH, but the provider package does not copy secret values into profile configuration.

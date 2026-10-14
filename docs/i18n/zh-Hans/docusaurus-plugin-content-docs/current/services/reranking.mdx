@@ -20,4 +20,33 @@ const ordered = answer.results.map(({index, score}) => ({
 
 结果按相关度从高到低排列。每项包含原文档索引和 0 到 1 的分数；分数只适合在同一次调用中比较。`topN` 要求提供方只返回最相关的若干项，省略则请求全部文档。
 
+候选集应控制在所选模型的输入限制内。重排模型会把问题与每个候选项一起读取，因此延迟和令牌用量会随文档数量与长度一同增长。将分数关联回应用记录时，应保留返回的 `index`；服务有意不在结果中重复文档内容。
+
+分数适合在同一次响应内排序或筛选。不要跨提供方或模型持久化统一阈值，因为分数校准不属于共享契约。
+
 本项目维护的 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0–1 的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
+
+## 检索模式
+
+常见流程会先用关键词或向量搜索取得较宽的候选集，再让重排模型选出最终少量结果。应在候选文本旁保留原始记录 ID，以便根据返回索引关联，而不是依赖可能重复的文本。
+
+```ts
+const candidates = await searchIndex(query, {limit: 40})
+const {results, model} = await ctx.rerankers.rerank(
+  query,
+  candidates.map(candidate => candidate.text),
+  {topN: 8, priority: 'foreground', signal},
+)
+
+return results.map(result => ({
+  ...candidates[result.index],
+  rerankScore: result.score,
+  rerankModel: model,
+}))
+```
+
+若返回索引超出范围，应在应用边界拒绝或修复，而不是悄悄把分数关联到错误记录。本项目维护的提供方会验证响应，但使用第三方实现时，仍应把契约视为信任边界。
+
+## 运维选择
+
+离线评估和索引维护使用后台优先级；重排会阻塞可见回答时使用前台优先级。取消信号应贯穿整个检索流程，避免已放弃的搜索继续占用搜索与模型容量。

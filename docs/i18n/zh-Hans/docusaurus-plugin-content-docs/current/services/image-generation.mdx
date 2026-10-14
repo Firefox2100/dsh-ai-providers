@@ -30,3 +30,29 @@ const [{data, mediaType, revisedPrompt}] = result.images
 | `user` | 可选最终用户标识 |
 
 无参考图时以 JSON 调用 `POST /images/generations`；有参考图时以 multipart 表单调用 `POST /images/edits`。Base64 响应会直接转换为 Blob，URL 响应会在调用结束前下载。
+
+## 保存结果
+
+`generate()` 返回时，每张生成图都已完整可用。应使用 `mediaType` 选择存储元数据或文件扩展名；`revisedPrompt` 只应作为可选来源信息保存，因为并非所有提供方都会返回。结果中的 `model` 表明实际处理请求的模型。
+
+```ts
+for (const [index, image] of result.images.entries()) {
+  await assets.write(`generation-${index}`, image.data, {
+    mediaType: image.mediaType,
+    model: result.model,
+    revisedPrompt: image.revisedPrompt,
+  })
+}
+```
+
+Blob 由调用方负责。若结果需要跨会话保留，应复制到应用存储中，而不是长期持有对象 URL；对象 URL 属于浏览器进程资源，并且可能被撤销。
+
+## 参考图与可移植性
+
+共享契约规定参考图用于保留身份或构图，但不同提供方遵循参考图的强度及可接受数量并不相同。`description` 应简短并明确说明该参考图的用途。不要假设某图像提供方接受的请求可以原样移植到另一家。
+
+`highRes` 会在提供方支持时请求二次放大渲染。不支持的提供方可以忽略它，因此使用方应检查返回图像，而不是把该标记当作尺寸保证。
+
+## 验证与重试
+
+空提示词、无效数量、无效压缩值或不可用的参考图属于 `invalid-input`。不支持的组合为 `unsupported`；策略、模型、配额或凭据拒绝为 `rejected`。图像请求可能成本较高且不会自动保证幂等，因此只有在可以接受重复输出时才应重试。

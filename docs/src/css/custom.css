@@ -1,24 +1,103 @@
+@font-face {
+  font-family: "Ubuntu Sans RP";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../../static/fonts/UbuntuSans-Variable.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Ubuntu Sans Mono RP";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../../static/fonts/UbuntuSansMono-Variable.ttf") format("truetype");
+}
+
 :root {
-  --ifm-color-primary: #167d6d;
-  --ifm-color-primary-dark: #147062;
-  --ifm-color-primary-darker: #136a5d;
-  --ifm-color-primary-darkest: #0f574c;
-  --ifm-color-primary-light: #188a78;
-  --ifm-color-primary-lighter: #19907d;
-  --ifm-color-primary-lightest: #1ca38e;
-  --ifm-font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --ifm-heading-font-weight: 700;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-color-primary: #1d7065;
+  --ifm-color-primary-dark: #1a655b;
+  --ifm-color-primary-darker: #185f56;
+  --ifm-color-primary-darkest: #144f47;
+  --ifm-color-primary-light: #207b6f;
+  --ifm-color-primary-lighter: #228174;
+  --ifm-color-primary-lightest: #279283;
+  --ifm-background-color: #f4f6f6;
+  --ifm-background-surface-color: #e9eeef;
+  --ifm-font-family-base: "Ubuntu Sans RP", ui-sans-serif, system-ui, sans-serif;
+  --ifm-font-family-monospace: "Ubuntu Sans Mono RP", ui-monospace, monospace;
+  --ifm-font-color-base: #18272e;
+  --ifm-heading-color: #0c1720;
+  --ifm-heading-font-family: "Ubuntu Sans RP", ui-sans-serif, system-ui, sans-serif;
+  --ifm-heading-font-weight: 650;
+  --ifm-code-font-size: 91%;
+  --ifm-global-radius: 3px;
+  --ifm-navbar-background-color: rgba(244, 246, 246, .97);
+  --ifm-footer-background-color: #0c1720;
+  --docusaurus-highlighted-code-line-bg: rgba(36, 127, 114, .14);
+  --ap-rule: #aebac0;
+  --ap-muted: #52656d;
+  --ap-reading: 74ch;
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #74dbc7;
-  --ifm-color-primary-dark: #58d2ba;
-  --ifm-color-primary-darker: #49ceb4;
-  --ifm-color-primary-darkest: #30b098;
-  --ifm-color-primary-light: #90e4d3;
-  --ifm-color-primary-lighter: #9fe8d9;
-  --ifm-color-primary-lightest: #c9f2ea;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #69cabc;
+  --ifm-color-primary-dark: #4fc0b0;
+  --ifm-color-primary-darker: #43bcab;
+  --ifm-color-primary-darkest: #389b8e;
+  --ifm-color-primary-light: #83d4c8;
+  --ifm-color-primary-lighter: #90d8cd;
+  --ifm-color-primary-lightest: #b7e7e0;
+  --ifm-background-color: #0c1720;
+  --ifm-background-surface-color: #101f29;
+  --ifm-font-color-base: #d8e0e3;
+  --ifm-heading-color: #f0f4f5;
+  --ifm-navbar-background-color: rgba(12, 23, 32, .97);
+  --docusaurus-highlighted-code-line-bg: rgba(105, 202, 188, .16);
+  --ap-rule: #38505d;
+  --ap-muted: #9fb0b7;
+}
+
+::selection { background: rgba(79, 182, 166, .28); }
+:focus-visible { outline: 2px solid var(--ifm-color-primary); outline-offset: 3px; }
+* { scrollbar-color: var(--ifm-color-primary) transparent; }
+a { text-underline-offset: .17em; }
+
+.navbar {
+  border-bottom: 1px solid var(--ap-rule);
+  box-shadow: none;
+}
+
+.navbar__title { font-weight: 700; letter-spacing: -.01em; }
+.footer { border-top: 3px solid var(--ifm-color-primary); }
+.footer__title { font: 700 .76rem/1.4 var(--ifm-font-family-monospace); letter-spacing: .06em; text-transform: uppercase; }
+
+.theme-doc-markdown { max-width: var(--ap-reading); }
+.theme-doc-markdown > header + p,
+.theme-doc-markdown > p:first-of-type { color: var(--ap-muted); font-size: 1.12rem; line-height: 1.7; }
+.theme-doc-markdown h1 { font-size: clamp(2.5rem, 5vw, 4.4rem); line-height: 1; letter-spacing: -.035em; }
+.theme-doc-markdown h2 { margin-top: 3.25rem; border-top: 1px solid var(--ap-rule); padding-top: 1.2rem; font-size: clamp(1.65rem, 3vw, 2.25rem); letter-spacing: -.02em; }
+.theme-doc-markdown h3 { margin-top: 2.2rem; font-size: 1.25rem; }
+.theme-doc-markdown p,
+.theme-doc-markdown li { line-height: 1.72; }
+.theme-doc-markdown strong { color: var(--ifm-heading-color); }
+
+.theme-doc-sidebar-container { border-right-color: var(--ap-rule) !important; }
+.menu__link { border-radius: 2px; }
+.menu__link--active:not(.menu__link--sublist) { border-left: 1px solid var(--ifm-color-primary); background: var(--ifm-background-surface-color); }
+.table-of-contents { border-left-color: var(--ap-rule); font-size: .84rem; }
+.table-of-contents__link--active { font-weight: 700; }
+
+table { display: table; width: 100%; border-collapse: collapse; }
+table th { background: var(--ifm-background-surface-color); font: 700 .76rem/1.4 var(--ifm-font-family-monospace); letter-spacing: .04em; text-transform: uppercase; }
+table th, table td { border-color: var(--ap-rule); padding: .8rem .9rem; }
+
+.theme-code-block { border: 1px solid var(--ap-rule); border-radius: 2px; box-shadow: none !important; }
+.alert { border: 1px solid var(--ap-rule); border-radius: 2px; box-shadow: none; }
+.pagination-nav__link { border-color: var(--ap-rule); border-radius: 2px; }
+.pagination-nav__link:hover { border-color: var(--ifm-color-primary); }
+.breadcrumbs__link { border-radius: 2px; }
+
+@media (max-width: 996px) {
+  .theme-doc-markdown h2 { margin-top: 2.7rem; }
 }

@@ -26,4 +26,20 @@ Requests contain `model`, `query`, `documents`, optional `top_n`, and `return_do
 
 The service validates empty queries and documents, sorts results by descending score, and normalizes raw logits to the service contract's 0–1 range.
 
+## Connection boundaries
+
+Use separate connections when endpoints require different credentials, timeouts, or base URLs. A connection ID is configuration identity, so keep it stable after another capability or profile setting refers to it. The credential reference names a DSH-managed secret; it is not the secret value itself.
+
+Self-hosted servers can leave the credential reference empty. Use an HTTP base URL only for a deliberately trusted local deployment; public services should use HTTPS. The provider appends `/rerank`, so including that endpoint in the configured base URL would duplicate the path.
+
+## Response requirements
+
+Every result must identify the corresponding input document by index. Indices outside the submitted candidate list, missing scores, or non-numeric scores are malformed responses and fail the call instead of being silently accepted. The normalized result never returns document bodies because the consumer already owns them.
+
+Jina and Cohere do not promise identical models, limits, or score calibration. Treat model IDs as provider-specific, keep candidate sets within the selected service's limits, and compare scores only within one response.
+
+## Diagnosing compatibility
+
+If a server rejects the request, first verify the configured prefix and model, then compare its `/rerank` request shape with the fields above. Authentication, quota, and unknown-model responses become `rejected`; connectivity and server failures become `unavailable`; malformed caller input is `invalid-input`.
+
 See [Reranking](../services/reranking) for consumer usage.

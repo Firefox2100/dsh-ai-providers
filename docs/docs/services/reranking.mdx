@@ -20,4 +20,33 @@ const ordered = answer.results.map(({index, score}) => ({
 
 Results are sorted best first. Each row contains the original document index and a score from 0 to 1. Scores are comparable within one call only. `topN` asks the provider to return only the strongest results; omitting it requests all documents.
 
+Keep the candidate set small enough for the selected model's input limit. Rerankers read the query together with each candidate, so latency and token use grow with both the number and length of documents. Preserve the returned `index` when joining scores back to application records; the service deliberately does not duplicate document content in its result.
+
+Use the score to order or filter results within that response. Do not persist a universal threshold across providers or models: score calibration is not part of the shared contract.
+
 The project-maintained Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside 0–1, the provider maps every score through a logistic function while preserving order.
+
+## Retrieval pattern
+
+A typical pipeline retrieves a broader candidate set with lexical or vector search, then asks the reranker for the final few results. Keep the original record IDs beside the candidate strings so the returned indices can be joined without relying on repeated text.
+
+```ts
+const candidates = await searchIndex(query, {limit: 40})
+const {results, model} = await ctx.rerankers.rerank(
+  query,
+  candidates.map(candidate => candidate.text),
+  {topN: 8, priority: 'foreground', signal},
+)
+
+return results.map(result => ({
+  ...candidates[result.index],
+  rerankScore: result.score,
+  rerankModel: model,
+}))
+```
+
+Reject or repair an out-of-range returned index at your application boundary rather than silently attaching a score to the wrong record. The project-maintained providers validate their responses, but consumers of third-party implementations should still treat the contract as the trust boundary.
+
+## Operational choices
+
+Use background priority for offline evaluation and index maintenance. Use foreground priority when reranking blocks a visible answer. Pass cancellation through the whole retrieval pipeline so abandoned searches do not continue consuming both search and model capacity.

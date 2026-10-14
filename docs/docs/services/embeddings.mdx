@@ -40,3 +40,15 @@ The OpenAI-compatible provider splits large input arrays according to its config
 | `user` | Optional end-user identifier sent to the API |
 
 The provider calls `POST /embeddings`.
+
+## Index consistency
+
+Store the returned `model` and `dimensions` with an index or collection. If either changes, rebuild the affected vectors before searching them. A connection can change its selected model without changing the consumer API, but that does not make vectors from the old and new models compatible.
+
+Batch related documents where practical. The service preserves ordering, so callers can associate `vectors[n]` with `texts[n]`; do not infer identity from vector contents. For interactive search, embed the query at foreground priority and keep bulk indexing in the background so the concurrency gate can preserve responsive capacity.
+
+## Failure and cancellation
+
+An empty input array or any empty text is `invalid-input`. A requested dimension the provider cannot produce is `unsupported`; authentication, quota, and unknown-model responses are `rejected`. Pass an `AbortSignal` from indexing jobs and user searches so queued work and active HTTP requests can stop when their owner disappears.
+
+`prefetch()` is deliberately fire-and-forget: it never reports a result and never throws to its caller. Use `embed()` whenever completion or failure matters to application state.

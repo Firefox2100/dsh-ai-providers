@@ -326,67 +326,53 @@
     "message": "标签",
     "description": "The title of the tag list page"
   },
-  "homepage.capability.models.title": {
-    "message": "语言模型"
-  },
-  "homepage.capability.models.description": {
-    "message": "在 DSH 中同时注册多个 OpenAI 兼容的模型路由。"
-  },
-  "homepage.capability.retrieval.title": {
-    "message": "检索"
-  },
-  "homepage.capability.retrieval.description": {
-    "message": "为搜索和记忆提供共享的嵌入与重排服务。"
-  },
-  "homepage.capability.media.title": {
-    "message": "语音与图像"
-  },
-  "homepage.capability.media.description": {
-    "message": "与提供方无关的 TTS、文件及实时 STT 和图像生成。"
-  },
-  "homepage.hero.title": {
-    "message": "统一接口，自由选择提供方。"
-  },
-  "homepage.hero.subtitle": {
-    "message": "凭据只需配置一次，为 DeepSeek Harness 插件提供模型、检索、语音与图像的公共基础。"
-  },
-  "homepage.hero.getStarted": {
-    "message": "开始使用"
-  },
-  "homepage.hero.architecture": {
-    "message": "了解架构"
-  },
-  "homepage.capabilities.title": {
-    "message": "AI 能力的公共服务层"
-  },
-  "homepage.capabilities.subtitle": {
-    "message": "使用方插件依赖稳定接口，提供方插件负责可复用连接、凭据和传输细节。"
-  },
-  "homepage.design.label": {
-    "message": "为插件而设计"
-  },
-  "homepage.design.title": {
-    "message": "配置一次，随处使用"
-  },
-  "homepage.design.connections": {
-    "message": "同一个连接可供多种能力复用。"
-  },
-  "homepage.design.live": {
-    "message": "无需重启配置档案即可切换所选提供方。"
-  },
-  "homepage.design.concurrency": {
-    "message": "使用共享并发规则协调前台与后台工作。"
-  },
-  "homepage.design.foundation": {
-    "message": "作为其他插件的基础设施安装；它本身不会发起 AI 请求。"
-  },
-  "homepage.design.future": {
-    "message": "持续增加提供方和服务，而无需逐一重构使用方插件。"
-  },
-  "homepage.meta.title": {
-    "message": "面向 DSH 插件的 AI 服务"
-  },
-  "homepage.meta.description": {
-    "message": "凭据配置一次，为 DeepSeek Harness 插件提供可复用的 AI 能力。"
-  }
+  "homepage.backplane.aria": {"message": "使用方插件通过稳定契约连接到能力和提供方"},
+  "homepage.backplane.trace": {"message": "集成路径示意"},
+  "homepage.backplane.status": {"message": "契约可用"},
+  "homepage.backplane.consumer": {"message": "使用方插件"},
+  "homepage.backplane.contract": {"message": "稳定的使用方契约"},
+  "homepage.hero.title": {"message": "面向一个稳定接口开发。"},
+  "homepage.hero.subtitle": {"message": "在 DSH 插件中使用语言模型、检索、语音与图像能力，无需为每次集成重复搭建提供方管线。"},
+  "homepage.hero.getStarted": {"message": "安装整合包"},
+  "homepage.hero.contracts": {"message": "使用契约"},
+  "homepage.hero.compatibility": {"message": "独立项目 · DSH 0.2.x · 英文与简体中文"},
+  "homepage.proof.connection.title": {"message": "配置一次"},
+  "homepage.proof.connection.body": {"message": "在不同能力间复用连接与凭据引用。"},
+  "homepage.proof.contract.title": {"message": "使用统一契约"},
+  "homepage.proof.contract.body": {"message": "让插件代码与厂商传输层保持独立。"},
+  "homepage.proof.gate.title": {"message": "协调容量"},
+  "homepage.proof.gate.body": {"message": "共享并发限制，并为前台工作预留空间。"},
+  "homepage.contract.title": {"message": "抽象层本身就是产品。"},
+  "homepage.contract.subtitle": {"message": "使用方插件调用稳定服务；运行时负责选择与协调；厂商包负责传输及有价值的提供方专属选项。"},
+  "homepage.contract.consumer.title": {"message": "使用方"},
+  "homepage.contract.consumer.body": {"message": "依赖共享类型，并从 Cordis 上下文请求某项能力。"},
+  "homepage.contract.runtime.title": {"message": "运行时"},
+  "homepage.contract.runtime.body": {"message": "注册提供方、解析选择、规范化错误并控制并发。"},
+  "homepage.contract.vendor.title": {"message": "厂商包"},
+  "homepage.contract.vendor.body": {"message": "解析连接并执行提供方专属请求。"},
+  "homepage.contract.note": {"message": "使用方无需处理厂商凭据、端点、批处理、HTTP 错误或提供方选择；这些关注点都保留在服务边界之后。"},
+  "homepage.registry.title": {"message": "已实现的能力接口"},
+  "homepage.registry.subtitle": {"message": "一个整合包即可安装本项目维护的运行时与全部提供方。部署范围较小时，也可单独安装各个包。"},
+  "homepage.providers.title": {"message": "边界可互换，细节不抹平。"},
+  "homepage.providers.body": {"message": "公共契约刻意保持精简。提供方包仍可公开其服务实际支持的模型名称、维度、声音、推理控制与其他选项。"},
+  "homepage.providers.architecture": {"message": "阅读架构说明"},
+  "homepage.close.title": {"message": "不再重复搭建同一套集成层。"},
+  "homepage.close.body": {"message": "安装维护中的整合包，或仅依赖核心契约以及插件所需的提供方包。"},
+  "homepage.close.install": {"message": "安装"},
+  "homepage.close.provider": {"message": "创建提供方"},
+  "homepage.capability.llm.name": {"message": "语言模型"},
+  "homepage.capability.llm.description": {"message": "多个提供方路由可通过 DSH 模型接口并存。"},
+  "homepage.capability.embed.name": {"message": "嵌入"},
+  "homepage.capability.embed.description": {"message": "所选提供方通过 ctx.embeddings 公开。"},
+  "homepage.capability.rerank.name": {"message": "重排"},
+  "homepage.capability.rerank.description": {"message": "所选提供方通过 ctx.rerankers 公开。"},
+  "homepage.capability.tts.name": {"message": "文本转语音"},
+  "homepage.capability.tts.description": {"message": "通过 ctx.textToSpeech 流式输出音频。"},
+  "homepage.capability.stt.name": {"message": "语音转文本"},
+  "homepage.capability.stt.description": {"message": "提供文件转写与可选的实时转写服务。"},
+  "homepage.capability.image.name": {"message": "图像生成"},
+  "homepage.capability.image.description": {"message": "返回生成的二进制对象，并支持可选参考图。"},
+  "homepage.capability.docsAria": {"message": "{name} 文档"},
+  "homepage.meta.title": {"message": "面向 DSH 插件的稳定 AI 能力契约"},
+  "homepage.meta.description": {"message": "为 DeepSeek Harness 插件开发者提供与厂商无关的语言模型、检索、语音与图像服务。"}
 }

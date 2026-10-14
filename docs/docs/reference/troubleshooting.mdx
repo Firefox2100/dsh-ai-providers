@@ -26,3 +26,30 @@ Ensure the consumer reads, cancels, or discards the stream. `maxHold` can releas
 ## Live transcription is missing
 
 `streamingSpeechToText` is registered only when the selected API provider implements live transcription. File transcription may still be available through `apiSpeechToText`, and DSH's built-in speech-to-text providers remain separate options.
+
+## A settings change appears to do nothing
+
+Confirm that the consumer is using the selected service rather than importing a vendor implementation directly. Capability selections and non-startup provider fields are resolved live. Options marked as startup-only require the profile process to restart.
+
+For language models, verify that the chat is using the intended `route/model`; language-model routes coexist and are not controlled by the single-provider capability selectors.
+
+## Vectors no longer compare correctly
+
+Check the `model` and `dimensions` returned by the embedding service. A connection or model change requires rebuilding stored vectors. Do not mix results from different models even when their dimensions happen to match.
+
+## A compatible endpoint returns malformed data
+
+Compatibility describes a wire shape, not a guarantee that every server implements every endpoint or field. Check the provider page for the exact method and path, inspect the preserved `AiError` cause in server logs, and compare the response with the documented contract. Do not work around a malformed response by accepting missing indices, invalid media types, or incomplete stream events in a consumer plugin.
+
+## Distinguishing error codes
+
+| Code | Check first |
+| --- | --- |
+| `not-configured` | Provider selection, plugin load state, and referenced connection |
+| `invalid-input` | Empty text, invalid counts or ranges, and mismatched request shapes |
+| `unsupported` | Model capability and provider-specific option support |
+| `rejected` | Credential, quota, policy, model, or voice identifier |
+| `unavailable` | Network reachability, server health, timeout, and concurrency wait |
+| `cancelled` | Caller lifecycle and propagated `AbortSignal` |
+
+Messages and causes contain diagnostics, but only the code is a stable branching contract.

@@ -42,3 +42,21 @@ See [Anthropic](../official-providers/anthropic) for configuration and native AP
 ## `@dsh-ai-providers/all`
 
 The metadata-only DSH bundle. It installs the runtime and all four provider plugins maintained by this project.
+
+## Choosing dependencies
+
+| You are building | Depend on | Do not require |
+| --- | --- | --- |
+| A plugin that consumes AI capabilities | `@dsh-ai-providers/core` | A specific vendor package |
+| A third-party provider plugin | `@dsh-ai-providers/core` and the runtime as its DSH host | Another vendor package |
+| An OpenAI-wire provider implementation | `@dsh-ai-providers/openai-compatible` plus the core contract | `@dsh-ai-providers/openai` |
+| A profile using every maintained provider | `@dsh-ai-providers/all` | Individual bundle installation commands |
+| A profile using selected providers | Runtime plus those vendor packages | The all-provider bundle |
+
+Keep `core` as the public type boundary in consumer code. Runtime internals and transport helpers can change for implementation needs; importing them from a consumer would recreate the coupling this project is intended to remove.
+
+## Bundle versus library packages
+
+The runtime and four vendor packages are DSH plugins with bundle metadata. `core` and `openai-compatible` are libraries: they are installed as dependencies and are not rows a user enables in a profile. The `all` package contains bundle metadata rather than an additional runtime implementation, so it does not introduce another service layer.
+
+All public packages in a release use the same version. Keep package versions aligned when declaring several direct dependencies, especially for a provider implementation compiled against the shared contract.

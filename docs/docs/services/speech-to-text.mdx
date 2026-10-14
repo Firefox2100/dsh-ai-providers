@@ -39,3 +39,19 @@ for await (const event of session.events) {
 Send audio with `session.append(chunk)`, call `session.commit()` to request transcription of the current buffer, and call `session.close()` when finished.
 
 The OpenAI-compatible implementation uses the Realtime transcription WebSocket. Its formats are `pcm16` (24 kHz mono by default), `g711_ulaw`, and `g711_alaw`. It also accepts a vocabulary/style `prompt` and a per-session model override. Live sessions are long-lived and do not pass through the request concurrency gate.
+
+## Choosing an interface
+
+Use completed-recording transcription when you already own a bounded recording and need one authoritative result. It participates in the shared concurrency gate and reports both recording and inference duration. Use live transcription when partial text changes the interaction while audio is still arriving.
+
+The two services are intentionally separate. Availability of `apiSpeechToText` does not imply that `streamingSpeechToText` exists, and a consumer should not emulate live transcription by repeatedly uploading a growing recording unless that behaviour is explicitly acceptable for its product.
+
+## Live-session lifecycle
+
+Append chunks in capture order and with the format declared at session creation. `delta` events are provisional UI state; only `final` events should be committed as finished transcript text. A consumer should still surface or log an `error` event even if the async iterator later closes.
+
+Call `commit()` at an utterance boundary when the provider should process the current buffer. Call `close()` exactly once when capture ends, and abort through the supplied signal when the owner is disposed. Because live sessions bypass the request gate, the caller is responsible for limiting how many it opens.
+
+## Audio and language boundaries
+
+The provider-neutral file interface carries bytes and a language hint; it does not resample or inspect arbitrary containers. Supply the encoding expected by the configured endpoint. For live PCM, preserve the negotiated sample format across every appended chunk. Use `auto` only when provider-side language detection is preferable to a known language hint.

@@ -34,3 +34,19 @@ The selection takes effect without restarting the profile. Selecting **Disabled*
 DSH may provide its own `speechToText` registry. Keep that registry enabled if you want to use DSH Voice Input: this plugin contributes the selected API transcription provider to it. In DSH's speech-to-text settings, choose that API-backed provider instead of the built-in SenseVoice provider. Do not leave SenseVoice selected when you intend recordings to use the configured API.
 
 The provider-neutral file-transcription service remains available directly as `apiSpeechToText`; live API transcription is exposed separately as `streamingSpeechToText` when supported.
+
+## Naming and change management
+
+Connection IDs and language-model route IDs are persistent references, not presentation labels. Choose short stable IDs and change the display name when wording needs to improve. Renaming an ID can break capability selections or chat model references that still use the old value.
+
+Configuration fields that describe a connection or model are validated at the settings boundary. Keep provider-specific identifiers exactly as the upstream service publishes them; this project does not translate a friendly model or voice name into an undocumented vendor ID.
+
+## Test one capability at a time
+
+Start with the connection and one capability that the endpoint definitely implements. Confirm it, then enable additional services. An OpenAI-compatible base URL may support chat while omitting speech or images, and a LocalAI deployment exposes only the backends it has loaded.
+
+When a test fails, use the normalized error code to separate configuration from availability: `not-configured` points to selection or load state; `rejected` usually points to credentials, quota, policy, or identifiers; `unavailable` points to reachability, timeout, or provider health. See [Troubleshooting](../reference/troubleshooting) for the complete table.
+
+## Concurrency defaults
+
+Leave calls ungated until there is a real shared limit, or add a rule matching the constrained provider, route, or capability. Use background priority for indexing and maintenance, and reserve capacity only when those jobs could delay interactive work. The status view shows which rule is holding or queuing calls.
