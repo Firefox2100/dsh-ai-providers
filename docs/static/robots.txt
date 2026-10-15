@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://firefox2100.github.io/dsh-ai-providers/sitemap.xml
+Sitemap: https://firefox2100.github.io/dsh-ai-providers/zh-Hans/sitemap.xml

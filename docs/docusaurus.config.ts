@@ -12,6 +12,20 @@ const config: Config = {
   organizationName: 'Firefox2100',
   projectName: 'dsh-ai-providers',
   onBrokenLinks: 'throw',
+  headTags: [{
+    tagName: 'script',
+    attributes: {type: 'application/ld+json'},
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
+      name: 'DSH AI Providers',
+      description: 'Provider-neutral AI capability contracts and provider plugins for DeepSeek Harness.',
+      codeRepository: 'https://github.com/Firefox2100/dsh-ai-providers',
+      programmingLanguage: 'TypeScript',
+      runtimePlatform: 'DeepSeek Harness 0.2.x',
+      license: 'https://www.gnu.org/licenses/gpl-3.0.html',
+    }),
+  }],
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'zh-Hans'],
@@ -31,11 +45,17 @@ const config: Config = {
             'https://github.com/Firefox2100/dsh-ai-providers/tree/main/docs/docs/',
         },
         blog: false,
+        sitemap: {lastmod: 'date'},
         theme: {customCss: './src/css/custom.css'},
       } satisfies Preset.Options,
     ],
   ],
   themeConfig: {
+    image: 'img/social-card.png',
+    metadata: [
+      {name: 'keywords', content: 'DeepSeek Harness, DSH, AI providers, TypeScript, LLM, embeddings, reranking, text to speech, speech to text, image generation'},
+      {name: 'robots', content: 'index, follow, max-image-preview:large'},
+    ],
     colorMode: {respectPrefersColorScheme: true},
     navbar: {
       title: 'DSH AI Providers',
