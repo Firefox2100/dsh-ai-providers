@@ -3,22 +3,23 @@ import { Button, SettingsForm, SettingsSecretField } from '@deepseek-ai/dsh-clie
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { OpenAiCardFace } from './controller.ts'
 import { formLabels } from './locales.ts'
+import css from './OpenAiSurface.module.css'
 
 export type OpenAiConnectionsProps = PropsRuntime<'settings.section'> & PropsLocale<'ai.openai'> & InjectFace<OpenAiCardFace>
 
 export function OpenAiConnections(props: OpenAiConnectionsProps) {
   const state = props.useOpenAiCard(snapshot => snapshot)
   const { t } = props
-  return <div data-testid="ai-openai-connections">
-    <h2 style={{ marginTop: 0 }}>{t('connectionsTitle')}</h2>
-    <p>{t('connectionsDescription')}</p>
+  return <div data-testid="ai-openai-connections" className={css.section}>
+    <h2 className={css.title}>{t('connectionsTitle')}</h2>
+    <p className={css.description}>{t('connectionsDescription')}</p>
     <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
-      <div style={{ display: 'grid', gap: 16 }}>
+      <div className={css.list}>
         {state.connections.map(connection => {
           const status = state.connectionStatus[connection.apiKeyRef]
           return <ConnectionRow key={connection.id} {...props} connection={connection} {...(status === undefined ? {} : { status })} disabled={!state.writable} />
         })}
-        {state.connections.length === 0 && <p>{t('connectionsEmpty')}</p>}
+        {state.connections.length === 0 && <p className={css.empty}>{t('connectionsEmpty')}</p>}
         <div><Button variant="outline" size="sm" disabled={!state.writable} onClick={props.addConnection}>{t('connectionAdd')}</Button></div>
       </div>
     </SettingsForm>
@@ -34,11 +35,11 @@ function ConnectionRow(props: OpenAiConnectionsProps & { connection: { id: strin
     try { if (await props.saveKey(connection.id, key)) setKey('') }
     finally { setSaving(false) }
   }
-  const input = (field: 'name' | 'baseUrl' | 'apiKeyRef', label: string, value: string) => <label style={{ display: 'grid', gap: 5 }}>
+  const input = (field: 'name' | 'baseUrl' | 'apiKeyRef', label: string, value: string) => <label className={css.field}>
     <span>{label}</span>
     <input value={value} disabled={disabled} onChange={event => { props.updateConnection(connection.id, field, event.target.value) }} />
   </label>
-  return <section style={{ border: '1px solid var(--border, #4444)', borderRadius: 8, padding: 14, display: 'grid', gap: 12 }}>
+  return <section className={css.card}>
     {input('name', t('connectionName'), connection.name)}
     {input('baseUrl', t('baseUrl'), connection.baseUrl)}
     {input('apiKeyRef', t('apiKeyEnv'), connection.apiKeyRef)}
@@ -52,7 +53,7 @@ function ConnectionRow(props: OpenAiConnectionsProps & { connection: { id: strin
       stateLabel={status?.configured === true ? t('apiKeySet') : t('apiKeyUnset')}
       onEdit={setKey}
     />
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div className={css.actions}>
       <Button variant="outline" size="sm" disabled={key.trim() === '' || saving || status?.writable === false} onClick={() => { void saveKey() }}>{saving ? t('saving') : t('apiKeySave')}</Button>
       <Button variant="outline" size="sm" disabled={disabled} onClick={() => { props.removeConnection(connection.id) }}>{t('connectionRemove')}</Button>
     </div>

@@ -1,12 +1,19 @@
 .section { display: flex; flex-direction: column; gap: 16px; }
 .title { margin: 0; font-size: 16px; font-weight: 500; line-height: 24px; color: var(--dsw-alias-label-primary); }
-.description { margin: 0; font-size: 13px; color: var(--dsw-alias-label-secondary); }
+.description { max-width: 72ch; margin: 0; font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-secondary); }
 .heading { margin: 0; font-size: 14px; font-weight: 500; color: var(--dsw-alias-label-primary); }
 .muted { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
-.route { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--dsw-alias-border-l3); border-radius: var(--dsw-radius-sm); }
+.route { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
 .routeHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
 .name { font-size: 14px; font-weight: 500; color: var(--dsw-alias-label-primary); }
-.model { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--dsw-alias-label-primary); }
-.ok { color: var(--dsw-alias-state-success-primary, #2a7); }
-.error { color: var(--dsw-alias-state-error-primary, #c33); }
-.panel { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--dsw-alias-border-l3); }
+.model { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(120px, 1fr) auto auto auto minmax(0, 2fr); align-items: center; gap: 8px 12px; min-width: 0; font-size: 13px; color: var(--dsw-alias-label-primary); }
+.model > * { min-width: 0; overflow-wrap: anywhere; }
+.ok { color: var(--dsw-alias-state-success-primary); }
+.error { color: var(--dsw-alias-state-error-primary); }
+.panel { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 0.5px solid var(--dsw-alias-border-l3); }
+
+@media (max-width: 760px) {
+  .model { grid-template-columns: minmax(0, 1fr) auto; }
+  .model > :nth-child(n + 3):not(:last-child) { grid-column: 1; }
+  .model > :last-child { grid-column: 1 / -1; }
+}

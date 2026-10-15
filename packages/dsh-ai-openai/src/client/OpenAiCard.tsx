@@ -3,6 +3,7 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {} from '@dsh-ai-providers/core/slots'
 import type { OpenAiCardFace } from './controller.ts'
 import { formLabels } from './locales.ts'
+import css from './OpenAiSurface.module.css'
 
 export type OpenAiCardProps =
   PropsRuntime<'ai.provider.embedding'>
@@ -17,11 +18,11 @@ export function OpenAiCard(props: OpenAiCardProps) {
   const common = { overriddenLabel: t('overridden'), resetLabel: t('reset'), invalidLabel: t('invalidNumber'), disabled }
   const connection = state[`${props.capability}Connection` as 'embeddingConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection']
   return (
-    <div data-testid="ai-openai">
-      <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 500 }}>{t('title')}</h3>
-      <p style={{ margin: '0 0 12px', fontSize: 12 }}>{t('description')}</p>
+    <div data-testid="ai-openai" className={css.section}>
+      <h3 className={css.providerTitle}>{t('title')}</h3>
+      <p className={css.providerDescription}>{t('description')}</p>
       <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
-        <label style={{ display: 'grid', gap: 6, marginBottom: 12 }}>
+        <label className={css.field}>
           <span>{t('connection')}</span>
           <select value={connection.text} disabled={disabled} onChange={event => { props.edit(`${props.capability}Connection`, event.target.value) }}>
             <option value="">{t('connectionNone')}</option>
