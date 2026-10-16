@@ -3,7 +3,7 @@ title: Creating or extending a provider
 sidebar_position: 1
 ---
 
-A vendor plugin translates provider-neutral contracts into one vendor's API. Use `@dsh-ai-providers/openai` and `@dsh-ai-providers/jina-cohere` as implementation references.
+A provider plugin implements one or more provider-neutral contracts against a vendor API. Use `@dsh-ai-providers/openai` and `@dsh-ai-providers/jina-cohere` as implementation references, but expose only the capabilities the target API actually supports.
 
 ## 1. Define validated configuration
 
@@ -29,7 +29,7 @@ ctx.effect(() => ctx.aiProviders.register(provider))
 
 Give errors stable `AiError` categories and preserve the vendor response as diagnostic context without exposing credentials.
 
-Map failures by what the caller can do next: malformed caller data is `invalid-input`; a feature the vendor cannot perform is `unsupported`; credential, quota, and model refusals are `rejected`; transport and server failures are `unavailable`; an aborted request is `cancelled`. Reserve `not-configured` for selection or configuration that prevents the service from being resolved.
+Map a failure according to what the caller can do next. Malformed caller data is `invalid-input`; a feature the vendor cannot perform is `unsupported`; credential, quota, and model refusals are `rejected`; transport and server failures are `unavailable`; an aborted request is `cancelled`. Reserve `not-configured` for selection or configuration that prevents the service from being resolved.
 
 ## 4. Expose settings metadata
 

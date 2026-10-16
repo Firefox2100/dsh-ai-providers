@@ -2,9 +2,9 @@
 title: LocalAI
 ---
 
-`@dsh-ai-providers/localai` is the first-class [LocalAI](https://localai.io/) provider maintained by Firefox2100 as part of this project. It keeps LocalAI separate from the general OpenAI-compatible provider so a profile can expose LocalAI-specific controls and capabilities without presenting them as OpenAI features. It is not an official DSH or LocalAI package.
+`@dsh-ai-providers/localai` is the dedicated [LocalAI](https://localai.io/) integration maintained by Firefox2100 as part of this project. It is separate from the general OpenAI-compatible provider, so LocalAI-specific controls and capabilities are not presented as OpenAI features. It is not an official DSH or LocalAI package.
 
-The package depends on the provider-neutral `@dsh-ai-providers/openai-compatible` transport library, not on the OpenAI provider plugin. The LocalAI and OpenAI plugins can therefore evolve and be installed independently while sharing the protocol implementation they genuinely have in common.
+The package depends on the provider-neutral `@dsh-ai-providers/openai-compatible` transport library, not on the OpenAI provider plugin. The two plugins can be installed independently while sharing their common protocol implementation.
 
 ## Capabilities
 
@@ -39,6 +39,8 @@ Reranking calls `POST /rerank` relative to the configured `/v1` base URL. Set `r
 
 These services use the corresponding OpenAI-compatible LocalAI endpoints. Model IDs, voices, formats, and image options depend on the LocalAI backend configuration and should be entered exactly as served. `embeddingBody`, `ttsBody`, and `imageBody` add backend-specific JSON fields while the service keeps ownership of canonical fields such as the input, model, voice, and prompt. Live transcription is available when the deployment provides the compatible realtime WebSocket endpoint.
 
-## Choosing this package
+LocalAI image generation always calls `POST /images/generations`; it does not use `/images/edits`. Reference handling is configured as one of three modes: ignore references, send the first image in `files` for image-to-image generation, or send every image in `ref_images` for a backend that supports references. `highRes` performs a second image-to-image pass at the configured scale. The provider also supports per-request `steps`, `negativePrompt`, and `seed` fields, subject to the loaded backend.
+
+## When to use this package
 
 Use `@dsh-ai-providers/localai` for LocalAI deployments. Keep `@dsh-ai-providers/openai` for OpenAI or other compatible servers. Both packages may be installed together because they register different provider IDs.

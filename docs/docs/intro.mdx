@@ -3,7 +3,7 @@ sidebar_position: 1
 title: DSH AI Providers
 ---
 
-DSH AI Providers is a common AI capability layer for [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness) plugins. A user registers a vendor connection and DSH-managed credential once; every supported capability and every consumer plugin can reuse it. Plugin developers depend on stable services rather than rebuilding credential forms, provider selection, concurrency control, and vendor transports.
+DSH AI Providers gives [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness) plugins a shared way to use AI services. Configure a provider connection and a DSH-managed credential once, then reuse them across supported capabilities and consumer plugins. Plugin developers work against provider-neutral service contracts instead of rebuilding credential forms, provider selection, concurrency control, and vendor transports.
 
 The current services are:
 
@@ -12,11 +12,11 @@ The current services are:
 - image generation;
 - OpenAI-compatible language-model routes.
 
-Install the runtime and one or more vendor plugins. Configure reusable connections in the DSH settings UI, select a provider for each capability, then consume the selected service from the Cordis context.
+Install the runtime and the provider plugins you need. Configure connections in DSH, select a provider for each capability, then consume the selected service from the Cordis context.
 
-This is a foundation, not a standalone end-user feature. Installing it by itself does not add an AI assistant or make requests. It becomes useful when another plugin consumes its services, or when a developer builds such a plugin. The separation lets users change providers without forcing each consuming plugin to implement or understand every vendor.
+This is infrastructure for other plugins. Installing it does not add an assistant or send an AI request by itself. Requests begin only when a consumer plugin calls one of the services. Because the consumer depends on the shared contract, users can change providers without requiring that plugin to understand every vendor API.
 
-Future releases will add more vendor packages, services, and vendor-specific controls while keeping the shared consumer contracts focused and stable.
+Provider-specific controls stay with their provider package. The shared contracts remain focused on behavior that consumers can use across implementations.
 
 ## Included packages
 
@@ -40,7 +40,7 @@ These packages are maintained by Firefox2100 as part of this independent project
 This project currently maintains four vendor packages:
 
 - [`@dsh-ai-providers/openai`](./official-providers/openai): OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation;
-- [`@dsh-ai-providers/localai`](./official-providers/localai): first-class LocalAI language models, embeddings, reranking, speech, and image generation;
+- [`@dsh-ai-providers/localai`](./official-providers/localai): dedicated LocalAI language models, embeddings, reranking, speech, and image generation;
 - [`@dsh-ai-providers/anthropic`](./official-providers/anthropic): language models through Anthropic's native Messages API;
 - [`@dsh-ai-providers/jina-cohere`](./official-providers/jina-cohere): Jina- and Cohere-compatible reranking.
 

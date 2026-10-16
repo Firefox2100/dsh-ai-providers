@@ -5,7 +5,7 @@ sidebar_position: 2
 
 ## A capability service is unavailable
 
-Confirm that the vendor plugin is installed and loaded, then select a provider for the capability in **Settings → AI Providers**. Selecting **Disabled** intentionally removes the service.
+Confirm that the provider plugin is installed and loaded, then select it for the capability in **Settings > AI Providers**. Selecting **Disabled** removes the service from the context.
 
 ## Authentication fails
 
@@ -21,7 +21,7 @@ Inspect the concurrency status in settings. A call may be waiting on more than o
 
 ## A stream consumes capacity indefinitely
 
-Ensure the consumer reads, cancels, or discards the stream. `maxHold` can release scheduler accounting as a safeguard, but it does not guarantee cancellation of the remote request.
+Ensure the consumer reads, cancels, or discards the stream. `maxHoldSeconds` can release scheduler accounting as a safeguard, but it does not guarantee cancellation of the remote request.
 
 ## Live transcription is missing
 
@@ -39,7 +39,7 @@ Check the `model` and `dimensions` returned by the embedding service. A connecti
 
 ## A compatible endpoint returns malformed data
 
-Compatibility describes a wire shape, not a guarantee that every server implements every endpoint or field. Check the provider page for the exact method and path, inspect the preserved `AiError` cause in server logs, and compare the response with the documented contract. Do not work around a malformed response by accepting missing indices, invalid media types, or incomplete stream events in a consumer plugin.
+Compatibility describes a wire shape. It does not guarantee that every server implements every endpoint or field. Check the provider page for the exact method and path, inspect the preserved `AiError` cause in server logs, and compare the response with the documented contract. Do not accept missing indices, invalid media types, or incomplete stream events in consumer code to work around a malformed response.
 
 ## Distinguishing error codes
 

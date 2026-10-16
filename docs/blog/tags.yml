@@ -1,19 +1,9 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
+dsh-ai-providers:
+  label: DSH AI Providers
+  permalink: /dsh-ai-providers
+  description: Project updates for DSH AI Providers
 
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
-
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
-
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+release:
+  label: Release
+  permalink: /release
+  description: Stable releases and project milestones

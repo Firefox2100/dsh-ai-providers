@@ -1,0 +1,71 @@
+---
+title: 核心契约参考
+sidebar_position: 2
+---
+
+使用方和提供方插件通过 `@dsh-ai-providers/core` 共用类型。该软件包只包含契约，不会选择提供方、注册 DSH 插件或发起网络请求。
+
+导入该包以加载上下文类型扩展，并使用公共类型：
+
+```ts
+import type {} from '@dsh-ai-providers/core'
+import type {AiError, EmbedOptions} from '@dsh-ai-providers/core'
+```
+
+不要为了调用所选能力而导入运行时内部模块或具体厂商包。
+
+## 上下文服务
+
+| 上下文成员 | 契约 | 可用条件 |
+| --- | --- | --- |
+| `ctx.embeddings` | `EmbeddingService` | 已选择并加载嵌入提供方 |
+| `ctx.rerankers` | `RerankService` | 已选择并加载重排提供方 |
+| `ctx.textToSpeech` | `TtsService` | 已选择并加载 TTS 提供方 |
+| `ctx.apiSpeechToText` | `SttService` | 已选择并加载 STT 提供方 |
+| `ctx.streamingSpeechToText` | `StreamingSttService` | 所选 STT 提供方还支持实时会话 |
+| `ctx.imageGeneration` | `ImageGenerationService` | 已选择并加载图像提供方 |
+| `ctx.aiProviders` | `AiProviderRegistry` | 已加载运行时插件 |
+
+语言模型继续使用 DSH 现有的 `ctx.llm` 服务。提供方包通过运行时适配器加入路由，不会再公开一个只能选择单个提供方的上下文服务。
+
+能力被禁用时，不会公开可用的服务值。如果缺少服务后插件无法工作，应声明必需的 Cordis 注入；只有功能确实有替代路径时，才使用可选注入。
+
+## 服务身份与调用选项
+
+每项能力服务都公开 `provider`、`model` 和 `capability`。`provider` 与 `model` 用于诊断，不应成为使用方代码转向厂商 API 的分支条件。
+
+大多数调用接受以下公共选项：
+
+| 选项 | 含义 |
+| --- | --- |
+| `priority` | 默认为 `foreground`；可以将允许等待的工作标记为 `background` |
+| `signal` | 在传输层支持时取消排队中及执行中的工作 |
+
+完整录音 STT 把 `AbortSignal` 作为单独的必需参数；实时 STT 则在会话选项中接收它。使用方拥有每个返回的流或实时会话，必须负责完成、取消、关闭或中止。
+
+## 提供方请求选项
+
+`AiProvider` 可以通过 `requestOptions` 描述属于单次调用、而不是配置档案连接的设置。每个 `RequestOption` 包含键名、标量类型、本地化标签，以及可选的说明、默认值和数值范围。
+
+`atStart: true` 表示使用方创建持久状态前必须确定该值。当前的例子是向量维度：保存向量后再改变维度会使集合不一致。这些元数据用于向使用方描述选项，不会把字段自动加入与提供方无关的 TypeScript 接口。
+
+## 失败契约
+
+能力调用以 `AiError` 报告失败。分支判断应使用 `code`，不要解析消息文本：
+
+| 错误码 | 含义 |
+| --- | --- |
+| `not-configured` | 因选择或配置问题无法解析服务 |
+| `invalid-input` | 调用方提供的数据无法处理 |
+| `unsupported` | 所选实现无法执行请求的功能 |
+| `rejected` | 提供方拒绝请求、模型、凭据、配额或策略 |
+| `unavailable` | 传输、超时、服务器、队列或异常响应故障 |
+| `cancelled` | 所属生命周期中止了调用 |
+
+语言模型实现使用 `LlmRequestError`，其中还包含 DSH 失败分类，以及可选的 HTTP 状态、重试延迟和请求 ID。运行时适配器会把它转换为 DSH 的模型错误类型，因此原有的重试与压缩行为仍然生效。
+
+## 稳定性边界
+
+核心包导出的名称、方法签名、结果结构、服务名称和错误码构成使用方边界。除非其他公共页面明确说明，提供方配置、运行时内部实现、浏览器 API 路由和传输辅助工具都属于实现细节。
+
+集成模式请参阅[在其他插件中使用服务](../consumers/using-services)，注册侧契约请参阅[创建或扩展提供方](../providers/creating-provider)。

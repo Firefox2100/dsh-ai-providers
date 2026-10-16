@@ -3,7 +3,7 @@ title: Configuration
 sidebar_position: 2
 ---
 
-Open **Settings → AI Providers** in DSH. Configuration has three layers.
+Open **Settings > AI Providers** in DSH. Work through the three layers in order.
 
 ## 1. Create reusable connections
 
@@ -27,7 +27,7 @@ Choose one registered provider for each capability:
 - API speech-to-text;
 - image generation.
 
-The selection takes effect without restarting the profile. Selecting **Disabled** removes that capability service from the context. Language-model routes are different: every configured vendor route remains available to DSH.
+Selections take effect without a profile restart. Selecting **Disabled** removes that capability service from the context. Language models are configured differently: every configured route remains available to DSH at the same time.
 
 ## Built-in speech-to-text
 
@@ -43,7 +43,7 @@ Configuration fields that describe a connection or model are validated at the se
 
 ## Test one capability at a time
 
-Start with the connection and one capability that the endpoint definitely implements. Confirm it, then enable additional services. An OpenAI-compatible base URL may support chat while omitting speech or images, and a LocalAI deployment exposes only the backends it has loaded.
+Start with one connection and one capability that the endpoint implements. Confirm that path before enabling more services. An OpenAI-compatible base URL may support chat but omit speech or images, and a LocalAI deployment exposes only the backends it has loaded.
 
 When a test fails, use the normalized error code to separate configuration from availability: `not-configured` points to selection or load state; `rejected` usually points to credentials, quota, policy, or identifiers; `unavailable` points to reachability, timeout, or provider health. See [Troubleshooting](../reference/troubleshooting) for the complete table.
 

@@ -9,9 +9,9 @@ Install the bundle into the target profile:
 dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-The bundle includes the runtime plus the OpenAI, LocalAI, Anthropic, and Jina/Cohere packages. Restart the profile after installation. DSH adds the plugins to the profile configuration and loads their settings pages.
+The bundle installs the runtime plus the OpenAI, LocalAI, Anthropic, and Jina/Cohere packages. Restart the profile after installation so DSH can load their configuration rows and settings pages.
 
-The bundle is infrastructure for other plugins. Installation alone does not add an assistant or make AI requests; configure the desired providers and use a plugin that consumes their services.
+The bundle does not add an assistant or send requests on its own. Configure the providers you need, then use a plugin that consumes their services.
 
 ## Package roles
 
@@ -38,9 +38,9 @@ The OpenAI plugin works with OpenAI and compatible servers. Compatibility depend
 
 ## Verify the installation
 
-After restart, open **Settings → AI Providers**. A complete bundle installation shows reusable connection configuration, capability selectors, concurrency settings, and the settings supplied by each loaded vendor plugin. If a vendor is absent, confirm that its bundle row is enabled in the same profile as the runtime.
+After restart, open **Settings > AI Providers**. A complete bundle installation shows connection configuration, capability selectors, concurrency settings, and a section for each loaded provider plugin. If a provider is missing, confirm that its bundle row and the runtime are enabled in the same profile.
 
-Do not test installation by expecting an outbound request. The runtime remains idle until a consumer calls a service. Configure a connection, select its provider for one capability, then use the relevant service page's minimal example or an installed consumer plugin.
+The runtime remains idle until a consumer calls a service. To verify an end-to-end setup, configure one connection, select it for one capability, then run the minimal example on that service's page or use an installed consumer plugin.
 
 ## Upgrade and removal
 

@@ -3,7 +3,7 @@ title: Concurrency control
 sidebar_position: 2
 ---
 
-The main plugin includes a shared concurrency gate. It limits work across providers and capabilities before a request reaches a vendor.
+The runtime applies one concurrency gate before requests reach their providers. Rules can cover several capabilities or routes when they share the same upstream limit.
 
 ## Rules
 
@@ -15,13 +15,13 @@ Foreground work is scheduled before background work. Calls retain FIFO order wit
 
 For example, a rule with `max: 4` and `reserve: 1` permits at most three background calls at once. A fourth background call waits, leaving one place available for an interactive request. If four foreground calls are already running, the reserve does not create a fifth place.
 
-Keep rules broad enough to describe a real shared bottleneck. A vendor account limit may match several capabilities; a GPU-backed local route may need a separate rule. Because a request must satisfy every matching rule, overlapping rules can express both limits without duplicating scheduling logic in consumers.
+Write each rule around a real shared bottleneck. An account limit may span several capabilities, while a GPU-backed local route may need its own rule. A request must satisfy every matching rule, so overlapping rules can represent both limits without moving scheduling logic into consumers.
 
 ## Time limits
 
-`maxWait` limits how long a call may remain queued. Expiry rejects the call with an `unavailable` `AiError`. A value of zero disables the limit.
+`maxWaitSeconds` limits how long a call may remain queued. Expiry rejects the call with an `unavailable` `AiError`. The default is 1,800 seconds; a value of zero disables the limit.
 
-`maxHold` protects the scheduler from a call that never releases its place. When it expires, the gate releases its accounting and logs a warning; it does not guarantee that the underlying vendor request is aborted.
+`maxHoldSeconds` protects the scheduler from a call that never releases its place. When it expires, the gate releases its accounting and logs a warning; it does not guarantee that the underlying vendor request is aborted. The profile configuration defaults to 1,800 seconds. This option is not currently exposed by the settings form.
 
 Streaming language-model and TTS calls retain their place until the stream ends, errors, is cancelled, or is discarded. File transcription is gated; live streaming transcription uses its own long-lived session interface.
 
@@ -35,6 +35,6 @@ The settings page shows active calls, queue lengths, the oldest wait, and runnin
 
 - Start with measured provider or hardware limits rather than adding a rule for every service.
 - Reserve capacity only where background work can otherwise delay an interaction.
-- Set `maxWait` from the caller's useful lifetime; a result that arrives after its screen is gone is still wasted work.
-- Treat `maxHold` as accounting protection, not request cancellation. Consumers should still pass `AbortSignal`.
+- Set `maxWaitSeconds` from the caller's useful lifetime; a result that arrives after its screen is gone is still wasted work.
+- Treat `maxHoldSeconds` as accounting protection, not request cancellation. Consumers should still pass `AbortSignal`.
 - When a queue grows, inspect the running-call list before increasing `max`: the bottleneck may be an unconsumed stream or a provider slowdown.

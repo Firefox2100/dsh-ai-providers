@@ -20,7 +20,7 @@ The project is primarily useful to plugin developers and to users of plugins bui
 - Share capability contracts, live configuration, and concurrency limits across plugins.
 - Retain vendor-specific controls where a common interface would otherwise hide useful behavior.
 
-Additional vendor packages and services will be added as the ecosystem grows. The provider-neutral contracts are the foundation: existing consumer plugins should not need to be redesigned for every new backend.
+The provider-neutral contracts are the foundation. A provider can be added behind those contracts without requiring each consumer plugin to add another vendor transport.
 
 ## Documentation
 
@@ -29,6 +29,7 @@ Additional vendor packages and services will be added as the ecosystem grows. Th
 - [Installation](https://firefox2100.github.io/dsh-ai-providers/docs/getting-started/installation)
 - [Configuration](https://firefox2100.github.io/dsh-ai-providers/docs/getting-started/configuration)
 - [Using services from another plugin](https://firefox2100.github.io/dsh-ai-providers/docs/consumers/using-services)
+- [Core contract reference](https://firefox2100.github.io/dsh-ai-providers/docs/reference/core-contracts)
 - [Creating a provider package](https://firefox2100.github.io/dsh-ai-providers/docs/providers/creating-provider)
 
 ## Packages
@@ -59,7 +60,7 @@ Install the bundle into a DSH profile:
 dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-The bundle installs the runtime and all vendor packages maintained by this project. Restart the profile, then configure connections, routes, and active services under **Settings → AI Providers**. Individual packages may also be installed separately for a custom deployment.
+The bundle installs the runtime and all provider packages maintained by this project. Restart the profile, then configure connections, routes, and active services under **Settings > AI Providers**. Individual packages may also be installed separately for a custom deployment.
 
 To use these language-model routes in place of DSH's stock routes, disable `@deepseek-ai/dsh-llm-pi-ai` and the stock `ui-settings-models` settings page in that profile. Keep DSH's core `llm` service enabled. For DSH Voice Input, keep its speech-to-text registry enabled but select the API-backed provider instead of the built-in SenseVoice provider.
 

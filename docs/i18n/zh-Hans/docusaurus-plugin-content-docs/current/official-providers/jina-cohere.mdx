@@ -3,7 +3,7 @@ title: Jina 与 Cohere
 sidebar_position: 2
 ---
 
-`@dsh-ai-providers/jina-cohere` 是 Firefox2100 在本项目中维护的重排提供方。它支持 Jina AI、Cohere 共用的 `POST /rerank` 格式，以及部分 LocalAI、vLLM 等兼容部署。它不是 DSH、Jina AI 或 Cohere 官方软件包。
+`@dsh-ai-providers/jina-cohere` 实现 Jina AI、Cohere 共用的 `POST /rerank` 格式，也支持部分 LocalAI、vLLM 等兼容部署。它由 Firefox2100 在本项目中维护，不是 DSH、Jina AI 或 Cohere 官方软件包。
 
 ## 配置连接
 
@@ -24,7 +24,7 @@ sidebar_position: 2
 
 请求包含 `model`、`query`、`documents`、可选 `top_n` 及 `return_documents: false`。响应可使用 `relevance_score` 或 `score`；如存在 Jina 或 Cohere 风格的 token 用量字段，服务也会读取它。
 
-服务会验证空问题和空文档，按分数降序排列结果，并将原始 logit 归一化到服务接口规定的 0–1 范围。
+服务会拒绝空问题和空文档，按分数降序排列结果，并将原始 logit 归一化到服务接口规定的 0 到 1 范围。
 
 ## 连接边界
 

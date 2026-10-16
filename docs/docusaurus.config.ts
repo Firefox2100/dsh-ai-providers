@@ -44,7 +44,12 @@ const config: Config = {
           editUrl:
             'https://github.com/Firefox2100/dsh-ai-providers/tree/main/docs/docs/',
         },
-        blog: false,
+        blog: {
+          routeBasePath: 'blog',
+          showReadingTime: true,
+          feedOptions: {type: ['rss', 'atom'], xslt: true},
+          editUrl: 'https://github.com/Firefox2100/dsh-ai-providers/tree/main/docs/blog/',
+        },
         sitemap: {lastmod: 'date'},
         theme: {customCss: './src/css/custom.css'},
       } satisfies Preset.Options,
@@ -67,6 +72,7 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
+        {to: '/blog', label: 'Blog', position: 'left'},
         {type: 'localeDropdown', position: 'right'},
         {
           href: 'https://github.com/Firefox2100/dsh-ai-providers',
@@ -89,6 +95,7 @@ const config: Config = {
         {
           title: 'Project',
           items: [
+            {label: 'Blog', to: '/blog'},
             {
               label: 'GitHub',
               href: 'https://github.com/Firefox2100/dsh-ai-providers',

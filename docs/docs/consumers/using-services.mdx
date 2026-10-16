@@ -3,7 +3,9 @@ title: Using services in another plugin
 sidebar_position: 1
 ---
 
-Depend on `@dsh-ai-providers/core` for types and declare the runtime service you require through Cordis injection.
+Import public types from `@dsh-ai-providers/core`, then declare each runtime service through Cordis injection. Consumer code should not need a vendor package.
+
+The complete list of services, shared call options, and stable error codes is in [Core contract reference](../reference/core-contracts).
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -25,7 +27,7 @@ Use optional injection when your plugin can operate without the capability:
 export const inject = { optional: ['streamingSpeechToText'] }
 ```
 
-Do not import a vendor package from a consumer plugin. The selected service hides credentials, endpoints, and vendor-specific transport.
+The selected service owns credentials, endpoints, and vendor-specific transport. A direct vendor import bypasses that boundary and prevents provider selection from doing its job.
 
 ## Choose required or optional injection
 

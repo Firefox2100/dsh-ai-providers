@@ -7,6 +7,8 @@ sidebar_position: 1
 
 Public contracts for embeddings, reranking, speech, images, providers, call options, and normalized errors. Consumer and vendor plugins should import shared types from this package.
 
+See [Core contract reference](./core-contracts) for the exported service boundary and lifecycle rules.
+
 ## `@dsh-ai-providers/openai-compatible`
 
 Protocol-level OpenAI-compatible transports, request serialization, stream parsing, connection validation, and service implementations. It has no DSH plugin entry point. The OpenAI and LocalAI plugins compose it without depending on each other.
@@ -21,9 +23,9 @@ An OpenAI-compatible provider for embeddings, language-model chat and streaming,
 
 See [OpenAI-compatible](../official-providers/openai) for endpoints and configuration.
 
-### `@dsh-ai-providers/localai`
+## `@dsh-ai-providers/localai`
 
-A first-class LocalAI provider for language models, embeddings, reranking, TTS, file and live STT, and image generation. It adds LocalAI defaults, native request fields, and reranking while reusing the tested OpenAI-compatible transports.
+A dedicated LocalAI provider for language models, embeddings, reranking, TTS, file and live STT, and image generation. It adds LocalAI defaults, native request fields, and reranking while reusing the shared OpenAI-compatible transports.
 
 See [LocalAI](../official-providers/localai) for configuration and native controls.
 

@@ -1,0 +1,71 @@
+---
+title: Core contract reference
+sidebar_position: 2
+---
+
+Consumer and provider plugins share types through `@dsh-ai-providers/core`. The package contains contracts only. It does not select a provider, register a DSH plugin, or make network requests.
+
+Import the package for its context augmentation and public types:
+
+```ts
+import type {} from '@dsh-ai-providers/core'
+import type {AiError, EmbedOptions} from '@dsh-ai-providers/core'
+```
+
+Do not import runtime internals or a vendor package merely to call a selected capability.
+
+## Context services
+
+| Context member | Contract | Availability |
+| --- | --- | --- |
+| `ctx.embeddings` | `EmbeddingService` | An embedding provider is selected and loaded |
+| `ctx.rerankers` | `RerankService` | A reranking provider is selected and loaded |
+| `ctx.textToSpeech` | `TtsService` | A TTS provider is selected and loaded |
+| `ctx.apiSpeechToText` | `SttService` | An STT provider is selected and loaded |
+| `ctx.streamingSpeechToText` | `StreamingSttService` | The selected STT provider also supports live sessions |
+| `ctx.imageGeneration` | `ImageGenerationService` | An image provider is selected and loaded |
+| `ctx.aiProviders` | `AiProviderRegistry` | The runtime plugin is loaded |
+
+Language models use DSH's existing `ctx.llm` service. Provider packages contribute routes through the runtime adapter instead of exposing another selected context service.
+
+A disabled capability does not expose a usable service value. Declare a required Cordis injection when your plugin cannot work without the service, or an optional injection when the feature has a real fallback.
+
+## Service identity and call options
+
+Every capability service exposes `provider`, `model`, and `capability`. Treat `provider` and `model` as diagnostic identity, not as a reason to branch into a vendor API from consumer code.
+
+Most calls accept the common options below:
+
+| Option | Meaning |
+| --- | --- |
+| `priority` | `foreground` by default, or `background` for work that may wait |
+| `signal` | Cancels queued and active work where the transport supports cancellation |
+
+Completed-recording STT takes its `AbortSignal` as a separate required argument. Live STT accepts it in the session options. A consumer owns every returned stream or live session and must finish, cancel, close, or abort it.
+
+## Provider request options
+
+An `AiProvider` can publish `requestOptions` for settings that belong to one call rather than the profile connection. Each `RequestOption` has a key, scalar type, localized label, optional description and default, and optional numeric bounds.
+
+`atStart: true` marks a value that must be fixed before a consumer creates persistent state. Vector dimensions are the current example: changing them after vectors have been stored would make the collection inconsistent. The metadata describes an option to consumers; it does not add the field to the provider-neutral TypeScript interface.
+
+## Failure contract
+
+Capability calls fail with `AiError`. Branch on `code`, not on message text:
+
+| Code | Meaning |
+| --- | --- |
+| `not-configured` | Selection or configuration cannot resolve a service |
+| `invalid-input` | The caller supplied data that cannot be processed |
+| `unsupported` | The selected implementation cannot perform the requested feature |
+| `rejected` | The provider refused the request, model, credential, quota, or policy |
+| `unavailable` | Transport, timeout, server, queue, or malformed-response failure |
+| `cancelled` | The owning lifecycle aborted the call |
+
+Language-model implementations use `LlmRequestError`, which also carries the DSH failure class and optional HTTP status, retry delay, and request ID. The runtime adapter converts it to DSH's model error type so the normal retry and compaction behavior still applies.
+
+## Stability boundary
+
+The exported core names, method signatures, result shapes, service names, and error codes form the consumer boundary. Provider configuration, runtime internals, browser API routes, and transport helpers are implementation details unless another public page explicitly documents them.
+
+See [Using services](../consumers/using-services) for integration patterns and [Creating or extending a provider](../providers/creating-provider) for the registration side of the contract.

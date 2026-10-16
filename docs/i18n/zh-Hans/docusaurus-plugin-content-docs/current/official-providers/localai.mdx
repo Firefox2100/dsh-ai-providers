@@ -2,9 +2,9 @@
 title: LocalAI
 ---
 
-`@dsh-ai-providers/localai` 是 Firefox2100 在本项目中维护的 [LocalAI](https://localai.io/) 专用提供方。它与通用 OpenAI 兼容提供方分开，使配置可以暴露 LocalAI 特有的控制项和能力，而不会把它们误作 OpenAI 功能。它不是 DSH 或 LocalAI 官方软件包。
+`@dsh-ai-providers/localai` 是 Firefox2100 在本项目中维护的 [LocalAI](https://localai.io/) 专用集成。它与通用 OpenAI 兼容提供方分开，因此 LocalAI 特有的控制项和能力不会被显示成 OpenAI 功能。它不是 DSH 或 LocalAI 官方软件包。
 
-该软件包依赖与提供方无关的 `@dsh-ai-providers/openai-compatible` 传输库，而不依赖 OpenAI 提供方插件。因此，LocalAI 与 OpenAI 插件可以独立安装和演进，同时复用两者确实共有的协议实现。
+该软件包依赖与提供方无关的 `@dsh-ai-providers/openai-compatible` 传输库，而不依赖 OpenAI 提供方插件。两个插件可以独立安装，同时复用共有的协议实现。
 
 ## 能力
 
@@ -39,6 +39,8 @@ LocalAI 原生或后端专用选项（例如约束语法及采样器控制）可
 
 这些服务使用 LocalAI 对应的 OpenAI 兼容端点。模型 ID、声音、格式和图像选项取决于 LocalAI 后端配置，应按服务实际提供的名称填写。`embeddingBody`、`ttsBody` 和 `imageBody` 可加入后端专用 JSON 字段；输入、模型、声音和提示词等标准字段仍由服务控制。部署提供兼容的实时 WebSocket 端点时，可以使用实时转录。
 
-## 何时选用
+LocalAI 图像生成始终调用 `POST /images/generations`，不会使用 `/images/edits`。参考图处理可以配置为三种模式：忽略参考图；把第一张图放入 `files`，用于图生图；或把全部图片放入 `ref_images`，交给支持参考图的后端。`highRes` 会按配置的倍率进行第二次图生图渲染。提供方还支持单次请求的 `steps`、`negativePrompt` 和 `seed` 字段，最终是否可用取决于已加载的后端。
+
+## 何时使用此软件包
 
 LocalAI 部署应使用 `@dsh-ai-providers/localai`；OpenAI 或其他兼容服务器继续使用 `@dsh-ai-providers/openai`。两者提供方 ID 不同，可以同时安装。

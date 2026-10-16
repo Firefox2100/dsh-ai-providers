@@ -11,7 +11,7 @@ These routes replace the routes supplied by DSH's stock model adapter. Disable t
 
 ## Configure a route
 
-In **Settings → AI Providers → Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.
+In **Settings > AI Providers > Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.
 
 Each model can declare:
 
@@ -36,6 +36,8 @@ The project-maintained OpenAI provider streams `POST /chat/completions` and tran
 | `body` | Add provider-specific top-level request fields |
 
 Route, model, request, and registered policy settings are merged before the call. DSH request values remain the most specific.
+
+When a model is marked as supporting vision, the provider reads available image attachments through DSH and sends them as data URLs. An offloaded or unavailable image becomes a text placeholder. Files are also represented by placeholders; this integration does not upload arbitrary files to the model endpoint.
 
 ## Policies
 

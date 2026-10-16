@@ -3,7 +3,7 @@ title: 重排
 sidebar_position: 2
 ---
 
-重排服务根据问题为一小组候选文档评分。它应在较便宜的检索之后使用，而不是代替索引或检索。所选服务为 `ctx.rerankers`。
+重排服务根据问题为一小组候选文档评分，适合放在成本较低的检索步骤之后。使用方通过 `ctx.rerankers` 访问所选服务。
 
 ```ts
 const answer = await ctx.rerankers.rerank(
@@ -24,7 +24,7 @@ const ordered = answer.results.map(({index, score}) => ({
 
 分数适合在同一次响应内排序或筛选。不要跨提供方或模型持久化统一阈值，因为分数校准不属于共享契约。
 
-本项目维护的 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0–1 的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
+本项目维护的 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0 到 1 范围的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
 
 ## 检索模式
 

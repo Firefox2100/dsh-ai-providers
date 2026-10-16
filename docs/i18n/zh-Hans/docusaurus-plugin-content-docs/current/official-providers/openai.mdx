@@ -3,7 +3,7 @@ title: OpenAI 兼容
 sidebar_position: 1
 ---
 
-`@dsh-ai-providers/openai` 是 Firefox2100 在本项目中维护的通用提供方软件包。它支持 OpenAI 本身及 LocalAI 等兼容服务器；实际能力取决于服务器实现的端点。它不是 DSH 官方软件包。
+`@dsh-ai-providers/openai` 面向 OpenAI 及兼容服务器实现 OpenAI API 格式。兼容服务器可能只提供下列部分端点。该软件包由 Firefox2100 在本项目中维护，不是 DSH 或 OpenAI 官方软件包。
 
 ## 支持能力
 
@@ -45,6 +45,6 @@ sidebar_position: 1
 
 ## 选择服务
 
-完成配置后，在每个需要使用的能力标签页中分别选择 **OpenAI-compatible**。语言模型路由无需进行能力选择。
+完成配置后，在每个需要使用的能力标签页中选择 **OpenAI-compatible**。语言模型路由会直接注册，无需进行能力选择。
 
 各服务页面列出了单次请求选项和结果接口。

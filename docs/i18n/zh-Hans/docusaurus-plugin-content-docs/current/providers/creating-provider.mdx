@@ -3,7 +3,7 @@ title: 创建或扩展提供方
 sidebar_position: 1
 ---
 
-提供方插件负责将统一接口转换为特定厂商的 API。可参考 `@dsh-ai-providers/openai` 和 `@dsh-ai-providers/jina-cohere` 的实现。
+提供方插件针对某个厂商 API 实现一项或多项统一契约。可参考 `@dsh-ai-providers/openai` 和 `@dsh-ai-providers/jina-cohere`，但只应公开目标 API 确实支持的能力。
 
 ## 1. 定义并验证配置
 
@@ -29,7 +29,7 @@ ctx.effect(() => ctx.aiProviders.register(provider))
 
 错误应映射到稳定的 `AiError` 分类，并保留不含凭据的厂商响应作为诊断信息。
 
-应根据调用方接下来能做什么来映射失败：调用方数据不合法使用 `invalid-input`；厂商无法执行某项功能使用 `unsupported`；凭据、配额和模型拒绝使用 `rejected`；传输及服务器失败使用 `unavailable`；请求被中止使用 `cancelled`。`not-configured` 只用于因选择或配置问题而无法解析服务的情况。
+映射失败时，应考虑调用方接下来能做什么。调用方数据不合法使用 `invalid-input`；厂商无法执行某项功能使用 `unsupported`；凭据、配额和模型拒绝使用 `rejected`；传输及服务器失败使用 `unavailable`；请求被中止使用 `cancelled`。`not-configured` 只用于因选择或配置问题而无法解析服务的情况。
 
 ## 4. 暴露设置元数据
 

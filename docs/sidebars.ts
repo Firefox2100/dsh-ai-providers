@@ -55,7 +55,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Reference',
-      items: ['reference/packages', 'reference/troubleshooting'],
+      items: ['reference/packages', 'reference/core-contracts', 'reference/troubleshooting'],
     },
   ],
 };

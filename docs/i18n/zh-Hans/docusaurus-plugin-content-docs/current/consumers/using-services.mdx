@@ -3,7 +3,9 @@ title: 在其他插件中使用服务
 sidebar_position: 1
 ---
 
-使用 `@dsh-ai-providers/core` 中的类型，并通过 Cordis 注入声明所需的运行时服务。
+从 `@dsh-ai-providers/core` 导入公共类型，再通过 Cordis 注入声明每项运行时服务。使用方代码无需依赖具体厂商包。
+
+服务列表、公共调用选项和稳定错误码请参阅[核心契约参考](../reference/core-contracts)。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -25,7 +27,7 @@ export function apply(ctx: Context) {
 export const inject = { optional: ['streamingSpeechToText'] }
 ```
 
-使用方插件不应导入具体提供方包。所选服务会隐藏凭据、端点和厂商传输细节。
+所选服务负责处理凭据、端点和厂商传输细节。直接导入厂商包会绕过这条边界，也会让提供方选择失去作用。
 
 ## 选择必需注入或可选注入
 

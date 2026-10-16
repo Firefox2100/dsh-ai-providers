@@ -3,7 +3,7 @@ title: Reranking
 sidebar_position: 2
 ---
 
-Reranking scores a short candidate list against a query. Use it after a cheaper search, not as a replacement for indexing or retrieval. The selected service is `ctx.rerankers`.
+Reranking scores a short candidate list against a query. It belongs after a cheaper retrieval step. Consumers access the selected service as `ctx.rerankers`.
 
 ```ts
 const answer = await ctx.rerankers.rerank(
@@ -24,7 +24,7 @@ Keep the candidate set small enough for the selected model's input limit. Rerank
 
 Use the score to order or filter results within that response. Do not persist a universal threshold across providers or models: score calibration is not part of the shared contract.
 
-The project-maintained Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside 0–1, the provider maps every score through a logistic function while preserving order.
+The project-maintained Jina/Cohere provider calls `POST /rerank`. It accepts both `relevance_score` and `score` response fields. If a compatible server returns raw logits outside the 0 to 1 range, the provider maps every score through a logistic function while preserving order.
 
 ## Retrieval pattern
 

@@ -3,7 +3,7 @@ title: OpenAI-compatible
 sidebar_position: 1
 ---
 
-`@dsh-ai-providers/openai` is the general-purpose provider package maintained by Firefox2100 as part of this project. It supports OpenAI itself and compatible servers such as LocalAI, subject to the endpoints each server implements. It is not an official DSH package.
+`@dsh-ai-providers/openai` implements the OpenAI API shape for OpenAI and compatible servers. A compatible server may expose only some of the endpoints below. The package is maintained by Firefox2100 as part of this project and is not an official DSH or OpenAI package.
 
 ## Capabilities
 
@@ -45,6 +45,6 @@ Language models are configured as named routes. A route selects a connection and
 
 ## Selection
 
-After configuring the provider, select **OpenAI-compatible** separately in each capability tab you want it to serve. Language-model routes need no capability selection.
+After configuring the provider, select **OpenAI-compatible** in each capability tab you want it to serve. Language-model routes are registered directly and need no capability selection.
 
 See the individual service pages for request options and result contracts.

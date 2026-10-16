@@ -1,0 +1,76 @@
+---
+slug: dsh-ai-providers-ready-for-use
+title: DSH AI Providers is ready for use
+description: A stable interface for language models, retrieval, speech, and image generation in DeepSeek Harness plugins.
+authors: [firefox2100]
+tags: [dsh-ai-providers, release]
+---
+
+DSH AI Providers is ready for developers and users to install. Version 0.1.3 is published on npm, the provider bundle can be added to a DeepSeek Harness profile, and the interfaces needed by consumer plugins are documented.
+
+The project gives DSH plugins one provider-neutral way to use language models, embeddings, reranking, text-to-speech, speech-to-text, and image generation. A plugin can depend on the shared contracts instead of building its own credential storage, provider selection, concurrency controls, and vendor transports.
+
+{/* truncate */}
+
+## One interface, several kinds of AI service
+
+AI features tend to arrive in separate integrations. A plugin adds one implementation for embeddings, another for speech, then repeats the work for a second vendor. The resulting code mixes the feature itself with authentication, endpoints, request formats, error handling, and settings.
+
+DSH AI Providers moves that plumbing behind stable TypeScript services. Consumer plugins call interfaces from `@dsh-ai-providers/core`. Provider packages implement those interfaces, while `@dsh-ai-providers/runtime` handles registration, selection, settings, credentials, probes, and shared concurrency limits.
+
+The current contracts cover:
+
+- language-model routes and streaming responses;
+- embeddings and reranking;
+- text-to-speech and completed or realtime speech-to-text;
+- image generation, including reference images where the provider supports them.
+
+The common interface stays deliberately small. Vendor packages can still expose useful request controls, and the runtime can render those settings without requiring the consumer to know the vendor.
+
+## Providers available in the first release
+
+The maintained bundle installs the runtime and four provider packages.
+
+`@dsh-ai-providers/openai` supports reusable OpenAI-compatible connections for language models, embeddings, speech, and image generation. `@dsh-ai-providers/localai` uses the same general protocols with LocalAI-specific defaults, reranking, realtime transcription, and native image controls. `@dsh-ai-providers/anthropic` provides language models through Anthropic's Messages API. `@dsh-ai-providers/jina-cohere` covers Jina- and Cohere-compatible reranking endpoints.
+
+The OpenAI-compatible transports are also published separately as `@dsh-ai-providers/openai-compatible`. Provider authors can reuse them without depending on the OpenAI plugin itself.
+
+Connections and credentials are configured once in DSH. Each capability can then select the appropriate connection independently. A local endpoint might provide the language model and embeddings, while another service handles speech or reranking.
+
+## Designed for consumer plugins
+
+The main audience is developers building DSH plugins. Installing the bundle does not add an assistant and does not send a request by itself. It supplies services that another plugin can consume.
+
+A consumer declares the service it needs and calls its stable contract. For example, an embedding consumer receives ready-to-use vectors. It remains responsible for storing them beside its own data. This boundary avoids a shared cache that cannot understand the consumer's lifecycle or invalidation rules.
+
+Services follow DSH's live configuration model. Provider selections and request defaults can change without rewriting consumer code. Unavailable capabilities withdraw their usable service value instead of leaving a facade that fails later for an unexplained reason. Failures cross the boundary as shared error types rather than vendor-specific exceptions.
+
+Concurrency is shared as well. Limits can cover a model route or an entire capability, reserve capacity for foreground work, and allow background indexing or media jobs to wait without blocking a user's next request indefinitely.
+
+The [consumer guide](/dsh-ai-providers/docs/consumers/using-services) shows the service interfaces and lifecycle rules. Developers implementing another vendor can start with the [provider guide](/dsh-ai-providers/docs/providers/creating-provider) and the [core contract reference](/dsh-ai-providers/docs/reference/core-contracts).
+
+## Ready means usable, with a clear compatibility range
+
+Version 0.1.3 is the first release I consider ready for normal use. All public packages share the same version, include DSH bundle metadata where applicable, and are published through the repository's release checks. The workspace includes type checking, automated tests, production builds, and package validation before publishing.
+
+The project currently targets DSH `>=0.2.0-rc.2 <0.3.0`. DSH is still pre-stable, so that compatibility range matters. A future DSH release may require a corresponding provider update. The interfaces in `@dsh-ai-providers/core` are intended to remain the stable surface for consumers, but version 0.1.x should still be treated as an early public series rather than a promise that no contract will ever change.
+
+The implementation has also been exercised with LocalAI for language models, embeddings, reranking, speech, and image generation. Provider-specific guides state what each package supports and where an upstream service imposes a limitation. That is a stronger readiness claim than saying every compatible endpoint behaves identically.
+
+## Install the complete bundle
+
+Add the maintained bundle to the DSH profile that should use it:
+
+```bash
+dsh plugin --profile <profile> add @dsh-ai-providers/all
+```
+
+Restart the profile, then open **Settings > AI Providers**. Configure the required connections and credential references, choose active services, and test them from the settings pages. The [installation guide](/dsh-ai-providers/docs/getting-started/installation) covers the profile changes needed when these language-model routes replace DSH's stock adapter.
+
+Individual packages can be installed separately when a profile only needs part of the bundle. Plugin developers normally depend on `@dsh-ai-providers/core` for types and contracts, then leave provider choice to the user's profile.
+
+## What comes next
+
+The project now has a usable base: common contracts, a runtime, maintained providers, configuration UI, documentation, and a release path. Future posts will be reserved for changes that deserve more than a changelog entry, such as an important provider, a new capability, or a material change to the developer contract.
+
+For now, the useful next step is to install the bundle in a test profile, configure the services a consumer needs, and report concrete compatibility problems through the [project issue tracker](https://github.com/Firefox2100/dsh-ai-providers/issues).

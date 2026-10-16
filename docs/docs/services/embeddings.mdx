@@ -22,9 +22,9 @@ export async function index(ctx: Context, texts: string[]) {
 }
 ```
 
-`embed()` returns vectors in input order, the responding model, vector dimensions, and token usage when reported. Empty strings are rejected. `embedOne()` is a convenience for one string.
+`embed()` returns vectors in input order, the responding model, vector dimensions, and token usage when reported. The project-maintained OpenAI-compatible services reject empty strings. `embedOne()` is a convenience for one string.
 
-Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content when the model distinguishes them. Never compare vectors from different models or dimensions. `cosineSimilarity()` from `@dsh-ai-providers/core` validates dimensions before comparing two vectors.
+Use `inputType: 'query'` for search queries and `inputType: 'document'` for indexed content when the provider distinguishes them. The OpenAI-compatible transport does not send this field because the OpenAI embeddings API has no equivalent; a provider for an instruction-based model can map it to the prefixes or fields that model expects. Never compare vectors from different models or dimensions. `cosineSimilarity()` from `@dsh-ai-providers/core` validates dimensions before comparing two vectors.
 
 ## Prefetch and batching
 
@@ -49,6 +49,6 @@ Batch related documents where practical. The service preserves ordering, so call
 
 ## Failure and cancellation
 
-An empty input array or any empty text is `invalid-input`. A requested dimension the provider cannot produce is `unsupported`; authentication, quota, and unknown-model responses are `rejected`. Pass an `AbortSignal` from indexing jobs and user searches so queued work and active HTTP requests can stop when their owner disappears.
+An empty input array returns an empty vector list without contacting the provider. An empty string inside a non-empty request is `invalid-input`. A requested dimension the provider cannot produce is `unsupported`; authentication, quota, and unknown-model responses are `rejected`. Pass an `AbortSignal` from indexing jobs and user searches so queued work and active HTTP requests can stop when their owner disappears.
 
 `prefetch()` is deliberately fire-and-forget: it never reports a result and never throws to its caller. Use `embed()` whenever completion or failure matters to application state.

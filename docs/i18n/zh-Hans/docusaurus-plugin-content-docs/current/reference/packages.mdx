@@ -7,6 +7,8 @@ sidebar_position: 1
 
 提供嵌入、重排、语音、图像、提供方、调用选项和统一错误的公共接口。使用方和提供方插件都应从此包导入共享类型。
 
+导出的服务边界与生命周期规则请参阅[核心契约参考](./core-contracts)。
+
 ## `@dsh-ai-providers/openai-compatible`
 
 提供 OpenAI 兼容协议的传输、请求序列化、流解析、连接校验及服务实现。它没有 DSH 插件入口；OpenAI 与 LocalAI 插件通过组合使用它，彼此不产生依赖。
@@ -21,7 +23,7 @@ sidebar_position: 1
 
 端点和配置请参阅 [OpenAI 兼容](../official-providers/openai)。
 
-### `@dsh-ai-providers/localai`
+## `@dsh-ai-providers/localai`
 
 LocalAI 专用提供方，涵盖语言模型、嵌入、重排、TTS、文件及实时 STT 和图像生成。它复用经过测试的 OpenAI 兼容传输层，同时加入 LocalAI 默认值、原生请求字段和重排。
 

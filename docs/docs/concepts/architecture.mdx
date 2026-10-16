@@ -3,7 +3,7 @@ title: Architecture
 sidebar_position: 1
 ---
 
-The project separates contracts, selection, and vendor implementations.
+The architecture separates the public contract from provider selection and vendor-specific transport code.
 
 The boundary is intentionally narrower than any one vendor API. It captures the operations consumers can rely on across providers, while request-option metadata gives provider packages room to expose useful differences without forcing those differences into every consumer.
 
@@ -18,7 +18,7 @@ The boundary is intentionally narrower than any one vendor API. It captures the 
 
 A vendor plugin registers an `AiProvider` with `ctx.aiProviders`. A provider has a stable ID, a display label, optional settings metadata, and factories for its supported capabilities. Registration is scoped through Cordis, so unloading the plugin removes the provider.
 
-The main plugin creates service facades for the selected providers:
+The runtime exposes service facades for the selected providers:
 
 | Context service | Capability |
 | --- | --- |
@@ -51,4 +51,4 @@ Provider failures are normalized as `AiError` values with one of six stable code
 
 ## Compatibility boundary
 
-The core package is the dependency boundary for consumers and third-party providers. The runtime and official provider packages can evolve behind it, but changing a core method, result shape, error code, or service name affects every implementation and consumer. New vendor-only controls therefore belong in provider request-option metadata unless they represent behaviour that can be defined consistently across implementations.
+The core package is the dependency boundary for consumers and third-party providers. The runtime and project-maintained provider packages can evolve behind it, but changing a core method, result shape, error code, or service name affects every implementation and consumer. Keep vendor-only controls in provider request-option metadata unless their behavior can be defined consistently across implementations.
