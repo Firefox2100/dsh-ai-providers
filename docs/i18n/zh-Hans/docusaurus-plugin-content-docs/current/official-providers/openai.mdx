@@ -20,6 +20,8 @@ sidebar_position: 1
 
 在提供方卡片中创建一个或多个可复用连接。每个连接包含 ID、名称、基础 URL 和 DSH 凭据引用。默认连接指向 `https://api.openai.com/v1`，并引用 `OPENAI_API_KEY`。
 
+![DSH 设置中已配置的 OpenAI 兼容连接](/img/screenshots/providers/openai-settings.png)
+
 同一连接可供所有能力共享，也可为每项能力分别选择连接。这适合将语言模型、语音和图像部署在不同兼容服务器上的环境。
 
 基础 URL 应包含各端点之前的 API 前缀。例如服务器的嵌入端点是 `/v1/embeddings` 时，应填写 `http://localhost:8080/v1`。

@@ -1,43 +1,38 @@
-# Website
+# DSH AI Providers documentation
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+English | [简体中文](./README.zh-CN.md)
 
-## Installation
+The project documentation is a bilingual [Docusaurus](https://docusaurus.io/) site. English source pages live in `docs/`; Simplified Chinese translations live under `i18n/zh-Hans/`.
 
-```bash
-npm install
-```
-
-**Note**: feel free to use the package manager of your choice.
-
-## Local Development
+## Install dependencies
 
 ```bash
-npm run start
+pnpm install
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
+## Local development
 
 ```bash
-npm run build
+pnpm start
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+The development server watches the English site by default. Use Docusaurus's locale option when checking the Chinese site:
+
+```bash
+pnpm start -- --locale zh-Hans
+```
+
+## Validate the site
+
+```bash
+pnpm typecheck
+pnpm build
+```
+
+The production build checks both locales and fails on broken links. Generated files are written to `build/`.
 
 ## Deployment
 
-Using SSH:
+The repository workflow in `.github/workflows/deploy-docs.yml` builds and deploys the site to GitHub Pages. Normal documentation changes do not require a manual `docusaurus deploy` run.
 
-```bash
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Update English and Simplified Chinese pages together. Check commands, package names, compatibility ranges, and capability claims against the current source before publishing.

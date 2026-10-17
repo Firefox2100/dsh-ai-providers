@@ -20,6 +20,8 @@ sidebar_position: 1
 
 Create one or more reusable connections in the provider card. Each has an ID, name, base URL, and DSH credential reference. The default connection targets `https://api.openai.com/v1` and refers to `OPENAI_API_KEY`.
 
+![An OpenAI-compatible connection configured in DSH settings](/img/screenshots/providers/openai-settings.png)
+
 A connection can be shared by all capabilities, or each capability can select a different connection. This is useful when language models, speech, and images are hosted by different compatible servers.
 
 Base URLs must include the API prefix expected before the endpoint paths. For example, use `http://localhost:8080/v1` for a server whose embeddings endpoint is `/v1/embeddings`.
