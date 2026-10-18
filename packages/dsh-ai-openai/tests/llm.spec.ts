@@ -19,7 +19,7 @@ describe('the stream of chat completions', () => {
     const chunks = await collect(translate(events(delta({ content: 'Hel' }), delta({ content: 'lo' }), delta({}, 'stop'), { choices: [], usage: { prompt_tokens: 10, completion_tokens: 2, total_tokens: 12, prompt_tokens_details: { cached_tokens: 4 } } }, '[DONE]'), 'tags'))
     expect(kinds(chunks)).toEqual(['start:text', 'text-delta', 'text-delta', 'block-end', 'usage', 'finish:stop'])
     expect(chunks[3]).toMatchObject({ block: { type: 'text', text: 'Hello' } })
-    expect(chunks[4]).toMatchObject({ usage: { inputTokens: 10, outputTokens: 2, totalTokens: 12, cacheReadTokens: 4 } })
+    expect(chunks[4]).toMatchObject({ usage: { inputTokens: 6, outputTokens: 2, totalTokens: 12, cacheReadTokens: 4 } })
   })
 
   it('keeps the reasoning the endpoint separates, before the answer', async () => {
@@ -49,9 +49,21 @@ describe('the stream of chat completions', () => {
 
   it('reports a cut-off answer as max tokens, and refuses nothing, errors and truncation', async () => {
     expect((await collect(translate(events(delta({ content: 'x' }, 'length'), '[DONE]'), 'tags'))).at(-1)).toEqual({ type: 'finish', reason: { kind: 'max-tokens' } })
+    expect((await collect(translate(events(delta({ content: 'x' }, 'content_filter'), '[DONE]'), 'tags'))).at(-1)).toEqual({ type: 'finish', reason: { kind: 'error', failure: { message: 'model stopped: content_filter', code: 'CONTENT_FILTER' } } })
     await expect(collect(translate(events(delta({}, 'stop'), '[DONE]'), 'tags'))).rejects.toMatchObject({ failure: 'EMPTY_RESPONSE' })
+    await expect(collect(translate(events(delta({ content: 'x' }), '[DONE]'), 'tags'))).rejects.toMatchObject({ failure: 'TRANSPORT' })
     await expect(collect(translate(events(delta({ content: 'x' }), { error: { message: 'maximum context length is 10 tokens' } }), 'tags'))).rejects.toMatchObject({ failure: 'CONTEXT_WINDOW_EXCEEDED' })
     await expect(collect(translate(events(delta({ content: 'x' })), 'tags'))).rejects.toMatchObject({ failure: 'TRANSPORT' })
+  })
+
+  it('reports disjoint cached-token usage across compatible wire spellings', async () => {
+    const chunks = await collect(translate(events(
+      delta({ content: 'x' }),
+      delta({}, 'stop'),
+      { choices: [], usage: { prompt_tokens: 20, completion_tokens: 3, prompt_cache_hit_tokens: 15 } },
+      '[DONE]',
+    ), 'tags'))
+    expect(chunks.at(-2)).toEqual({ type: 'usage', usage: { inputTokens: 5, outputTokens: 3, totalTokens: 23, cacheReadTokens: 15 } })
   })
 
   it('is read from server-sent events whatever the way the bytes are cut', async () => {

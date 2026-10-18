@@ -61,21 +61,35 @@ interface WireDelta {
 interface WireEvent {
   error?: unknown
   choices?: { delta?: WireDelta; finish_reason?: string | null }[]
-  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; prompt_tokens_details?: { cached_tokens?: number }; completion_tokens_details?: { reasoning_tokens?: number } } | null
+  usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+    prompt_cache_hit_tokens?: number
+    prompt_tokens_details?: { cached_tokens?: number }
+    completion_tokens_details?: { reasoning_tokens?: number }
+  } | null
 }
 
-const usageOf = (usage: NonNullable<WireEvent['usage']>): TokenUsage => ({
-  inputTokens: usage.prompt_tokens ?? 0,
-  outputTokens: usage.completion_tokens ?? 0,
-  ...usage.total_tokens === undefined ? {} : { totalTokens: usage.total_tokens },
-  ...usage.prompt_tokens_details?.cached_tokens ? { cacheReadTokens: usage.prompt_tokens_details.cached_tokens } : {},
-  ...usage.completion_tokens_details?.reasoning_tokens ? { reasoningTokens: usage.completion_tokens_details.reasoning_tokens } : {},
-})
+const usageOf = (usage: NonNullable<WireEvent['usage']>): TokenUsage => {
+  const prompt = usage.prompt_tokens ?? 0
+  const output = usage.completion_tokens ?? 0
+  const cacheRead = usage.prompt_tokens_details?.cached_tokens ?? usage.prompt_cache_hit_tokens
+  const total = usage.total_tokens ?? (usage.prompt_tokens === undefined || usage.completion_tokens === undefined ? undefined : prompt + output)
+  return {
+    inputTokens: Math.max(0, prompt - (cacheRead ?? 0)),
+    outputTokens: output,
+    ...total === undefined ? {} : { totalTokens: total },
+    ...cacheRead === undefined ? {} : { cacheReadTokens: cacheRead },
+    ...usage.completion_tokens_details?.reasoning_tokens === undefined ? {} : { reasoningTokens: usage.completion_tokens_details.reasoning_tokens },
+  }
+}
 
-function finishOf(wire: string | undefined, calls: boolean): FinishReason {
+function finishOf(wire: string, calls: boolean): FinishReason {
   if (wire === 'length') return { kind: 'max-tokens' }
-  if (calls || wire === 'tool_calls' || wire === 'function_call') return { kind: 'tool-calls' }
-  return { kind: 'stop' }
+  if (wire === 'tool_calls' || wire === 'function_call') return { kind: 'tool-calls' }
+  if (wire === 'stop') return calls ? { kind: 'tool-calls' } : { kind: 'stop' }
+  return { kind: 'error', failure: { message: `model stopped: ${wire}`, code: wire.toUpperCase() } }
 }
 
 /**
@@ -143,6 +157,7 @@ export async function * translate(events: AsyncIterable<string>, tags: Reasoning
   }
   yield * emit(splitter.feed('', true))
   if (!done && wireFinish === undefined) throw new LlmRequestError('TRANSPORT', 'the stream ended before the endpoint said the answer was complete')
+  if (wireFinish === undefined) throw new LlmRequestError('TRANSPORT', 'the endpoint ended the stream without a finish reason')
   if (blocks.length === 0) throw new LlmRequestError('EMPTY_RESPONSE', 'the model answered with nothing')
 
   for (const block of blocks) {
