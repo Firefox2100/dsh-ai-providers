@@ -13,7 +13,7 @@
     "watch": "pnpm -r --parallel run watch",
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",
-    "test:coverage": "pnpm -r run test --coverage --coverage.reporter=text --coverage.reporter=lcov",
+    "test:coverage": "pnpm -r run test --coverage --coverage.reporter=text --coverage.reporter=lcov && node scripts/merge-coverage.mjs",
     "release:check": "node scripts/check-release.mjs",
     "release:publish": "node scripts/publish.mjs"
   },
