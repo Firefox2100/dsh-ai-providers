@@ -7,7 +7,6 @@ import { AiProviders } from './host/registry.ts'
 import { AiServices } from './host/services.ts'
 import { LlmRoutes } from './host/llm.ts'
 import { RequestGate } from './host/gate.ts'
-import { ModelControls } from './host/model-controls.ts'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-llm'
 
@@ -30,7 +29,6 @@ export const name = '@dsh-ai-providers/runtime'
 
 export function apply(ctx: Context, config: Config): void {
   const registry = new AiProviders(ctx)
-  new ModelControls(ctx, registry)
   const gate = new RequestGate({ rules: () => config.limits.get(), maxWaitMs: () => config.maxWaitSeconds.get() * 1000, maxHoldMs: () => config.maxHoldSeconds.get() * 1000, onForced: (request, ms) => { ctx.logger.warn(`a ${request.capability} call${request.route === undefined ? '' : ` on ${request.route}`} held its place for ${Math.round(ms / 1000)} s and was let go of`) } })
   registry.gate = gate
   ctx.on('loader/volatile-update', () => { gate.pump() })

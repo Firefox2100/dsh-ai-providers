@@ -21,7 +21,7 @@ describe('route model controls', () => {
   beforeEach(() => {
     ctx = new Context()
     registry = new AiProviders(ctx)
-    controls = new ModelControls(ctx, registry)
+    controls = registry.modelControls
   })
 
   afterEach(async () => { await ctx.fiber.dispose() })

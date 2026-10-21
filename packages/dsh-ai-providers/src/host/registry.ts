@@ -1,12 +1,14 @@
 import { Service, type Context } from '@deepseek-ai/cordis'
 import type { AiProvider, AiProviderRegistry, Capability, LlmPolicy } from '@dsh-ai-providers/core'
 import type { RequestGate } from './gate.ts'
+import { ModelControls } from './model-controls.ts'
 
 /**
  * The registry vendor plugins register their providers in. A registration is an effect of the
  * vendor's own plugin, so unloading the vendor removes it.
  */
 export class AiProviders extends Service implements AiProviderRegistry {
+  readonly modelControls: ModelControls
   private readonly providers = new Map<string, AiProvider>()
   private readonly listeners = new Set<() => void>()
   private readonly llmPolicies: LlmPolicy[] = []
@@ -16,6 +18,7 @@ export class AiProviders extends Service implements AiProviderRegistry {
 
   constructor(ctx: Context) {
     super(ctx, 'aiProviders')
+    this.modelControls = new ModelControls(ctx, this)
   }
 
   register(provider: AiProvider): () => void {
