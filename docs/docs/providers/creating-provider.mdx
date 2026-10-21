@@ -19,6 +19,26 @@ Unsupported capabilities should be absent, not represented by methods that alway
 
 Factories must read live configuration when called. Do not capture a connection, credential value, or model at registration time: doing so makes settings appear to update while requests continue using stale state. Keep the implementation's `provider`, `model`, and `capability` identity accurate because consumers and diagnostics can inspect them.
 
+### Optional LLM model controls
+
+Set `LlmService.modelControl` only when the provider has a real model-administration API. List the implemented methods in `operations`, and omit methods the provider cannot perform.
+
+```ts
+import {LlmService, type LlmModelControl} from '@dsh-ai-providers/core'
+
+class VendorLlmService extends LlmService {
+  readonly modelControl: LlmModelControl = {
+    operations: ['status', 'unload'],
+    status: (route, model, signal) => this.modelStatus(route, model, signal),
+    unload: (route, model, signal) => this.unloadModel(route, model, signal),
+  }
+}
+```
+
+Resolve the named route and its connection on every call so settings changes take effect immediately. Validate the model name before sending it, pass the signal to the transport, and map the vendor's state into `LlmModelRuntimeStatus`. Report memory in bytes only when the response supplies a valid, non-negative value.
+
+Model administration usually changes shared process state. Do not implement automatic unloading inside `stream()`, and do not imply that an aborted HTTP request rolled back a load or unload already accepted by the server.
+
 ## 3. Register through the context
 
 Register with `ctx.aiProviders` inside the plugin scope. Use `ctx.effect()` when registration returns or requires a disposer, so hot reload removes the provider cleanly.
@@ -52,4 +72,6 @@ Run the workspace tests and type checks before publishing. Avoid asserting only 
 - Registration and every listener or timer are scoped through `ctx` and unload cleanly.
 - UI labels and option descriptions exist in English and Simplified Chinese.
 - Provider-specific options are exposed only when the provider implements them.
+- `modelControl.operations` agrees with the methods the service implements.
+- Model-control tests cover route resolution, authorization, cancellation, malformed status responses, and unsupported operations.
 - Tests cover a compatible local or stub server so routine verification does not require paid credentials.

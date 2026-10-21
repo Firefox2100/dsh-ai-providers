@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/anthropic",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Native Anthropic language model provider for dsh-ai-providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -35,9 +35,9 @@
   "peerDependencies": {
     "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.3.0",
     "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.1.5"
+    "@dsh-ai-providers/core": "workspace:0.2.0"
   },
-  "dependencies": {"@dsh-ai-providers/runtime": "workspace:0.1.5"},
+  "dependencies": {"@dsh-ai-providers/runtime": "workspace:0.2.0"},
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
     "@deepseek-ai/dsh-client-locale": "0.2.0-rc.2",
@@ -51,7 +51,7 @@
     "@deepseek-ai/schemastery": "^3.18.4",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
-    "@dsh-ai-providers/core": "workspace:0.1.5",
+    "@dsh-ai-providers/core": "workspace:0.2.0",
     "lightningcss": "^1.33.0",
     "react": "^18.3.1",
     "tsdown": "^0.22.2",

@@ -33,6 +33,12 @@ title: LocalAI
 
 LocalAI 原生或后端专用选项（例如约束语法及采样器控制）可放入 `sampling.body`。先应用路由值，再由模型值覆盖。
 
+### 模型管理
+
+LocalAI 路由支持通过 `ctx.aiModels` 暴露的可选模型管理 API：状态查询使用 `GET /backend/monitor`，加载使用 `POST /backend/load`，卸载使用 `POST /backend/shutdown`，路径均相对于已配置的 `/v1` 基础 URL。状态结果包含 LocalAI 后端状态，并在服务端提供时包含以字节计的内存用量。
+
+LocalAI 启用认证后，这些端点需要管理员权限，因此连接凭据必须具备相应权限。加载和卸载会改变服务器共享状态；只有在调用方负责模型生命周期并已处理并发请求时才应使用。
+
 ## 重排
 
 重排会相对于已配置的 `/v1` 基础 URL 调用 `POST /rerank`。`rerankModel` 应填写 LocalAI 提供的模型名称。`rerankBody` 会合并到每次请求中，用于后端专用参数；查询、文档、模型、`top_n` 和 `return_documents` 仍由服务调用控制。

@@ -66,6 +66,32 @@ export interface LlmCall {
   headers: Readonly<Record<string, string>>
 }
 
+/** One operation a provider offers for the resident process behind a language model. */
+export type LlmModelOperation = 'status' | 'load' | 'unload'
+
+/** Provider-neutral state of a model backend, when the provider can observe it. */
+export interface LlmModelRuntimeStatus {
+  state: 'uninitialized' | 'busy' | 'ready' | 'error' | 'unknown'
+  /** Resident memory reported by the provider, in bytes. */
+  memoryBytes?: number
+}
+
+/** Optional administrative operations of one provider's language-model routes. */
+export interface LlmModelControl {
+  readonly operations: readonly LlmModelOperation[]
+  status?(route: string, model: string, signal?: AbortSignal): Promise<LlmModelRuntimeStatus>
+  load?(route: string, model: string, signal?: AbortSignal): Promise<void>
+  unload?(route: string, model: string, signal?: AbortSignal): Promise<void>
+}
+
+/** Route-based access to the optional model administration offered by providers. */
+export interface AiModelControls {
+  operations(route: string): readonly LlmModelOperation[]
+  status(route: string, model: string, signal?: AbortSignal): Promise<LlmModelRuntimeStatus>
+  load(route: string, model: string, signal?: AbortSignal): Promise<void>
+  unload(route: string, model: string, signal?: AbortSignal): Promise<void>
+}
+
 /**
  * Decides controls for a request from what is known about it: the session, the purpose, the tools, the route. A consumer that knows
  * what a request is for (a story's characters think differently from its narrator) registers one.
@@ -104,6 +130,9 @@ export abstract class LlmService extends AiService {
 
   /** The model of a route is the one a request names, so a service has none of its own. */
   get model(): string { return '' }
+
+  /** Administrative model lifecycle, when this endpoint offers it. */
+  readonly modelControl?: LlmModelControl
 
   /** The routes the service serves now. Read on each use, so an edited configuration applies at once. */
   abstract routes(): readonly LlmRouteSpec[]

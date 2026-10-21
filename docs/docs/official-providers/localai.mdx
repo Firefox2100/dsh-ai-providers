@@ -33,6 +33,12 @@ Language models use LocalAI's OpenAI-compatible `POST /chat/completions` stream.
 
 Use `sampling.body` for LocalAI-native or backend-specific options such as constrained grammar and backend sampler controls. Route values apply first and model values override them.
 
+### Model administration
+
+LocalAI routes support the optional model administration API exposed as `ctx.aiModels`: status uses `GET /backend/monitor`, loading uses `POST /backend/load`, and unloading uses `POST /backend/shutdown`, all relative to the configured `/v1` base URL. Status reports LocalAI's backend state and, when supplied, its memory use in bytes.
+
+These endpoints require administrative authorization when LocalAI authentication is enabled, so the connection credential must have that access. Loading and unloading change shared server state; use them only when the caller owns the model lifecycle and has accounted for concurrent requests.
+
 ## Reranking
 
 Reranking calls `POST /rerank` relative to the configured `/v1` base URL. Set `rerankModel` to the model name served by LocalAI. `rerankBody` is merged into each request for backend-specific parameters; the query, documents, model, `top_n`, and `return_documents` fields remain controlled by the service call.

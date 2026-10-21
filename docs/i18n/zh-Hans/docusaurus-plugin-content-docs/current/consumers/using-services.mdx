@@ -54,6 +54,28 @@ const result = await ctx.rerankers.rerank(query, documents, {
 
 实时转录前先检查 `ctx.streamingSpeechToText` 是否存在。按照核心接口创建会话、依次发送音频块、消费转录事件，最后关闭或中止会话。
 
+## 管理本地模型
+
+`ctx.aiModels` 按 LLM 路由解析模型控制能力。运行时插件加载后，该服务就会存在，但每条路由可以支持不同的操作。显示控制项或发起调用前，先检查 `operations()`。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@dsh-ai-providers/core'
+
+export const inject = ['aiModels']
+
+export async function unloadWhenIdle(ctx: Context, route: string, model: string) {
+  if (!ctx.aiModels.operations(route).includes('unload')) return
+  await ctx.aiModels.unload(route, model)
+}
+```
+
+可用方法为 `status(route, model)`、`load(route, model)` 和 `unload(route, model)`，均可传入可选的 `AbortSignal`。`status()` 返回统一的状态；服务器报告内存用量时，结果还会包含 `memoryBytes`。
+
+加载和卸载会改变提供方进程的状态，并不局限于发起调用的聊天。卸载模型可能中断正在使用同一模型的其他请求。应把这些调用绑定到明确的用户操作，或交给负责该服务器的调度器。不要在每次推理结束后自动卸载模型。
+
+路由不存在时返回 `not-configured`。路由没有模型控制能力，或不支持所请求的操作时返回 `unsupported`。认证失败返回 `rejected`，传输和服务器故障返回 `unavailable`。
+
 ## 处理失败
 
 捕获 `AiError` 并根据其分类处理。错误消息只用于诊断，不属于稳定 API。包装错误时应保留原始原因。
@@ -74,5 +96,7 @@ const result = await ctx.rerankers.rerank(query, documents, {
 - 从拥有请求生命周期的一方传入 `signal`。
 - 将索引和维护调用标记为 `background`。
 - 完整消费或取消流。
+- 提供模型管理操作前，先检查 `ctx.aiModels.operations(route)`。
+- 将加载和卸载视为共享服务器操作，而不是聊天清理步骤。
 - 将返回的模型名、维度、令牌数、声音和媒体元数据视为提供方结果，而不是固定常量。
 - 除成功路径外，还应测试 `not-configured`、取消、卸载和提供方失败。

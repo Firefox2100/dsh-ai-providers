@@ -25,8 +25,13 @@ Do not import runtime internals or a vendor package merely to call a selected ca
 | `ctx.streamingSpeechToText` | `StreamingSttService` | The selected STT provider also supports live sessions |
 | `ctx.imageGeneration` | `ImageGenerationService` | An image provider is selected and loaded |
 | `ctx.aiProviders` | `AiProviderRegistry` | The runtime plugin is loaded |
+| `ctx.aiModels` | `AiModelControls` | The runtime plugin is loaded |
 
 Language models use DSH's existing `ctx.llm` service. Provider packages contribute routes through the runtime adapter instead of exposing another selected context service.
+
+`ctx.aiModels` is separate from inference. It resolves optional administrative operations for a route: model status, load, and unload. Use `operations(route)` for feature detection. A provider advertises these operations through `LlmService.modelControl`; providers without an administrative API leave that property undefined.
+
+`LlmModelRuntimeStatus.state` is one of `uninitialized`, `busy`, `ready`, `error`, or `unknown`. `memoryBytes` is present only when the provider reports resident memory. The contract does not promise that cancelling a request reverses work already accepted by a remote server.
 
 A disabled capability does not expose a usable service value. Declare a required Cordis injection when your plugin cannot work without the service, or an optional injection when the feature has a real fallback.
 

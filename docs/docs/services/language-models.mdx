@@ -43,6 +43,12 @@ When a model is marked as supporting vision, the provider reads available image 
 
 A plugin that knows the purpose of a request can register an `LlmPolicy` through `ctx.aiProviders.policy()`. Policies can adjust sampling and concurrency priority without binding the caller to the OpenAI provider.
 
+## Optional model administration
+
+A provider may expose model lifecycle operations through its language-model service. Consumer plugins use `ctx.aiModels.operations(route)` to detect what a route supports, then call `status(route, model)`, `load(route, model)`, or `unload(route, model)`. Providers that cannot manage models do not implement this optional capability; callers must not assume it is present.
+
+These operations affect the provider process, not one chat. In particular, unloading a model can interrupt other users or requests. The runtime therefore performs operations only when a plugin asks explicitly and never unloads a model automatically after inference. An optional `AbortSignal` cancels the request, but cannot guarantee that a remote server has rolled back work it already accepted.
+
 ## Anthropic-native behavior
 
 The project-maintained Anthropic provider uses `POST /messages` with native system prompts, content blocks, tool declarations, tool use and tool results. It translates streamed text, thinking, tool-input JSON, usage, cache usage, and stop reasons into DSH chunks. Image blocks are read from DSH's attachment service and sent as base64 image sources; offloaded images remain text placeholders.

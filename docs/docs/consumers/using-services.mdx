@@ -54,6 +54,28 @@ Consume or explicitly cancel returned streams. The concurrency gate holds capaci
 
 For live transcription, first check whether `ctx.streamingSpeechToText` is present. Start a session, send audio chunks in order, consume transcript events, then close or abort the session according to the core contract.
 
+## Manage a local model
+
+`ctx.aiModels` resolves model controls by LLM route. The service is present when the runtime plugin is loaded, but each route decides which operations it supports. Check `operations()` before showing a control or calling it.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@dsh-ai-providers/core'
+
+export const inject = ['aiModels']
+
+export async function unloadWhenIdle(ctx: Context, route: string, model: string) {
+  if (!ctx.aiModels.operations(route).includes('unload')) return
+  await ctx.aiModels.unload(route, model)
+}
+```
+
+The available methods are `status(route, model)`, `load(route, model)`, and `unload(route, model)`. Each accepts an optional `AbortSignal`. `status()` returns a provider-neutral state and may include `memoryBytes` when the server reports it.
+
+Loading and unloading change the provider process. They are not scoped to the calling chat, and unloading can disrupt another request using the same model. Tie these calls to an explicit user action or to a scheduler that owns the server. Do not unload a model after every inference call.
+
+An unknown route fails with `not-configured`. A route without model controls, or without the requested operation, fails with `unsupported`. Authentication failures are `rejected`; transport and server failures are `unavailable`.
+
 ## Handling failures
 
 Catch `AiError` and branch on its category. Treat message text as diagnostic information, not as an API contract. Preserve the error cause when wrapping it for your own plugin.
@@ -74,5 +96,7 @@ Catch `AiError` and branch on its category. Treat message text as diagnostic inf
 - Pass `signal` from the lifecycle that owns the request.
 - Mark indexing and maintenance calls as `background`.
 - Fully consume or cancel streams.
+- Check `ctx.aiModels.operations(route)` before offering a model-management action.
+- Treat load and unload as shared server operations, not chat cleanup.
 - Treat returned model names, dimensions, token counts, voices, and media metadata as provider results rather than fixed constants.
 - Test `not-configured`, cancellation, unload, and a provider-side failure in addition to the successful path.
