@@ -8,7 +8,7 @@ const config = (selected: string, connections: unknown[]) => ({
 
 describe('OpenAI-compatible connections', () => {
   it('resolves the connection selected for a capability and normalizes its URL', () => {
-    expect(resolveConnection(config('local', [{ id: 'local', name: 'LocalAI', baseUrl: 'http://localhost:8081/v1/', apiKeyRef: 'LOCALAI_API_KEY' }]), 'image')).toEqual({ baseUrl: 'http://localhost:8081/v1', apiKeyRef: 'LOCALAI_API_KEY' })
+    expect(resolveConnection(config('local', [{ id: 'local', name: 'LocalAI', baseUrl: 'http://localhost:8081/v1///', apiKeyRef: 'LOCALAI_API_KEY' }]), 'image')).toEqual({ baseUrl: 'http://localhost:8081/v1', apiKeyRef: 'LOCALAI_API_KEY' })
   })
 
   it('fails clearly for a missing selection, deleted connection, or invalid URL', () => {
