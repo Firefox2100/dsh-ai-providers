@@ -20,9 +20,18 @@ export const SAMPLING_NUMBERS = [
   ['frequencyPenalty', -2, 2, false], ['presencePenalty', -2, 2, false], ['repetitionPenalty', 0, undefined, false], ['seed', 0, undefined, true], ['maxTokens', 1, undefined, true],
 ] as const satisfies readonly (readonly [keyof OpenAiSamplingConfig, number, number | undefined, boolean])[]
 
+const withoutEdgeHyphens = (value: string): string => {
+  let start = 0
+  let end = value.length
+  while (value[start] === '-') start += 1
+  while (value[end - 1] === '-') end -= 1
+  return value.slice(start, end)
+}
+
 /** An id made of the letters and digits of a name, unused among `taken`. */
 export function freshId(name: string, taken: readonly string[]): string {
-  const base = name.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'route'
+  const normalized = name.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-')
+  const base = withoutEdgeHyphens(normalized) || 'route'
   let id = base
   for (let n = 2; taken.includes(id); n += 1) id = `${base}-${n}`
   return id

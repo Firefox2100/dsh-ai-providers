@@ -20,7 +20,8 @@ const NAMESPACE = 'ai.concurrency'
 export function registerConcurrency(ctx: Context): void {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: concurrency dictionaries')
-  const controller = new ConcurrencyController(ctx, ctx.configForms.get(ENTRY_ID))
+  const controller = new ConcurrencyController(ctx.configForms.get(ENTRY_ID))
+  controller.start(ctx)
   ctx.effect(
     () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
       ctx.slots.register({

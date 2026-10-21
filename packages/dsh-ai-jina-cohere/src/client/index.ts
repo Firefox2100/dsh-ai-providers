@@ -28,6 +28,7 @@ export function apply(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-jina-cohere: dictionaries')
 
   const controller = new JinaCohereCardController(ctx.configForms.get(ENTRY_ID))
+  controller.start()
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-jina-cohere: form')
 
   ctx.effect(

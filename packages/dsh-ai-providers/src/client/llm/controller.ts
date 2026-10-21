@@ -23,7 +23,7 @@ export class LlmController {
   private readonly store = createSnapshotStore<LlmState>({ status: 'loading', routes: [], probes: {} }, { flush: 'sync' })
   private readonly abort = new AbortController()
 
-  constructor() { void this.load() }
+  start(): void { void this.load() }
 
   private patch(change: Partial<LlmState>): void {
     this.store.set({ ...this.store.getSnapshot(), ...change })

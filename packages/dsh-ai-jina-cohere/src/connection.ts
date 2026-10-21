@@ -4,12 +4,18 @@ import type { Config } from './config.ts'
 
 export interface JinaCohereConnection { baseUrl: string; apiKeyRef: string }
 
+const withoutTrailingSlashes = (value: string): string => {
+  let end = value.length
+  while (value[end - 1] === '/') end -= 1
+  return value.slice(0, end)
+}
+
 export function resolveConnection(config: Config): JinaCohereConnection {
   const id = config.rerankConnection.get().trim()
   if (id === '') throw new AiError('not-configured', 'no Jina / Cohere connection is selected for reranking')
   const connection = config.connections.get().find(candidate => candidate.id === id)
   if (connection === undefined) throw new AiError('not-configured', `the selected Jina / Cohere connection "${id}" does not exist`)
-  const baseUrl = connection.baseUrl.trim().replace(/\/+$/, '')
+  const baseUrl = withoutTrailingSlashes(connection.baseUrl.trim())
   if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
   let url: URL
   try { url = new URL(baseUrl) }

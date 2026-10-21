@@ -61,8 +61,9 @@ export class CapabilityController {
       const disposers = [ctx.slots.subscribe(providerSlotName(this.capability), () => { this.syncEntries() }), ctx.locale.subscribe(() => { this.syncEntries() })]
       return () => { for (const dispose of disposers) dispose() }
     }, 'dsh-ai-providers: provider list')
-    void this.refresh()
   }
+
+  start(): void { void this.refresh() }
 
   private projection(): CapabilityState {
     return {

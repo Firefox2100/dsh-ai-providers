@@ -7,6 +7,12 @@ export interface OpenAiConnection {
   apiKeyRef: string
 }
 
+const withoutTrailingSlashes = (value: string): string => {
+  let end = value.length
+  while (value[end - 1] === '/') end -= 1
+  return value.slice(0, end)
+}
+
 export async function connectionHeaders(connection: OpenAiConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
   if (connection.apiKeyRef === '') return {}
   let key: Awaited<ReturnType<CredentialProvider['resolve']>>
@@ -34,7 +40,7 @@ export function resolveConnection(config: Config, capability: OpenAiCapability):
 }
 
 export function validateConnection(connection: OpenAiConnectionConfig): OpenAiConnection {
-  const baseUrl = connection.baseUrl.trim().replace(/\/+$/, '')
+  const baseUrl = withoutTrailingSlashes(connection.baseUrl.trim())
   if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
   let url: URL
   try { url = new URL(baseUrl) }

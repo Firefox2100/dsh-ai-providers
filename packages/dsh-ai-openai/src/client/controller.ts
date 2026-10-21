@@ -95,11 +95,11 @@ const routeListField = listField('llmRoutes')
 export class OpenAiCardController {
   private readonly form: SettingsFormModel<OpenAiSettings>
   private readonly store: SnapshotStore<OpenAiCardState>
-  private readonly unsubscribe: () => void
+  private unsubscribe = () => {}
   private readonly abort = new AbortController()
   private credentialStatus: Record<string, CredentialsPayload> = {}
 
-  constructor(scope: SettingsFormScope<OpenAiSettings>) {
+  constructor(private readonly scope: SettingsFormScope<OpenAiSettings>) {
     this.form = new SettingsFormModel(
       scope,
       [
@@ -113,7 +113,10 @@ export class OpenAiCardController {
       ],
     )
     this.store = this.form.bind(() => this.projection())
-    this.unsubscribe = scope.subscribe(() => { void this.readCredentials() })
+  }
+
+  start(): void {
+    this.unsubscribe = this.scope.subscribe(() => { void this.readCredentials() })
     void this.readCredentials()
   }
 

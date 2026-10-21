@@ -56,11 +56,11 @@ const connectionListField: SettingsFieldSpec = {
 export class JinaCohereCardController {
   private readonly form: SettingsFormModel<JinaCohereSettings>
   private readonly store: SnapshotStore<JinaCohereCardState>
-  private readonly unsubscribe: () => void
+  private unsubscribe = () => {}
   private readonly abort = new AbortController()
   private credentialStatus: Record<string, CredentialsPayload> = {}
 
-  constructor(scope: SettingsFormScope<JinaCohereSettings>) {
+  constructor(private readonly scope: SettingsFormScope<JinaCohereSettings>) {
     this.form = new SettingsFormModel(
       scope,
       [
@@ -68,7 +68,10 @@ export class JinaCohereCardController {
       ],
     )
     this.store = this.form.bind(() => this.projection())
-    this.unsubscribe = scope.subscribe(() => { void this.readCredentials() })
+  }
+
+  start(): void {
+    this.unsubscribe = this.scope.subscribe(() => { void this.readCredentials() })
     void this.readCredentials()
   }
 

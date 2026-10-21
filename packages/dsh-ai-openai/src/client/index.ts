@@ -29,6 +29,7 @@ export function apply(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-openai: dictionaries')
 
   const controller = new OpenAiCardController(ctx.configForms.get(ENTRY_ID))
+  controller.start()
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-openai: form')
 
   ctx.effect(

@@ -22,6 +22,7 @@ export function registerLlm(ctx: Context): void {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: llm dictionaries')
   const controller = new LlmController()
+  controller.start()
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: llm tab')
   ctx.effect(
     () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>

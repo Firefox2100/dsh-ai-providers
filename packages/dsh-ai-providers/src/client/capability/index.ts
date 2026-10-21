@@ -35,6 +35,7 @@ function registerTab(ctx: Context, capability: Capability): void {
   ctx.effect(() => ctx.locale.register(namespace, dictionariesOf[capability]), `dsh-ai-providers: ${capability} dictionaries`)
 
   const controller = new CapabilityController(ctx, ctx.configForms.get(ENTRY_ID), capability)
+  controller.start()
   ctx.effect(() => () => { controller.dispose() }, `dsh-ai-providers: ${capability} tab`)
 
   // The tab only exists while the host plugin is loaded and serves its form.

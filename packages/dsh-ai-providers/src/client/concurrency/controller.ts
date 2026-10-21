@@ -65,11 +65,14 @@ export class ConcurrencyController {
   private readonly abort = new AbortController()
   private live: Record<string, ConcurrencyStatus> = {}
   private routes: { id: string; name: string }[] = []
-  private readonly timer: ReturnType<typeof setInterval>
+  private timer: ReturnType<typeof setInterval> | undefined
 
-  constructor(ctx: Context, scope: SettingsFormScope<ConcurrencySettings>) {
+  constructor(scope: SettingsFormScope<ConcurrencySettings>) {
     this.form = new SettingsFormModel(scope, [limitsField, settingsNumberField('maxWaitSeconds')])
     this.store = this.form.bind(() => this.projection())
+  }
+
+  start(ctx: Context): void {
     void this.refresh()
     this.timer = setInterval(() => { void this.refresh() }, REFRESH_MS)
     ctx.effect(() => () => { this.dispose() }, 'dsh-ai-providers: concurrency tab')
@@ -109,7 +112,7 @@ export class ConcurrencyController {
   }
 
   dispose(): void {
-    clearInterval(this.timer)
+    if (this.timer !== undefined) clearInterval(this.timer)
     this.abort.abort()
     this.form.dispose()
   }
