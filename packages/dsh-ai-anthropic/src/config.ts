@@ -9,8 +9,13 @@ export interface AnthropicReasoningLevelConfig {id: string; name: string; body: 
 export interface AnthropicLlmModelConfig {
   id: string; name: string; contextWindow?: number; maxTokens?: number; vision?: boolean; reasoningLevels?: readonly AnthropicReasoningLevelConfig[]; defaultReasoning?: string; sampling?: AnthropicSamplingConfig
 }
+export interface AnthropicRetryConfig {
+  mode: 'normal' | 'always'; maxRetries?: number; retryableCodes?: readonly string[]; backoff?: {initialDelayMs?: number; maxDelayMs?: number; jitterRatio?: number}
+}
 export interface AnthropicLlmRouteConfig {
   id: string; name: string; connection: string; models: readonly AnthropicLlmModelConfig[]; sampling?: AnthropicSamplingConfig; headers?: Readonly<Record<string, string>>
+  /** How DSH retries a failed request of this route; DSH's defaults when absent. */
+  retry?: AnthropicRetryConfig
 }
 export interface Config {
   connections: Volatile<AnthropicConnectionConfig[]>; llmRoutes: Volatile<AnthropicLlmRouteConfig[]>; anthropicVersion: Volatile<string>; llmIdleTimeoutMs: Volatile<number>
@@ -22,6 +27,8 @@ export const Config = z.object({
     id: z.string().required(), name: z.string().required(), connection: z.string().required(),
     models: z.array(z.object({id: z.string().required(), name: z.string().required(), contextWindow: z.natural(), maxTokens: z.natural(), vision: z.boolean(), reasoningLevels: z.array(z.object({id: z.string().required(), name: z.string().required(), body: z.dict(z.any()).default({})})), defaultReasoning: z.string(), sampling: sampling()})).default([]),
     sampling: sampling(), headers: z.dict(z.string()),
+    // Left free-form: the schema would fill in empty lists and zeros, which DSH's own policy check then reads as a policy.
+    retry: z.any(),
   })).default([]).volatile(),
   anthropicVersion: z.string().default('2023-06-01').volatile(),
   llmIdleTimeoutMs: z.natural().default(300_000).volatile(),

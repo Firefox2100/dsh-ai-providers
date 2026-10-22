@@ -1,5 +1,6 @@
 import { access, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { DSH_DEVELOPMENT, DSH_ENGINES, DSH_PACKAGE_PEERS } from './dsh-compat.mjs'
 import { releasePackages } from './release-packages.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -39,6 +40,16 @@ for (const { folder, name } of releasePackages) {
     if (dependency.startsWith('@deepseek-ai/')) throw new Error(`${name}: ${dependency} must be a peer dependency`)
   }
 
+  for (const field of ['peerDependencies', 'devDependencies']) {
+    for (const [dependency, range] of Object.entries(manifest[field] ?? {})) {
+      if (dependency === '@deepseek-ai/dsh' && range !== DSH_ENGINES) throw new Error(`${name}: ${field}.${dependency} must be ${DSH_ENGINES}`)
+      if (!dependency.startsWith('@deepseek-ai/dsh-')) continue
+      const expected = field === 'peerDependencies' ? DSH_PACKAGE_PEERS : DSH_DEVELOPMENT
+      if (range !== expected) throw new Error(`${name}: ${field}.${dependency} must be ${expected}`)
+    }
+  }
+  if (manifest.dsh?.engines !== undefined) throw new Error(`${name}: DSH reads engines.dsh, not dsh.engines`)
+
   if (manifest.main) await access(resolve(directory, manifest.main))
   if (manifest.types) await access(resolve(directory, manifest.types))
 }
@@ -48,6 +59,7 @@ await access(resolve(root, 'LICENSE'))
 for (const folder of ['dsh-ai-all', 'dsh-ai-providers', 'dsh-ai-openai', 'dsh-ai-anthropic', 'dsh-ai-jina-cohere', 'dsh-ai-localai']) {
   const manifest = JSON.parse(await readFile(resolve(root, 'packages', folder, 'package.json'), 'utf8'))
   if (manifest.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error(`${manifest.name}: missing DSH bundle declaration`)
+  if (manifest.engines?.dsh !== DSH_ENGINES) throw new Error(`${manifest.name}: engines.dsh must be ${DSH_ENGINES}`)
   if (!manifest.files.includes('cordis.patch.yml')) throw new Error(`${manifest.name}: cordis.patch.yml must be published`)
   await access(resolve(root, 'packages', folder, 'cordis.patch.yml'))
 }

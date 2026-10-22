@@ -1,4 +1,4 @@
-import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
+import type { GenerateOptions, RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { AiError, type AiErrorCode } from './errors.ts'
 import { AiService, type RequestPriority } from './service.ts'
 
@@ -42,7 +42,10 @@ export interface LlmModelSpec {
   contextWindow?: number
   /** The output limit used when a request sets none. */
   maxTokens?: number
+  /** Levels run from the least to the greatest effort: DSH picks the first for light work such as session titles. */
   reasoning?: { levels: readonly LlmReasoningLevel[]; default?: string }
+  /** The model reads the latest system message at any position of the conversation as the whole system prompt; absent means only a leading one is read. */
+  systemPromptUpdate?: 'in-history'
   sampling?: LlmSampling
 }
 
@@ -52,6 +55,16 @@ export interface LlmRouteSpec {
   name: string
   models: readonly LlmModelSpec[]
   sampling?: LlmSampling
+  /** The endpoint the route sends its requests to, when it has one fixed by its configuration. */
+  baseUrl?: string
+  /** How DSH retries a failed request of this route; absent means DSH's own defaults. */
+  retry?: RetryPolicyConfig
+}
+
+/** An endpoint a surface is still editing: nothing stored yet, the key used for this one question only. */
+export interface LlmEndpointDraft {
+  baseUrl: string
+  apiKey?: string
 }
 
 /** One model request as the service gets it: DSH's request, the route and model it names, and the controls that apply to it. */
@@ -145,4 +158,12 @@ export abstract class LlmService extends AiService {
 
   /** The models the endpoint of a route says it has, for choosing which to add. */
   async discover(_route: string, _signal?: AbortSignal): Promise<LlmModelSpec[]> { return [] }
+
+  /**
+   * The models an endpoint that is not configured yet says it has.
+   * @throws {AiError} `unsupported` when the service cannot ask an endpoint on its own.
+   */
+  async interrogate(_draft: LlmEndpointDraft, _signal?: AbortSignal): Promise<LlmModelSpec[]> {
+    throw new AiError('unsupported', 'this provider cannot list the models of an endpoint that is not configured yet')
+  }
 }

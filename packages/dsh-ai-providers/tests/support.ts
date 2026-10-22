@@ -1,5 +1,5 @@
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
+import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmModelSpec, LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {
@@ -71,6 +71,12 @@ export class FakeLlm extends LlmService {
   failWith: Error | undefined
 
   routes(): readonly LlmRouteSpec[] { return this.routeList }
+
+  interrogated: { baseUrl: string; apiKey?: string }[] = []
+  override async interrogate(draft: { baseUrl: string; apiKey?: string }): Promise<LlmModelSpec[]> {
+    this.interrogated.push(draft)
+    return [{ id: 'found', name: 'Found', contextWindow: 4096, inputs: ['text', 'image'] }]
+  }
 
   async * stream(call: LlmCall): AsyncGenerator<StreamChunk> {
     this.calls.push(call)

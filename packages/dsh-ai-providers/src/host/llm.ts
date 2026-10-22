@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
-import { LlmAdapter, LlmError, ProviderRequestId, attributionHeaders } from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
+import { LlmAdapter, LlmError, ProviderRequestId, attributionHeaders, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
+import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, GenerateOptions, LlmConfigurableProvider, LlmDiscoveredModel, LlmModelDiscoveryRequest, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, PreparedAdapterCall, ResolvedRetryPolicy, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from '@dsh-ai-providers/core'
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
@@ -74,8 +74,26 @@ export class AiLlmAdapter extends LlmAdapter {
     return Promise.resolve(resolved(provider, route.models.find(candidate => candidate.id === model), model))
   }
 
-  override async * stream(options: GenerateOptions): AsyncGenerator<StreamChunk> {
-    const { service, route } = this.ownerOf(options.provider)
+  /** The retry policy DSH captures when the route is registered; absent means DSH's defaults. */
+  override providerRetryPolicy(provider: string): ResolvedRetryPolicy | undefined {
+    const { route } = this.ownerOf(provider)
+    return route.retry === undefined ? undefined : resolveRetryPolicy(route.retry, `language model route "${route.id}": retry`)
+  }
+
+  /** The model facts and the request that follows come from one reading of the routes, so an edit between the two cannot mix them. */
+  override prepareCall(provider: string, model: string): Promise<PreparedAdapterCall> {
+    const owner = this.ownerOf(provider)
+    return Promise.resolve({
+      model: resolved(provider, owner.route.models.find(candidate => candidate.id === model), model),
+      stream: options => this.streamFrom(owner, options),
+    })
+  }
+
+  override stream(options: GenerateOptions): AsyncGenerator<StreamChunk> {
+    return this.streamFrom(this.ownerOf(options.provider), options)
+  }
+
+  private async * streamFrom({ service, route }: RouteOwner, options: GenerateOptions): AsyncGenerator<StreamChunk> {
     const model = route.models.find(candidate => candidate.id === options.model)
     const answers = this.registry.policies().map(policy => policy({ options, route: route.id, model: options.model }))
     const priority = answers.map(answer => answer?.priority).findLast(found => found !== undefined)
@@ -106,6 +124,7 @@ function resolved(provider: string, model: LlmModelSpec | undefined, id: string)
     inputModalities: model?.inputs ?? ['text'],
     ...model?.contextWindow === undefined ? {} : { context: { contextWindow: model.contextWindow } },
     ...model?.maxTokens === undefined ? {} : { defaultMaxTokens: model.maxTokens },
+    ...model?.systemPromptUpdate === undefined ? {} : { systemPromptUpdate: model.systemPromptUpdate },
     ...model?.reasoning === undefined ? {} : {
       reasoning: {
         efforts: model.reasoning.levels.map(level => ({ id: level.id as never, name: level.name })),
@@ -123,11 +142,17 @@ export interface RouteState { active: boolean; problem?: string }
  * and withdrawn when it stops. A route another adapter already holds is reported, not registered.
  */
 export class LlmRoutes {
-  private readonly handles = new Map<string, () => void>()
+  private readonly handles = new Map<string, AdapterRegistrationHandle>()
   private readonly problems = new Map<string, string>()
+  private readonly discoveries = new Map<string, () => void>()
   private readonly adapter: AiLlmAdapter
+  private directory: DirectoryRegistrationHandle | undefined
+  private directoryFacts = ''
+  private directoryProblem = ''
+  /** What DSH captured of each registered route that a later edit can change, to register the route again when it differs. */
+  private readonly captured = new Map<string, string>()
 
-  constructor(private readonly ctx: Context, registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate) {
+  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate) {
     this.adapter = new AiLlmAdapter(registry, gate)
   }
 
@@ -148,14 +173,19 @@ export class LlmRoutes {
       if (wanted.has(id)) continue
       dispose()
       this.handles.delete(id)
+      this.captured.delete(id)
     }
     for (const id of [...this.problems.keys()]) if (!wanted.has(id)) this.problems.delete(id)
     const llm = this.ctx.get('llm')
     if (llm === undefined) return
-    for (const id of wanted) {
-      if (this.handles.has(id)) continue
+    for (const { route } of owners) {
+      const id = route.id
+      const retry = JSON.stringify(route.retry ?? null)
       try {
-        this.handles.set(id, llm.registerAdapter([id], this.adapter))
+        const held = this.handles.get(id)
+        if (held === undefined) this.handles.set(id, llm.registerAdapter([id], this.adapter))
+        else if (this.captured.get(id) !== retry) held.replace([id])
+        this.captured.set(id, retry)
         this.problems.delete(id)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -163,10 +193,76 @@ export class LlmRoutes {
         this.problems.set(id, message)
       }
     }
+    this.publishDirectory(llm, owners)
+    this.offerDiscovery(llm)
+  }
+
+  /** Declares the routes to DSH's configuration surfaces: every route is one the configuration declared, at the endpoint of its connection. */
+  private publishDirectory(llm: NonNullable<Context['llm']>, owners: readonly RouteOwner[]): void {
+    const entries: LlmConfigurableProvider[] = owners.map(({ provider, route }) => ({
+      provider: route.id, displayName: route.name, settingsNs: provider.configEntryId ?? provider.id, settingsPath: ['llmRoutes'], declared: true,
+      ...route.baseUrl === undefined ? {} : { defaultBaseURL: route.baseUrl },
+      ...this.problems.get(route.id) === undefined ? {} : { error: this.problems.get(route.id)! },
+    }))
+    const facts = JSON.stringify(entries)
+    if (facts === this.directoryFacts) return
+    try {
+      if (this.directory !== undefined) this.directory.replace(entries)
+      else if (entries.length > 0) this.directory = llm.registerConfigurableProviders(entries)
+      this.directoryFacts = facts
+      this.directoryProblem = ''
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (this.directoryProblem !== message) this.onProblem(`language model routes could not be listed for configuration: ${message}`)
+      this.directoryProblem = message
+    }
+  }
+
+  /** Lets DSH ask an endpoint for its models on behalf of each settings section that holds routes. */
+  private offerDiscovery(llm: NonNullable<Context['llm']>): void {
+    const namespaces = new Set(this.registry.llmProviders().map(provider => provider.configEntryId ?? provider.id))
+    for (const [namespace, withdraw] of this.discoveries) {
+      if (namespaces.has(namespace)) continue
+      withdraw()
+      this.discoveries.delete(namespace)
+    }
+    for (const namespace of namespaces) {
+      if (this.discoveries.has(namespace)) continue
+      try {
+        this.discoveries.set(namespace, llm.registerModelDiscovery(namespace, (request, signal) => this.discover(namespace, request, signal)))
+      } catch (error) {
+        this.onProblem(`model discovery for "${namespace}" is not offered: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+  }
+
+  /** A route that is configured answers with its own models; a draft endpoint is asked through the provider of the section. */
+  private async discover(namespace: string, request: LlmModelDiscoveryRequest, signal?: AbortSignal): Promise<LlmDiscoveredModel[]> {
+    const providers = this.registry.llmProviders().filter(provider => (provider.configEntryId ?? provider.id) === namespace)
+    const known = request.provider === undefined ? undefined : this.adapter.owners().find(owner => owner.route.id === request.provider && providers.some(provider => provider.id === owner.provider.id))
+    let models: readonly LlmModelSpec[]
+    if (known !== undefined) models = known.route.models
+    else if (request.baseURL !== undefined && request.baseURL !== '') {
+      const service = providers.map(provider => provider.llm?.()).find(found => found !== undefined)
+      if (service === undefined) throw new LlmError(`no provider of "${namespace}" serves language models`, 'NO_DISCOVERY')
+      models = await service.interrogate({ baseUrl: request.baseURL, ...request.apiKey === undefined || request.apiKey === '' ? {} : { apiKey: request.apiKey } }, signal)
+    } else throw new LlmError('model discovery needs a configured route or a baseURL', 'INVALID_DISCOVERY')
+    return models.map(model => ({
+      id: model.id, name: model.name,
+      ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow },
+      ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens },
+      inputModalities: model.inputs ?? ['text'],
+    }))
   }
 
   dispose(): void {
     for (const dispose of this.handles.values()) dispose()
     this.handles.clear()
+    this.captured.clear()
+    for (const withdraw of this.discoveries.values()) withdraw()
+    this.discoveries.clear()
+    this.directory?.()
+    this.directory = undefined
+    this.directoryFacts = ''
   }
 }

@@ -1,14 +1,13 @@
 {
   "name": "@dsh-ai-providers/all",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Complete Firefox2100-maintained AI provider bundle for DeepSeek Harness.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "dsh": {
-    "engines": {"dsh": ">=0.2.0-rc.2 <0.3.0"},
     "bundle": {"patch": "./cordis.patch.yml"}
   },
-  "engines": {"node": ">=22"},
+  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-all"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/intro",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
@@ -17,10 +16,10 @@
   "files": ["cordis.patch.yml", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@dsh-ai-providers/runtime": "workspace:0.2.0",
-    "@dsh-ai-providers/openai": "workspace:0.2.0",
-    "@dsh-ai-providers/anthropic": "workspace:0.2.0",
-    "@dsh-ai-providers/jina-cohere": "workspace:0.2.0",
-    "@dsh-ai-providers/localai": "workspace:0.2.0"
+    "@dsh-ai-providers/runtime": "workspace:0.3.0",
+    "@dsh-ai-providers/openai": "workspace:0.3.0",
+    "@dsh-ai-providers/anthropic": "workspace:0.3.0",
+    "@dsh-ai-providers/jina-cohere": "workspace:0.3.0",
+    "@dsh-ai-providers/localai": "workspace:0.3.0"
   }
 }

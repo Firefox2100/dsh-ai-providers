@@ -39,6 +39,8 @@ jobs:
         run: pnpm typecheck
       - name: Test with coverage
         run: pnpm test:coverage
+      - name: Test against the other supported DSH releases
+        run: pnpm check:dsh
       - name: Upload coverage
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

@@ -43,6 +43,8 @@ export interface OpenAiLlmModelConfig {
   readonly reasoningLevels?: readonly OpenAiReasoningLevelConfig[] | undefined
   /** The id of the level used when the chat selects none. */
   readonly defaultReasoning?: string | undefined
+  /** The model's chat template reads a system message anywhere in the conversation as the whole system prompt, so DSH may change it without rewriting the start. */
+  readonly systemInHistory?: boolean | undefined
   readonly sampling?: OpenAiSamplingConfig | undefined
 }
 
@@ -62,6 +64,16 @@ export interface OpenAiLlmRouteConfig {
   readonly reasoningTags?: 'none' | 'tags' | 'implicit' | undefined
   /** Headers added to every request, besides the key and the harness's own. */
   readonly headers?: Readonly<Record<string, string>> | undefined
+  /** How DSH retries a failed request of this route; DSH's defaults when absent. */
+  readonly retry?: OpenAiRetryConfig | undefined
+}
+
+/** DSH's own retry policy shape: bounded retries of transient failures, or retrying every failure. */
+export interface OpenAiRetryConfig {
+  readonly mode: 'normal' | 'always'
+  readonly maxRetries?: number | undefined
+  readonly retryableCodes?: readonly string[] | undefined
+  readonly backoff?: { readonly initialDelayMs?: number | undefined; readonly maxDelayMs?: number | undefined; readonly jitterRatio?: number | undefined } | undefined
 }
 
 /** Runtime configuration consumed by the OpenAI-compatible transports. */
@@ -133,9 +145,12 @@ function routeSchema() {
       vision: z.boolean(),
       reasoningLevels: z.array(z.object({ id: z.string().required(), name: z.string().required(), body: z.dict(z.any()).default({}) })),
       defaultReasoning: z.string(),
+      systemInHistory: z.boolean(),
       sampling: samplingSchema(),
     })).default([]),
     sampling: samplingSchema(),
+    // Left free-form: the schema would fill in empty lists and zeros, which DSH's own policy check then reads as a policy.
+    retry: z.any(),
     maxCompletionTokens: z.boolean(),
     replayReasoning: z.boolean(),
     reasoningTags: z.union(['none', 'tags', 'implicit'] as const),

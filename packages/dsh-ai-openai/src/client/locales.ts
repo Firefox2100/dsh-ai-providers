@@ -9,7 +9,7 @@ export type OpenAiLocaleKey =
   | 'ttsModel' | 'ttsModelHint' | 'ttsVoice' | 'ttsVoiceHint' | 'ttsResponseFormat' | 'ttsResponseFormatHint' | 'ttsSpeed' | 'ttsSpeedHint'
   | 'sttModel' | 'sttModelHint' | 'sttRealtimeModel' | 'sttRealtimeModelHint'
   | 'imageModel' | 'imageModelHint' | 'imageSize' | 'imageSizeHint' | 'imageQuality' | 'imageQualityHint' | 'imageOutputFormat' | 'imageOutputFormatHint' | 'imageOutputCompression' | 'imageOutputCompressionHint'
-  | 'llmTitle' | 'llmDescription' | 'routesEmpty' | 'routeAdd' | 'routeNew' | 'routeRemove' | 'routeName' | 'routeId' | 'routeIdHint' | 'reasoningTags' | 'reasoningTagsTags' | 'reasoningTagsImplicit' | 'reasoningTagsNone' | 'reasoningTagsHint' | 'maxCompletionTokens' | 'replayReasoning' | 'routeHeaders' | 'routeHeadersHint' | 'routeSampling' | 'models' | 'modelAdd' | 'modelRemove' | 'modelId' | 'modelIdHint' | 'modelName' | 'contextWindow' | 'modelMaxTokens' | 'modelVision' | 'reasoningLevels' | 'reasoningLevelsHint' | 'levelId' | 'levelName' | 'levelBody' | 'levelAdd' | 'levelExample' | 'levelDefault' | 'modelSampling' | 'remove' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'samplingTemperature' | 'samplingTopP' | 'samplingTopK' | 'samplingMinP' | 'samplingFrequencyPenalty' | 'samplingPresencePenalty' | 'samplingRepetitionPenalty' | 'samplingSeed' | 'samplingMaxTokens' | 'samplingToolChoice' | 'samplingDefault' | 'samplingStop' | 'samplingStopHint' | 'samplingBody' | 'samplingBodyHint' | 'invalidJson' | 'llmIdleTimeoutMs' | 'llmIdleTimeoutMsHint'
+  | 'llmTitle' | 'llmDescription' | 'routesEmpty' | 'routeAdd' | 'routeNew' | 'routeRemove' | 'routeName' | 'routeId' | 'routeIdHint' | 'reasoningTags' | 'reasoningTagsTags' | 'reasoningTagsImplicit' | 'reasoningTagsNone' | 'reasoningTagsHint' | 'maxCompletionTokens' | 'replayReasoning' | 'routeHeaders' | 'routeRetry' | 'routeRetryHint' | 'modelSystemInHistory' | 'routeHeadersHint' | 'routeSampling' | 'models' | 'modelAdd' | 'modelRemove' | 'modelId' | 'modelIdHint' | 'modelName' | 'contextWindow' | 'modelMaxTokens' | 'modelVision' | 'reasoningLevels' | 'reasoningLevelsHint' | 'levelId' | 'levelName' | 'levelBody' | 'levelAdd' | 'levelExample' | 'levelDefault' | 'modelSampling' | 'remove' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'samplingTemperature' | 'samplingTopP' | 'samplingTopK' | 'samplingMinP' | 'samplingFrequencyPenalty' | 'samplingPresencePenalty' | 'samplingRepetitionPenalty' | 'samplingSeed' | 'samplingMaxTokens' | 'samplingToolChoice' | 'samplingDefault' | 'samplingStop' | 'samplingStopHint' | 'samplingBody' | 'samplingBodyHint' | 'invalidJson' | 'llmIdleTimeoutMs' | 'llmIdleTimeoutMsHint'
   | 'overridden' | 'reset' | 'invalidNumber'
   | 'readOnly' | 'unavailable' | 'save' | 'saving' | 'saveFailed'
 
@@ -80,6 +80,8 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     replayReasoning: "Send earlier reasoning back to the model",
     routeHeaders: "Extra headers (JSON)",
     routeHeadersHint: "Added to every request, for example {\"x-team\": \"story\"}.",
+    routeRetry: "Retry policy (JSON)",
+    routeRetryHint: "How DSH retries a failed request of this route, for example {\"mode\": \"normal\", \"maxRetries\": 3}. Empty means DSH's defaults.",
     routeSampling: "Controls for every model of this route",
     models: "Models",
     modelAdd: "Add model",
@@ -90,6 +92,7 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     contextWindow: "Context window (tokens)",
     modelMaxTokens: "Output limit (tokens)",
     modelVision: "Reads images",
+    modelSystemInHistory: "Reads a changed system prompt anywhere in the conversation",
     reasoningLevels: "Thinking levels",
     reasoningLevelsHint: "Each level is the request fields that select it on this server, for example {\"reasoning_effort\": \"none\"}.",
     levelId: "Id",
@@ -199,6 +202,8 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     replayReasoning: "把先前的思考内容再发回模型",
     routeHeaders: "额外请求头（JSON）",
     routeHeadersHint: "附加到每个请求，例如 {\"x-team\": \"story\"}。",
+    routeRetry: "重试策略（JSON）",
+    routeRetryHint: "DSH 如何重试此路由失败的请求，例如 {\"mode\": \"normal\", \"maxRetries\": 3}。留空则使用 DSH 的默认值。",
     routeSampling: "此路由所有模型的控制项",
     models: "模型",
     modelAdd: "添加模型",
@@ -209,6 +214,7 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     contextWindow: "上下文窗口（token）",
     modelMaxTokens: "输出上限（token）",
     modelVision: "能读图像",
+    modelSystemInHistory: "能把对话中任意位置改变的系统提示当作完整的系统提示",
     reasoningLevels: "思考档位",
     reasoningLevelsHint: "每个档位是在此服务上选中它的请求字段，例如 {\"reasoning_effort\": \"none\"}。",
     levelId: "标识",

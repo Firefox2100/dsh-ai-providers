@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { LlmCall } from '@dsh-ai-providers/core'
-import { imageRefsOf, OpenAiLlmService, sseData, translate, wireBody, wireMessages } from '@dsh-ai-providers/openai-compatible'
+import { Config, imageRefsOf, OpenAiLlmService, sseData, translate, wireBody, wireMessages } from '@dsh-ai-providers/openai-compatible'
 
 async function * events(...items: unknown[]): AsyncGenerator<string> {
   for (const item of items) yield typeof item === 'string' ? item : JSON.stringify(item)
@@ -156,6 +156,28 @@ describe('the service', () => {
     const { service } = make(() => Response.json({ data: [{ id: 'a', context_length: 4096 }, 'b', { name: 'no id' }] }))
     expect(service.routes()).toMatchObject([{ id: 'local', name: 'Local', models: [{ id: 'big', inputs: ['text'] }] }])
     expect(await service.discover('local')).toEqual([{ id: 'a', name: 'a', contextWindow: 4096 }, { id: 'b', name: 'b' }])
+  })
+
+  it('tells DSH the endpoint of a route, its retry policy and whether a model reads a changed system prompt in place', () => {
+    const route = { id: 'r', name: 'R', connection: 'c', models: [{ id: 'm', name: 'M', systemInHistory: true }, { id: 'n', name: 'N' }], retry: { mode: 'normal', maxRetries: 1 } }
+    const service = new OpenAiLlmService({ config: { llmRoutes: { get: () => [route] }, connections: { get: () => [{ id: 'c', name: 'C', baseUrl: ' http://llm.test/v1// ', apiKeyRef: '' }] } } as never, credentials: () => undefined })
+    expect(service.routes()).toEqual([{ id: 'r', name: 'R', baseUrl: 'http://llm.test/v1', retry: { mode: 'normal', maxRetries: 1 }, models: [{ id: 'm', name: 'M', inputs: ['text'], systemPromptUpdate: 'in-history' }, { id: 'n', name: 'N', inputs: ['text'] }] }])
+  })
+
+  it('accepts a route that sets no retry policy, and one that sets some', () => {
+    const [bare, retried] = Config({ llmRoutes: [{ id: 'a', name: 'A', connection: 'c' }, { id: 'b', name: 'B', connection: 'c', retry: { mode: 'always' } }] }).llmRoutes.get()
+    expect(bare!.models).toEqual([])
+    expect(bare!.retry).toBeUndefined()
+    expect(retried!.retry).toMatchObject({ mode: 'always' })
+  })
+
+  it('lists the models of an endpoint that is not configured yet, with the key it was given and nothing else', async () => {
+    const { service, seen } = make(() => Response.json({ data: [{ id: 'a' }] }))
+    expect(await service.interrogate({ baseUrl: 'http://draft.test/v1/', apiKey: 'sk-draft' })).toEqual([{ id: 'a', name: 'a' }])
+    expect(seen[0]).toMatchObject({ url: 'http://draft.test/v1/models', headers: { authorization: 'Bearer sk-draft' } })
+    await service.interrogate({ baseUrl: 'http://draft.test/v1' })
+    expect(seen[1]!.headers).toEqual({})
+    await expect(service.interrogate({ baseUrl: 'ftp://draft.test' })).rejects.toThrow(/HTTP or HTTPS/)
   })
 
   describe('pictures', () => {

@@ -1,6 +1,6 @@
 {
   "name": "dsh-ai-providers-workspace",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.3.4",
@@ -15,6 +15,8 @@
     "test": "pnpm -r run test",
     "test:coverage": "pnpm -r run test --coverage --coverage.reporter=text --coverage.reporter=lcov && node scripts/merge-coverage.mjs",
     "release:check": "node scripts/check-release.mjs",
+    "check:dsh": "node scripts/check-dsh-compat.mjs",
+    "sync:dsh": "node scripts/sync-dsh-ranges.mjs",
     "release:publish": "node scripts/publish.mjs"
   },
   "devDependencies": {

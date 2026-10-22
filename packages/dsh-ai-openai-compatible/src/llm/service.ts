@@ -1,6 +1,6 @@
-import type { StreamChunk } from '@deepseek-ai/dsh-llm'
+import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, LlmRequestError, LlmService, readJson, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
+import { AiError, LlmRequestError, LlmService, readJson, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
 import type { Config, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiSamplingConfig } from '../config.ts'
 import { connectionHeaders, validateConnection, type OpenAiConnection } from '../connection.ts'
 import { httpError } from './errors.ts'
@@ -34,12 +34,24 @@ function modelSpec(model: OpenAiLlmModelConfig): LlmModelSpec {
     ...model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : {
       reasoning: { levels: model.reasoningLevels, ...model.defaultReasoning === undefined ? {} : { default: model.defaultReasoning } },
     },
+    ...model.systemInHistory === true ? { systemPromptUpdate: 'in-history' as const } : {},
     ...model.sampling === undefined ? {} : { sampling: sampling(model.sampling)! },
   }
 }
 
-function routeSpec(route: OpenAiLlmRouteConfig): LlmRouteSpec {
-  return { id: route.id, name: route.name, models: route.models.map(modelSpec), ...route.sampling === undefined ? {} : { sampling: sampling(route.sampling)! } }
+function routeSpec(route: OpenAiLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec {
+  return {
+    id: route.id, name: route.name, models: route.models.map(modelSpec),
+    ...route.sampling === undefined ? {} : { sampling: sampling(route.sampling)! },
+    ...baseUrl === undefined ? {} : { baseUrl },
+    ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
+  }
+}
+
+/** The address a route's connection names, read without judging it: a bad address is reported when a request needs it. */
+const addressOf = (connection: { baseUrl: string } | undefined): string | undefined => {
+  const address = connection?.baseUrl.trim().replace(/\/+$/, '')
+  return address === undefined || address === '' ? undefined : address
 }
 
 /** Language models behind an OpenAI-compatible `chat/completions` endpoint: the routes of the configuration, each through one of its connections. */
@@ -54,7 +66,8 @@ export class OpenAiLlmService extends LlmService {
   }
 
   routes(): readonly LlmRouteSpec[] {
-    return this.deps.config.llmRoutes.get().map(routeSpec)
+    const connections = this.deps.config.connections.get()
+    return this.deps.config.llmRoutes.get().map(route => routeSpec(route, addressOf(connections.find(candidate => candidate.id === route.connection))))
   }
 
   private configOf(routeId: string): { route: OpenAiLlmRouteConfig; connection: OpenAiConnection } {
@@ -67,11 +80,20 @@ export class OpenAiLlmService extends LlmService {
 
   override async discover(routeId: string, signal?: AbortSignal): Promise<LlmModelSpec[]> {
     const { connection } = this.configOf(routeId)
+    return this.models(connection.baseUrl, await connectionHeaders(connection, this.deps.credentials), signal)
+  }
+
+  override async interrogate(draft: LlmEndpointDraft, signal?: AbortSignal): Promise<LlmModelSpec[]> {
+    const { baseUrl } = validateConnection({ id: 'draft', name: 'the endpoint', baseUrl: draft.baseUrl, apiKeyRef: '' })
+    return this.models(baseUrl, draft.apiKey === undefined || draft.apiKey === '' ? {} : { authorization: `Bearer ${draft.apiKey}` }, signal)
+  }
+
+  private async models(baseUrl: string, headers: Record<string, string>, signal?: AbortSignal): Promise<LlmModelSpec[]> {
     let response: Response
     try {
-      response = await this.send(`${connection.baseUrl}/models`, { headers: await connectionHeaders(connection, this.deps.credentials), signal: signal === undefined ? AbortSignal.timeout(15_000) : AbortSignal.any([signal, AbortSignal.timeout(15_000)]) })
+      response = await this.send(`${baseUrl}/models`, { headers, signal: signal === undefined ? AbortSignal.timeout(15_000) : AbortSignal.any([signal, AbortSignal.timeout(15_000)]) })
     } catch (error) {
-      throw new AiError('unavailable', `${connection.baseUrl} could not be reached: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
+      throw new AiError('unavailable', `${baseUrl} could not be reached: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
     }
     if (!response.ok) throw new AiError('rejected', `the endpoint answered ${response.status} ${response.statusText}`.trim())
     const body = await readJson<{ data?: unknown; models?: unknown }>(response)

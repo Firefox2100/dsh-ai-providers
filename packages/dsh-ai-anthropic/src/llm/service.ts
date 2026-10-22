@@ -1,6 +1,6 @@
-import type {StreamChunk} from '@deepseek-ai/dsh-llm'
+import type {RetryPolicyConfig, StreamChunk} from '@deepseek-ai/dsh-llm'
 import type {CredentialProvider} from '@deepseek-ai/dsh-credentials'
-import {AiError, LlmRequestError, LlmService, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
+import {AiError, LlmRequestError, LlmService, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
 import type {AnthropicLlmModelConfig, AnthropicLlmRouteConfig, AnthropicSamplingConfig, Config} from '../config.ts'
 import {connectionHeaders, validateConnection, type AnthropicConnection} from '../connection.ts'
 import {PROVIDER_ID} from '../ids.ts'
@@ -13,13 +13,14 @@ interface AttachmentReader {readImage(ref: never, signal?: AbortSignal): Promise
 export interface AnthropicLlmDeps {config: Config; credentials: () => Pick<CredentialProvider, 'resolve'> | undefined; attachments?: () => AttachmentReader | undefined; fetch?: typeof fetch}
 const sampling = (value: AnthropicSamplingConfig | undefined): LlmSampling | undefined => value
 const modelSpec = (model: AnthropicLlmModelConfig): LlmModelSpec => ({id: model.id, name: model.name, inputs: model.vision === true ? ['text', 'image'] : ['text'], ...(model.contextWindow === undefined ? {} : {contextWindow: model.contextWindow}), ...(model.maxTokens === undefined ? {} : {maxTokens: model.maxTokens}), ...(model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : {reasoning: {levels: model.reasoningLevels, ...(model.defaultReasoning === undefined ? {} : {default: model.defaultReasoning})}}), ...(model.sampling === undefined ? {} : {sampling: sampling(model.sampling)!})})
-const routeSpec = (route: AnthropicLlmRouteConfig): LlmRouteSpec => ({id: route.id, name: route.name, models: route.models.map(modelSpec), ...(route.sampling === undefined ? {} : {sampling: sampling(route.sampling)!})})
+const addressOf = (connection: {baseUrl: string} | undefined): string | undefined => { const address = connection?.baseUrl.trim().replace(/\/+$/, ''); return address === undefined || address === '' ? undefined : address }
+const routeSpec = (route: AnthropicLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec => ({id: route.id, name: route.name, models: route.models.map(modelSpec), ...(route.sampling === undefined ? {} : {sampling: sampling(route.sampling)!}), ...(baseUrl === undefined ? {} : {baseUrl}), ...(route.retry === undefined ? {} : {retry: route.retry as RetryPolicyConfig})})
 
 export class AnthropicLlmService extends LlmService {
   readonly provider = PROVIDER_ID
   private readonly send: typeof fetch
   constructor(private readonly deps: AnthropicLlmDeps) { super(); this.send = deps.fetch ?? fetch }
-  routes(): readonly LlmRouteSpec[] { return this.deps.config.llmRoutes.get().map(routeSpec) }
+  routes(): readonly LlmRouteSpec[] { const connections = this.deps.config.connections.get(); return this.deps.config.llmRoutes.get().map(route => routeSpec(route, addressOf(connections.find(item => item.id === route.connection)))) }
   private configOf(id: string): {route: AnthropicLlmRouteConfig; connection: AnthropicConnection} {
     const route = this.deps.config.llmRoutes.get().find(item => item.id === id)
     if (!route) throw new AiError('not-configured', `there is no language model route "${id}"`)
@@ -29,10 +30,17 @@ export class AnthropicLlmService extends LlmService {
   }
   override async discover(routeId: string, signal?: AbortSignal): Promise<LlmModelSpec[]> {
     const {connection} = this.configOf(routeId)
+    return this.models(connection.baseUrl, await connectionHeaders(connection, this.deps.credentials), signal)
+  }
+  override async interrogate(draft: LlmEndpointDraft, signal?: AbortSignal): Promise<LlmModelSpec[]> {
+    const {baseUrl} = validateConnection({id: 'draft', name: 'the endpoint', baseUrl: draft.baseUrl, apiKeyRef: ''})
+    return this.models(baseUrl, draft.apiKey === undefined || draft.apiKey === '' ? {} : {'x-api-key': draft.apiKey}, signal)
+  }
+  private async models(baseUrl: string, headers: Record<string, string>, signal?: AbortSignal): Promise<LlmModelSpec[]> {
     const timeout = AbortSignal.timeout(15_000)
     let response: Response
-    try { response = await this.send(`${connection.baseUrl}/models?limit=100`, {headers: {...await connectionHeaders(connection, this.deps.credentials), 'anthropic-version': this.deps.config.anthropicVersion.get()}, signal: signal ? AbortSignal.any([signal, timeout]) : timeout}) }
-    catch (error) { throw new AiError(signal?.aborted ? 'cancelled' : 'unavailable', `${connection.baseUrl} could not be reached`, {cause: error}) }
+    try { response = await this.send(`${baseUrl}/models?limit=100`, {headers: {...headers, 'anthropic-version': this.deps.config.anthropicVersion.get()}, signal: signal ? AbortSignal.any([signal, timeout]) : timeout}) }
+    catch (error) { throw new AiError(signal?.aborted ? 'cancelled' : 'unavailable', `${baseUrl} could not be reached`, {cause: error}) }
     if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
     const body = await response.json() as {data?: unknown}
     return Array.isArray(body.data) ? body.data.flatMap((value): LlmModelSpec[] => {

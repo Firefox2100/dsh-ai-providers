@@ -53,7 +53,7 @@ The [consumer guide](/dsh-ai-providers/docs/consumers/using-services) shows the 
 
 Version 0.1.3 is the first release I consider ready for normal use. All public packages share the same version, include DSH bundle metadata where applicable, and are published through the repository's release checks. The workspace includes type checking, automated tests, production builds, and package validation before publishing.
 
-The project currently targets DSH `>=0.2.0-rc.2 <0.3.0`. DSH is still pre-stable, so that compatibility range matters. A future DSH release may require a corresponding provider update. The interfaces in `@dsh-ai-providers/core` are intended to remain the stable surface for consumers, but version 0.1.x should still be treated as an early public series rather than a promise that no contract will ever change.
+When this was written the project targeted DSH `>=0.2.0-rc.2 <0.3.0`; [version 0.3.0](/dsh-ai-providers/blog/dsh-ai-providers-0-3-0) narrowed that range to the releases it has been tested on. DSH is still pre-stable, so the compatibility range matters. A future DSH release may require a corresponding provider update. The interfaces in `@dsh-ai-providers/core` are intended to remain the stable surface for consumers, but version 0.1.x should still be treated as an early public series rather than a promise that no contract will ever change.
 
 The implementation has also been exercised with LocalAI for language models, embeddings, reranking, speech, and image generation. Provider-specific guides state what each package supports and where an upstream service imposes a limitation. That is a stronger readiness claim than saying every compatible endpoint behaves identically.
 

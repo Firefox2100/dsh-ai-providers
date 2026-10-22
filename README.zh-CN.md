@@ -75,7 +75,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 
 ## 安装
 
-DSH AI Providers 需要 Node.js 22 或更高版本，目前支持 DSH `>=0.2.0-rc.2 <0.3.0`。
+DSH AI Providers 需要 Node.js 22 或更高版本，目前支持 DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`。
 
 将完整安装包加入需要使用它的 DSH 配置档案：
 

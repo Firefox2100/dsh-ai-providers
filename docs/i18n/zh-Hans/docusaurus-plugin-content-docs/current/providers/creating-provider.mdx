@@ -19,6 +19,10 @@ sidebar_position: 1
 
 工厂被调用时必须读取实时配置。不要在注册时捕获连接、凭据值或模型，否则设置看似已经更新，请求却仍在使用旧状态。实现中的 `provider`、`model` 与 `capability` 标识应保持准确，因为使用方和诊断功能可以读取它们。
 
+### 路由、重试与发现
+
+路由（`LlmRouteSpec`）可以带有 `baseUrl`（其配置固定的端点）和 `retry`（DSH 重试策略），运行时会把两者报告给 DSH。如果模型的聊天模板会把对话中任意位置改变的系统消息当作完整的系统提示，可为该模型设置 `systemPromptUpdate: 'in-history'`。重写 `LlmService.interrogate(draft, signal)`，可列出尚未配置的端点所拥有的模型（`draft.baseUrl`，以及仅为这一次提问提供的密钥 `draft.apiKey`）；默认实现会抛出 `unsupported` 错误。列出已配置路由的模型仍用 `discover(route)`。
+
 ### 可选的 LLM 模型控制
 
 只有提供方具备真正的模型管理 API 时，才设置 `LlmService.modelControl`。在 `operations` 中列出已实现的方法，并省略提供方无法执行的方法。

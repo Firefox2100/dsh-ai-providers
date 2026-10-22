@@ -64,6 +64,10 @@ function ModelCard(props: { model: ModelDraft; disabled: boolean; t: T; onChange
         <input type="checkbox" checked={model.vision === true} disabled={disabled} onChange={(event) => { props.onChange((draft) => { setField(draft, 'vision', event.target.checked ? true : undefined) }) }} />
         {t('modelVision')}
       </label>
+      <label className={css.check}>
+        <input type="checkbox" checked={model.systemInHistory === true} disabled={disabled} onChange={(event) => { props.onChange((draft) => { setField(draft, 'systemInHistory', event.target.checked ? true : undefined) }) }} />
+        {t('modelSystemInHistory')}
+      </label>
       <fieldset className={`${css.card} ${css.fieldset}`}>
         <legend className={css.legend}>{t('reasoningLevels')}</legend>
         <small>{t('reasoningLevelsHint')}</small>
@@ -148,6 +152,7 @@ function RouteCard(props: OpenAiLlmProps & { route: RouteDraft; index: number; d
         </label>
       </div>
       <JsonField label={t('routeHeaders')} value={route.headers} disabled={disabled} invalid={t('invalidJson')} hint={t('routeHeadersHint')} onChange={(value) => { edit((draft) => { setField(draft, 'headers', value as Record<string, string> | undefined) }) }} />
+      <JsonField label={t('routeRetry')} value={route.retry} disabled={disabled} invalid={t('invalidJson')} hint={t('routeRetryHint')} onChange={(value) => { edit((draft) => { setField(draft, 'retry', value as RouteDraft['retry']) }) }} />
       <details>
         <summary>{t('routeSampling')}</summary>
         <SamplingEditor sampling={route.sampling} disabled={disabled} t={t} onChange={(next) => { edit((draft) => { setField(draft, 'sampling', next) }) }} />

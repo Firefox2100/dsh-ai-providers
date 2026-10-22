@@ -29,6 +29,8 @@ import type {AiError, EmbedOptions} from '@dsh-ai-providers/core'
 
 语言模型继续使用 DSH 现有的 `ctx.llm` 服务。提供方包通过运行时适配器加入路由，不会再公开一个只能选择单个提供方的上下文服务。
 
+除 `stream()` 外，`LlmService` 还可以用 `discover(route)` 列出已配置路由的模型，用 `interrogate(draft)` 列出尚未配置的端点的模型；运行时会把两者作为模型发现提供给 DSH，并报告每个路由的 `baseUrl` 与 `retry` 策略。
+
 `ctx.aiModels` 与推理调用相互独立。它按路由解析可选的管理操作，包括查询模型状态、加载和卸载。使用 `operations(route)` 检测功能。提供方通过 `LlmService.modelControl` 声明这些操作；没有管理 API 的提供方不设置该属性。
 
 `LlmModelRuntimeStatus.state` 可能是 `uninitialized`、`busy`、`ready`、`error` 或 `unknown`。只有提供方报告常驻内存时，结果才包含 `memoryBytes`。取消请求并不保证远程服务器会撤销已经接受的工作。

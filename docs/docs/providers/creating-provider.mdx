@@ -19,6 +19,10 @@ Unsupported capabilities should be absent, not represented by methods that alway
 
 Factories must read live configuration when called. Do not capture a connection, credential value, or model at registration time: doing so makes settings appear to update while requests continue using stale state. Keep the implementation's `provider`, `model`, and `capability` identity accurate because consumers and diagnostics can inspect them.
 
+### Routes, retries and discovery
+
+A route (`LlmRouteSpec`) may carry `baseUrl`, the endpoint its configuration fixes, and `retry`, a DSH retry policy; the runtime reports both to DSH. A model may carry `systemPromptUpdate: 'in-history'` when its chat template reads a changed system message anywhere in the conversation. Override `LlmService.interrogate(draft, signal)` to list the models of an endpoint that is not configured yet (`draft.baseUrl`, and a key for this one question in `draft.apiKey`); the default throws an `unsupported` error. `discover(route)` stays the way to list the models of a configured route.
+
 ### Optional LLM model controls
 
 Set `LlmService.modelControl` only when the provider has a real model-administration API. List the implemented methods in `operations`, and omit methods the provider cannot perform.

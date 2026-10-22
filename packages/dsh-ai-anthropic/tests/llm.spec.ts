@@ -4,6 +4,7 @@ import type {LlmCall} from '@dsh-ai-providers/core'
 import {wireBody, wireConversation} from '../src/llm/serialize.ts'
 import {translate} from '../src/llm/translate.ts'
 import {AnthropicLlmService} from '../src/llm/service.ts'
+import {Config} from '../src/config.ts'
 
 const options = (): GenerateOptions => ({provider:'claude',model:'claude-test',messages:[
   {role:'system',content:[{type:'text',text:'Be brief.'}],source:{kind:'system-prompt'},id:'s' as never},
@@ -54,5 +55,18 @@ describe('Anthropic service',()=>{
     expect(seen[0]?.url).toBe('https://api.anthropic.com/v1/messages')
     expect(seen[0]?.init.headers).toMatchObject({'x-api-key':'secret','anthropic-version':'2023-06-01'})
     expect(await service.discover('claude')).toEqual([{id:'claude-a',name:'Claude A',inputs:['text','image']}])
+    expect(await service.interrogate({baseUrl:'https://draft.test/v1',apiKey:'draft-key'})).toEqual([{id:'claude-a',name:'Claude A',inputs:['text','image']}])
+    expect(seen.at(-1)?.url).toBe('https://draft.test/v1/models?limit=100')
+    expect(seen.at(-1)?.init.headers).toEqual({'x-api-key':'draft-key','anthropic-version':'2023-06-01'})
+    expect(service.routes()[0]).toMatchObject({id:'claude',baseUrl:'https://api.anthropic.com/v1'})
+  })
+})
+
+describe('Anthropic route configuration',()=>{
+  it('accepts a route that sets no retry policy, and one that sets some',()=>{
+    const [bare,retried]=Config({llmRoutes:[{id:'a',name:'A',connection:'c'},{id:'b',name:'B',connection:'c',retry:{mode:'always'}}]}).llmRoutes.get()
+    expect(bare!.models).toEqual([])
+    expect(bare!.retry).toBeUndefined()
+    expect(retried!.retry).toMatchObject({mode:'always'})
   })
 })

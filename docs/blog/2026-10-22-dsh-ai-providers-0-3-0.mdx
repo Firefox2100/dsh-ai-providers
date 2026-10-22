@@ -1,0 +1,40 @@
+---
+slug: dsh-ai-providers-0-3-0
+title: DSH AI Providers 0.3.0 works with DSH 0.2.1
+description: Compatibility with DSH 0.2.1-rc.2, tighter version ranges, and language-model routes that report more to DSH.
+authors: [firefox2100]
+tags: [dsh-ai-providers, release]
+---
+
+DSH AI Providers 0.3.0 is published. It runs on both DSH 0.2.0-rc.2 and DSH 0.2.1-rc.2, narrows the DSH range it claims to support, and lets a language-model route tell DSH more about itself.
+
+{/* truncate */}
+
+## Why a release was needed
+
+DSH 0.2.1 checks each plugin's declared requirements when it starts, and it disabled `@dsh-ai-providers/runtime` from version 0.2.0 of this project. The package pinned `@deepseek-ai/dsh-llm` to exactly `0.2.0-rc.2`, which no other DSH release can satisfy. The source itself needed no change to run: the packages type-check and pass their tests against both DSH releases.
+
+DSH also reads a different field than the one these packages used. It looks at the top-level `engines.dsh`, which now decides alone when present, not at `dsh.engines`. 0.3.0 declares `engines.dsh` as `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`. That stops before the next patch release instead of at the next minor, because DSH is pre-stable and a patch can change what a provider relies on. The `@deepseek-ai/dsh-*` peer ranges list the two tested releases, and the release check now enforces all of this in every package.
+
+Two commands keep it honest. `pnpm check:dsh <version>` type-checks and tests a temporary copy of the workspace against another tested DSH release, and CI runs it for the older one. When a change cannot serve both releases, the older one will be dropped, not kept by luck.
+
+## What a route now reports to DSH
+
+The previous releases registered a route with its models and little else. The adapter now covers more of what DSH's own model adapter offers:
+
+- **Retry policy.** A route can set `retry` in DSH's own shape. Without it DSH uses its defaults; a wrong policy makes the route unavailable and says why.
+- **One reading per call.** The model facts and the request that follows come from the same reading of the routes, so an edit between the two cannot mix them.
+- **Configurable providers.** Every route appears in DSH's directory of configurable providers, with the address of its connection and any problem that stops it being served.
+- **Model discovery.** DSH can ask a settings section for models. A configured route answers with its own models, and a draft endpoint is asked with `GET /models` using a key that is used once and not stored.
+- **System prompt in the conversation.** A model whose chat template reads a changed system message anywhere in the conversation can say so with `systemInHistory`, which lets DSH change the system prompt without rewriting the start of a cached conversation. It is off by default, because many local chat templates insist that the system message comes first.
+
+The route editor has a field for the retry policy and a checkbox for `systemInHistory`. Existing configuration keeps working without changes.
+
+## Things that behave differently on DSH 0.2.1
+
+- A key stored in DSH's credential store now takes precedence over an exported environment variable with the same name, and a key can be stored while the variable is exported. On DSH 0.2.0 the exported variable wins.
+- DSH expects a model's reasoning levels from the least to the greatest effort and uses the first one for light work such as session titles. List a route's levels in that order.
+
+## What is not covered
+
+Images are sent exactly as stored, so the providers declare no image resizing and no image pricing, and every request carries the complete tool list. Both are deliberate: declaring more would promise behaviour the wire code does not implement. Both tested DSH releases are pre-releases, and the providers have been exercised with LocalAI. The [language models guide](/dsh-ai-providers/docs/services/language-models) describes each setting.

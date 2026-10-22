@@ -18,7 +18,8 @@ Each model can declare:
 - display name and context window;
 - default output-token limit;
 - image input support;
-- named reasoning levels and a default level;
+- named reasoning levels, listed from the least to the greatest effort, and a default level (DSH takes the first one for light work such as session titles);
+- whether its chat template reads a changed system prompt anywhere in the conversation (`systemInHistory`); leave it off for templates that insist the system message comes first;
 - sampling overrides.
 
 Route-level sampling applies to every model unless overridden at model or request level. Supported controls include temperature, top-p, top-k, min-p, frequency and presence penalties, repetition penalty, seed, stop strings, output limit, tool choice, and additional JSON body fields.
@@ -33,11 +34,22 @@ The project-maintained OpenAI provider streams `POST /chat/completions` and tran
 | `replayReasoning` | Include earlier reasoning when sending history back |
 | `reasoningTags` | Read reasoning from separate fields, explicit tags, or an implicit prefix |
 | `headers` | Add route-specific request headers |
+| `retry` | How DSH retries a failed request of this route (see below) |
 | `body` | Add provider-specific top-level request fields |
 
 Route, model, request, and registered policy settings are merged before the call. DSH request values remain the most specific.
 
 When a model is marked as supporting vision, the provider reads available image attachments through DSH and sends them as data URLs. An offloaded or unavailable image becomes a text placeholder. Files are also represented by placeholders; this integration does not upload arbitrary files to the model endpoint.
+
+## What a route tells DSH
+
+Beyond its models, each route reports the following to DSH. Nothing here needs extra setup unless noted.
+
+- **Retry policy.** The optional route setting `retry` has the shape of DSH's own policy: `mode` (`normal` retries transient failures up to `maxRetries` times, `always` retries every failure), `retryableCodes`, and `backoff` (`initialDelayMs`, `maxDelayMs`, `jitterRatio`). Without it DSH uses its defaults. A wrong policy makes the route unavailable, with the reason shown on the route; a change applies as soon as it is saved. The Anthropic provider takes the same setting in its route JSON.
+- **One reading per call.** DSH prepares a call and then sends it. The model facts and the request come from the same reading of the routes, so editing a route in between cannot mix the old facts with the new endpoint settings.
+- **Configurable providers.** Every route is listed in DSH's directory of configurable providers as one that the configuration declared, with the address of its connection and any problem that keeps it from being served. The entry points at the section of the plugin that holds the route.
+- **Model discovery.** DSH can ask a section for models. A route that is already configured answers with its own models. A draft endpoint that is still being edited is asked with `GET /models`, using the key given for that one question; nothing is stored. This works for the OpenAI-compatible providers, LocalAI and Anthropic.
+- **Images and tools.** Pictures are sent exactly as stored, so DSH's default request-image size applies and no image pricing is declared; DSH uses its neutral estimate. Every request carries the complete tool list, so the providers do not declare mid-conversation tool updates.
 
 ## Policies
 

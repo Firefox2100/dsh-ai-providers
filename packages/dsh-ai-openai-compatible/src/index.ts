@@ -1,5 +1,5 @@
 export { Config } from './config.ts'
-export type { Config as OpenAiCompatibleConfig, OpenAiConnectionConfig, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiReasoningLevelConfig, OpenAiSamplingConfig } from './config.ts'
+export type { Config as OpenAiCompatibleConfig, OpenAiConnectionConfig, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiReasoningLevelConfig, OpenAiRetryConfig, OpenAiSamplingConfig } from './config.ts'
 export { connectionHeaders, resolveConnection, validateConnection } from './connection.ts'
 export type { OpenAiCapability, OpenAiConnection } from './connection.ts'
 export { OpenAiEmbeddingService } from './embedding.ts'

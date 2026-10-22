@@ -9,7 +9,7 @@ Open **Settings > AI Providers** in DSH. Work through the three layers in order.
 
 ## 1. Create reusable connections
 
-A connection contains a stable ID, display name, base URL, and a reference to a credential stored by DSH. The secret is handled by DSH's credential service. The plugin configuration stores only the reference and never returns the secret to the browser. Leave the credential reference empty for a server that does not require authentication.
+A connection contains a stable ID, display name, base URL, and a reference to a credential stored by DSH. The secret is handled by DSH's credential service. The plugin configuration stores only the reference and never returns the secret to the browser. Leave the credential reference empty for a server that does not require authentication. On DSH 0.2.1 a key stored in DSH's credential store takes precedence over an exported variable with the same name, and a key can be stored while the variable is exported; on DSH 0.2.0 the exported variable wins and blocks storing a key.
 
 Connections are reusable across capabilities. For example, one LocalAI connection can serve embeddings, speech, images, and language models.
 

@@ -1,5 +1,7 @@
 # DSH AI Providers
 
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Firefox2100_dsh-ai-providers&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Firefox2100_dsh-ai-providers) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Firefox2100_dsh-ai-providers&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Firefox2100_dsh-ai-providers) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Firefox2100_dsh-ai-providers&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Firefox2100_dsh-ai-providers)
+
 Reusable, provider-neutral AI services for [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-Harness).
 
 English | [简体中文](./README.zh-CN.md)
@@ -75,7 +77,7 @@ See the individual provider guides for configuration and supported features:
 
 ## Installation
 
-DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.0-rc.2 <0.3.0`.
+DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`.
 
 Install the bundle into a DSH profile:
 

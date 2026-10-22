@@ -84,6 +84,57 @@ describe('the language model routes', () => {
   })
 })
 
+describe('what the routes tell DSH besides their models', () => {
+  it('is the retry policy of a route, DSH\'s own defaults when it has none, and a refusal to serve the route when the policy is wrong', () => {
+    expect(runtime.providerRetryPolicy('local')).toMatchObject({ mode: 'normal', maxRetries: 5 })
+    fake.routeList = [{ ...fake.routeList[0]!, retry: { mode: 'normal', maxRetries: 2, backoff: { initialDelayMs: 100 } } }]
+    routes.sync()
+    expect(runtime.providerRetryPolicy('local')).toMatchObject({ mode: 'normal', maxRetries: 2, initialDelayMs: 100 })
+    fake.routeList = [{ ...fake.routeList[0]!, retry: { mode: 'always' } }]
+    routes.sync()
+    expect(runtime.providerRetryPolicy('local')).toMatchObject({ mode: 'always' })
+    fake.routeList = [{ ...fake.routeList[0]!, retry: { mode: 'normal', maxRetries: -1 } }]
+    routes.sync()
+    expect(problems.at(-1)).toMatch(/maxRetries/)
+  })
+
+  it('is whether a model reads a changed system prompt in place, only when its configuration says so', async () => {
+    expect((await runtime.resolveModelInfo('local', 'big')).systemPromptUpdate).toBeUndefined()
+    fake.routeList = [{ ...fake.routeList[0]!, models: [{ ...fake.routeList[0]!.models[0]!, systemPromptUpdate: 'in-history' }] }]
+    expect((await runtime.resolveModelInfo('local', 'big')).systemPromptUpdate).toBe('in-history')
+  })
+
+  it('keeps the facts of a prepared call for its request, whatever the configuration becomes in between', async () => {
+    const prepared = await runtime.prepareCall({ provider: 'local', model: 'big' })
+    expect(prepared.config.maxTokens).toBe(512)
+    fake.routeList = [{ ...fake.routeList[0]!, sampling: { temperature: 0.1 }, models: [{ id: 'big', name: 'Big', maxTokens: 64 }] }]
+    for await (const _chunk of prepared.stream({ ...request(), ...prepared.config })) { /* drained */ }
+    expect(fake.calls.at(-1)!.model?.maxTokens).toBe(512)
+    expect(fake.calls.at(-1)!.sampling).toMatchObject({ temperature: 0.5, topP: 0.9 })
+  })
+
+  it('is the directory of configurable providers: each route as one the configuration declared, with its endpoint and its trouble', () => {
+    fake.routeList = [{ ...fake.routeList[0]!, baseUrl: 'http://local.test/v1' }]
+    routes.sync()
+    expect(runtime.listConfigurableProviders()).toEqual([{ provider: 'local', displayName: 'Local', settingsNs: 'fake', settingsPath: ['llmRoutes'], declared: true, defaultBaseURL: 'http://local.test/v1' }])
+    fake.routeList = []
+    routes.sync()
+    expect(runtime.listConfigurableProviders()).toEqual([])
+    fake.routeList = [{ id: 'taken', name: 'Taken', models: [] }]
+    runtime.registerAdapter(['taken'], new (class extends LlmAdapter { override async * stream(): AsyncGenerator<StreamChunk> { /* serves nothing */ } })())
+    routes.sync()
+    expect(runtime.listConfigurableProviders()[0]).toMatchObject({ provider: 'taken', error: expect.stringMatching(/taken|already/i) })
+  })
+
+  it('is model discovery for the section that holds the routes: a configured route answers with its models, a draft endpoint is asked', async () => {
+    expect((await runtime.discoverModels('fake', { provider: 'local' })).map(model => model.id)).toEqual(['big'])
+    expect(await runtime.discoverModels('fake', { provider: 'local' })).toEqual([{ id: 'big', name: 'Big', contextWindow: 8192, maxTokens: 512, inputModalities: ['text'] }])
+    expect(await runtime.discoverModels('fake', { baseURL: 'http://draft.test/v1', apiKey: 'k' })).toEqual([{ id: 'found', name: 'Found', contextWindow: 4096, inputModalities: ['text', 'image'] }])
+    expect(fake.interrogated).toEqual([{ baseUrl: 'http://draft.test/v1', apiKey: 'k' }])
+    await expect(runtime.discoverModels('elsewhere', { baseURL: 'http://x.test' })).rejects.toThrow(/no model discovery/)
+  })
+})
+
 describe('merged controls', () => {
   it('take the later layer for each field and merge the extra body fields', () => {
     expect(mergeSampling({ temperature: 1, body: { a: 1, b: 1 } }, undefined, { temperature: 0.2, body: { b: 2 } }, { topP: undefined })).toEqual({ temperature: 0.2, body: { a: 1, b: 2 } })
