@@ -155,6 +155,9 @@ jobs:
       - name: Publish Cohere provider
         if: steps.published.outputs.cohere != 'true'
         run: pnpm run release:publish -- dsh-ai-cohere
+      - name: Publish DashScope provider
+        if: steps.published.outputs.dashscope != 'true'
+        run: pnpm run release:publish -- dsh-ai-dashscope
       - name: Publish complete bundle
         if: steps.published.outputs.all != 'true'
         run: pnpm run release:publish -- dsh-ai-all

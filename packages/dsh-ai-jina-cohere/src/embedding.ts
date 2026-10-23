@@ -1,9 +1,9 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, EmbeddingService, httpFailure, readJson, type EmbedOptions, type EmbeddingInputType, type EmbeddingResult, type RequestOption } from '@dsh-ai-providers/core'
-import { connectionHeaders, type JinaCohereConnection } from './connection.ts'
+import { connectionHeaders, type ApiConnection } from './connection.ts'
 
 /** What belongs to one embedding request to Jina or Cohere and not to every provider. */
-export interface JinaCohereEmbedOptions extends EmbedOptions {
+export interface EmbeddingApiOptions extends EmbedOptions {
   /** Vectors of this many dimensions, for models that can shorten theirs; overrides the configured default. */
   dimensions?: number
   /** Whether a text longer than the model's input is cut to fit (`true`) or refused; overrides the configured default. */
@@ -51,7 +51,7 @@ export interface EmbeddingSettings {
   timeoutMs: { get(): number }
 }
 
-export interface JinaCohereEmbeddingDeps {
+export interface EmbeddingApiDeps {
   config: EmbeddingSettings
   /** The provider id the service reports. */
   provider: string
@@ -59,7 +59,7 @@ export interface JinaCohereEmbeddingDeps {
   api: 'jina' | 'cohere'
   /** The credentials service, looked up on each call: the key is never held. */
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
-  connection: () => JinaCohereConnection
+  connection: () => ApiConnection
   /** Replaceable for tests. */
   fetch?: typeof fetch
 }
@@ -83,11 +83,11 @@ function messageOf(body: unknown): string | undefined {
  * Embeddings from Jina (`POST {baseUrl}/embeddings`) or Cohere (`POST {baseUrl}/embed`), whichever the configuration says the connection speaks.
  * The query/document choice of a call becomes Jina's `task` or Cohere's `input_type`, which Cohere requires: without a choice, texts are documents.
  */
-export class JinaCohereEmbeddingService extends EmbeddingService<JinaCohereEmbedOptions> {
+export class EmbeddingApiService extends EmbeddingService<EmbeddingApiOptions> {
   readonly provider: string
   private readonly send: typeof fetch
 
-  constructor(private readonly deps: JinaCohereEmbeddingDeps) {
+  constructor(private readonly deps: EmbeddingApiDeps) {
     super()
     this.provider = deps.provider
     this.send = deps.fetch ?? fetch
@@ -97,7 +97,7 @@ export class JinaCohereEmbeddingService extends EmbeddingService<JinaCohereEmbed
     return this.deps.config.embeddingModel.get()
   }
 
-  async embed(texts: readonly string[], options: JinaCohereEmbedOptions = {}): Promise<EmbeddingResult> {
+  async embed(texts: readonly string[], options: EmbeddingApiOptions = {}): Promise<EmbeddingResult> {
     const { config } = this.deps
     texts.forEach((text, index) => {
       if (text.trim() === '') throw new AiError('invalid-input', `text ${index + 1} is empty: the API refuses an empty input`)
@@ -119,7 +119,7 @@ export class JinaCohereEmbeddingService extends EmbeddingService<JinaCohereEmbed
     return { vectors, model: answered, dimensions: vectors[0]?.length ?? 0, ...tokens === undefined ? {} : { tokens } }
   }
 
-  private body(api: 'jina' | 'cohere', input: readonly string[], model: string, options: JinaCohereEmbedOptions): Record<string, unknown> {
+  private body(api: 'jina' | 'cohere', input: readonly string[], model: string, options: EmbeddingApiOptions): Record<string, unknown> {
     const { config } = this.deps
     const dimensions = options.dimensions ?? config.embeddingDimensions.get()
     const truncate = options.truncate ?? config.embeddingOverflow.get() === 'truncate'
@@ -144,7 +144,7 @@ export class JinaCohereEmbeddingService extends EmbeddingService<JinaCohereEmbed
     }
   }
 
-  private async request(api: 'jina' | 'cohere', input: readonly string[], model: string, options: JinaCohereEmbedOptions): Promise<Answer> {
+  private async request(api: 'jina' | 'cohere', input: readonly string[], model: string, options: EmbeddingApiOptions): Promise<Answer> {
     const { config, credentials } = this.deps
     const connection = this.deps.connection()
     const root = connection.baseUrl

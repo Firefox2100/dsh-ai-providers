@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { LlmRequestError, type LlmCall } from '@dsh-ai-providers/core'
-import { Config, CohereLlmService, translate, wireBody, wireMessages } from '../src/index.ts'
+import { Config, CohereLlmService, RERANK_REQUEST_OPTIONS, rerankBody, translate, type CohereRerankOptions, wireBody, wireMessages } from '../src/index.ts'
 import { httpError } from '../src/llm/errors.ts'
-import { JinaCohereEmbeddingService, JinaCohereRerankService } from '@dsh-ai-providers/jina-cohere'
+import { EmbeddingApiService, RerankApiService } from '@dsh-ai-providers/jina-cohere'
 
 const options = (extra: Partial<GenerateOptions> = {}): GenerateOptions => ({
   provider: 'cohere', model: 'command-a-03-2025', messages: [
@@ -186,17 +186,24 @@ describe('reused services', () => {
     const seen: Record<string, unknown>[] = []
     const fetcher = (async (_url: string, init: RequestInit) => { seen.push(JSON.parse(init.body as string) as Record<string, unknown>); return Response.json({ id: 'r', results: [{ index: 1, relevance_score: 0.9 }, { index: 0, relevance_score: 0.1 }] }) }) as unknown as typeof fetch
     const parsed = config({ rerankMaxTokensPerDoc: 1024 })
-    const service = new JinaCohereRerankService({ config: parsed, provider: 'cohere', connection: () => ({ baseUrl: 'https://api.cohere.test/v2', apiKeyRef: '' }), credentials: () => undefined, returnDocuments: false, body: () => ({ max_tokens_per_doc: 1024 }), fetch: fetcher })
+    const service = new RerankApiService<CohereRerankOptions>({ config: parsed, provider: 'cohere', connection: () => ({ baseUrl: 'https://api.cohere.test/v2', apiKeyRef: '' }), credentials: () => undefined, returnDocuments: false, body: options => rerankBody(parsed.rerankMaxTokensPerDoc.get(), options), fetch: fetcher })
     const result = await service.rerank('q', ['a', 'b'])
     expect(service.provider).toBe('cohere')
     expect(seen[0]).toEqual({ max_tokens_per_doc: 1024, model: 'rerank-v3.5', query: 'q', documents: ['a', 'b'] })
     expect(result.results.map(entry => entry.index)).toEqual([1, 0])
   })
 
+  it('lets a call override the token limit and set a priority', () => {
+    expect(rerankBody(1024, {})).toEqual({ max_tokens_per_doc: 1024 })
+    expect(rerankBody(1024, { maxTokensPerDoc: 256, queuePriority: 5 })).toEqual({ max_tokens_per_doc: 256, priority: 5 })
+    expect(rerankBody(0, {})).toEqual({})
+    expect(RERANK_REQUEST_OPTIONS.map(option => option.key)).toEqual(['maxTokensPerDoc', 'queuePriority'])
+  })
+
   it('embeds through /v2/embed whatever the shared configuration says', async () => {
     const seen: { url: string; body: Record<string, unknown> }[] = []
     const fetcher = (async (url: string, init: RequestInit) => { seen.push({ url, body: JSON.parse(init.body as string) as Record<string, unknown> }); return Response.json({ embeddings: { float: [[1, 2]] }, meta: { billed_units: { input_tokens: 3 } } }) }) as unknown as typeof fetch
-    const service = new JinaCohereEmbeddingService({ config: config(), provider: 'cohere', api: 'cohere', connection: () => ({ baseUrl: 'https://api.cohere.test/v2', apiKeyRef: '' }), credentials: () => undefined, fetch: fetcher })
+    const service = new EmbeddingApiService({ config: config(), provider: 'cohere', api: 'cohere', connection: () => ({ baseUrl: 'https://api.cohere.test/v2', apiKeyRef: '' }), credentials: () => undefined, fetch: fetcher })
     expect(await service.embed(['a'], { inputType: 'query' })).toEqual({ vectors: [[1, 2]], model: 'embed-v4.0', dimensions: 2, tokens: 3 })
     expect(seen[0]).toMatchObject({ url: 'https://api.cohere.test/v2/embed', body: { input_type: 'search_query', texts: ['a'] } })
     expect(service.provider).toBe('cohere')

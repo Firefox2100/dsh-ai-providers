@@ -1,0 +1,34 @@
+import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
+import { AiError } from '@dsh-ai-providers/core'
+import type { DashScopeConnectionConfig, Config } from './config.ts'
+
+/** A validated way to reach the API: its root, which ends with the version (`/api/v1`), and the name of the credential for it, if any. */
+export interface DashScopeConnection { baseUrl: string; apiKeyRef: string }
+
+export function validateConnection(connection: Pick<DashScopeConnectionConfig, 'name' | 'baseUrl' | 'apiKeyRef'>): DashScopeConnection {
+  const trimmed = connection.baseUrl.trim()
+  let end = trimmed.length
+  while (trimmed[end - 1] === '/') end -= 1
+  const baseUrl = trimmed.slice(0, end)
+  if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
+  let url: URL
+  try { url = new URL(baseUrl) }
+  catch (error) { throw new AiError('not-configured', `the base URL for connection "${connection.name}" is invalid`, { cause: error }) }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new AiError('not-configured', `the base URL for connection "${connection.name}" must use HTTP or HTTPS`)
+  return { baseUrl, apiKeyRef: connection.apiKeyRef.trim() }
+}
+
+export async function connectionHeaders(connection: DashScopeConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
+  if (connection.apiKeyRef === '') return {}
+  let key: Awaited<ReturnType<CredentialProvider['resolve']>>
+  try { key = await credentials()?.resolve(credentialRef(connection.apiKeyRef)) }
+  catch (error) { throw new AiError('not-configured', `the credential name "${connection.apiKeyRef}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error }) }
+  return key === undefined ? {} : { authorization: `Bearer ${key.value}` }
+}
+
+/** The connection a capability selection names; a selection that names none is not configured. */
+export function resolveConnection(config: Pick<Config, 'connections'>, selected: string): DashScopeConnection {
+  const connection = config.connections.get().find(item => item.id === selected)
+  if (connection === undefined) throw new AiError('not-configured', selected === '' ? 'no connection is selected' : `the selected connection "${selected}" does not exist`)
+  return validateConnection(connection)
+}

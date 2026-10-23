@@ -56,7 +56,7 @@ for (const { folder, name } of releasePackages) {
 
 await access(resolve(root, 'LICENSE'))
 
-for (const folder of ['dsh-ai-all', 'dsh-ai-providers', 'dsh-ai-openai', 'dsh-ai-anthropic', 'dsh-ai-jina', 'dsh-ai-localai', 'dsh-ai-ollama', 'dsh-ai-cohere']) {
+for (const folder of ['dsh-ai-all', 'dsh-ai-providers', 'dsh-ai-openai', 'dsh-ai-anthropic', 'dsh-ai-jina', 'dsh-ai-localai', 'dsh-ai-ollama', 'dsh-ai-cohere', 'dsh-ai-dashscope']) {
   const manifest = JSON.parse(await readFile(resolve(root, 'packages', folder, 'package.json'), 'utf8'))
   if (manifest.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error(`${manifest.name}: missing DSH bundle declaration`)
   if (manifest.engines?.dsh !== DSH_ENGINES) throw new Error(`${manifest.name}: engines.dsh must be ${DSH_ENGINES}`)
@@ -72,6 +72,7 @@ const standaloneBundles = [
   ['dsh-ai-localai', '@dsh-ai-providers/localai', 'ai-localai'],
   ['dsh-ai-ollama', '@dsh-ai-providers/ollama', 'ai-ollama'],
   ['dsh-ai-cohere', '@dsh-ai-providers/cohere', 'ai-cohere'],
+  ['dsh-ai-dashscope', '@dsh-ai-providers/dashscope', 'ai-dashscope'],
 ]
 for (const [folder, name, id] of standaloneBundles) {
   const directory = resolve(root, 'packages', folder)

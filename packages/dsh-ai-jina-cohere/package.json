@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/jina-cohere",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Reusable Jina- and Cohere-style rerank and embedding transports for DSH AI providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -25,11 +25,11 @@
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || 0.2.1-rc.2",
-    "@dsh-ai-providers/core": "workspace:0.4.0"
+    "@dsh-ai-providers/core": "workspace:0.4.1"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
-    "@dsh-ai-providers/core": "workspace:0.4.0",
+    "@dsh-ai-providers/core": "workspace:0.4.1",
     "@types/node": "^22.20.0",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",

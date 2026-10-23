@@ -13,3 +13,5 @@
       name: '@dsh-ai-providers/ollama'
     - id: ai-cohere
       name: '@dsh-ai-providers/cohere'
+    - id: ai-dashscope
+      name: '@dsh-ai-providers/dashscope'

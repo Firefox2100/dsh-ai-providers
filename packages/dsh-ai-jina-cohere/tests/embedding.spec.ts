@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { JinaCohereEmbeddingService, type JinaCohereEmbedOptions } from '../src/index.ts'
+import { EmbeddingApiService, type EmbeddingApiOptions } from '../src/index.ts'
 
 interface Seen { url: string; auth: string | null; body: Record<string, unknown> }
 
@@ -12,7 +12,7 @@ const service = (patch: Record<string, unknown>, answer: (seen: Seen) => Respons
     seen.push(entry)
     return answer(entry)
   }) as unknown as typeof fetch
-  return new JinaCohereEmbeddingService({
+  return new EmbeddingApiService({
     config: settings(patch),
     provider: patch['embeddingApi'] === 'cohere' ? 'cohere' : 'jina',
     api: patch['embeddingApi'] === 'cohere' ? 'cohere' : 'jina',
@@ -63,7 +63,7 @@ describe('Cohere embeddings', () => {
     expect(seen.map(entry => (entry.body['texts'] as string[]).length)).toEqual([96, 4])
     expect(seen[0]!.body).toMatchObject({ input_type: 'search_document', truncate: 'NONE' })
     expect(result.vectors).toHaveLength(100)
-    await embedder.embed(['a'], { task: 'clustering' } satisfies JinaCohereEmbedOptions)
+    await embedder.embed(['a'], { task: 'clustering' } satisfies EmbeddingApiOptions)
     expect(seen[2]!.body['input_type']).toBe('clustering')
   })
 })

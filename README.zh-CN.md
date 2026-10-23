@@ -40,6 +40,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
     +-- Anthropic
     +-- Ollama
     +-- Cohere
+    +-- DashScope
     +-- Jina
 ```
 
@@ -67,6 +68,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 | `@dsh-ai-providers/anthropic` | 通过 Anthropic Messages API 提供语言模型 |
 | `@dsh-ai-providers/ollama` | 通过 Ollama 原生 API 提供语言模型和嵌入 |
 | `@dsh-ai-providers/cohere` | 通过 Cohere 原生 API 提供语言模型、嵌入和重排序 |
+| `@dsh-ai-providers/dashscope` | 通过阿里云 DashScope（通义千问）原生 API 提供语言模型、嵌入、重排序、语音和图像 |
 | `@dsh-ai-providers/jina` | 通过 Jina API 提供重排序和嵌入 |
 | `@dsh-ai-providers/jina-cohere` | 可复用的 Jina 与 Cohere 风格重排序和嵌入传输层；不是插件 |
 | `@dsh-ai-providers/all` | 仅包含元数据的 DSH 安装包，集合本项目维护的运行时和全部供应商插件 |
@@ -78,6 +80,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 - [Anthropic](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/anthropic)
 - [Ollama](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/ollama)
 - [Cohere](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/cohere)
+- [DashScope](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/dashscope)
 - [Jina](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/jina)
 
 ## 安装

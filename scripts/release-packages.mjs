@@ -8,6 +8,7 @@ export const releasePackages = [
   { folder: 'dsh-ai-localai', name: '@dsh-ai-providers/localai', output: 'localai' },
   { folder: 'dsh-ai-ollama', name: '@dsh-ai-providers/ollama', output: 'ollama' },
   { folder: 'dsh-ai-cohere', name: '@dsh-ai-providers/cohere', output: 'cohere' },
+  { folder: 'dsh-ai-dashscope', name: '@dsh-ai-providers/dashscope', output: 'dashscope' },
   { folder: 'dsh-ai-jina', name: '@dsh-ai-providers/jina', output: 'jina' },
   { folder: 'dsh-ai-all', name: '@dsh-ai-providers/all', output: 'all' },
 ]

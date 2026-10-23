@@ -2,7 +2,7 @@ import type { Context } from '@deepseek-ai/cordis'
 // Type-only: declares `ctx.aiProviders` (from the main plugin) and `ctx.credentials`.
 import type {} from '@dsh-ai-providers/core'
 import type {} from '@deepseek-ai/dsh-credentials'
-import { EMBEDDING_REQUEST_OPTIONS, JinaCohereEmbeddingService, JinaCohereRerankService } from '@dsh-ai-providers/jina-cohere'
+import { EMBEDDING_REQUEST_OPTIONS, EmbeddingApiService, RerankApiService } from '@dsh-ai-providers/jina-cohere'
 import { Config } from './config.ts'
 import { resolveConnection } from './connection.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
@@ -22,8 +22,8 @@ export function apply(ctx: Context, config: Config): void {
     label: 'Jina',
     configEntryId: ENTRY_ID,
     capabilities: {
-      rerank: () => new JinaCohereRerankService({ config, provider: PROVIDER_ID, connection: () => resolveConnection(config, 'rerank'), credentials: () => ctx.get('credentials') }),
-      embedding: () => new JinaCohereEmbeddingService({ config, provider: PROVIDER_ID, api: 'jina', connection: () => resolveConnection(config, 'embedding'), credentials: () => ctx.get('credentials') }),
+      rerank: () => new RerankApiService({ config, provider: PROVIDER_ID, connection: () => resolveConnection(config, 'rerank'), credentials: () => ctx.get('credentials') }),
+      embedding: () => new EmbeddingApiService({ config, provider: PROVIDER_ID, api: 'jina', connection: () => resolveConnection(config, 'embedding'), credentials: () => ctx.get('credentials') }),
     },
     requestOptions: { embedding: EMBEDDING_REQUEST_OPTIONS },
   }), 'dsh-ai-jina: provider')

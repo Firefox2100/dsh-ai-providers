@@ -1,9 +1,9 @@
 import { AiError } from '@dsh-ai-providers/core'
-import { connectionHeaders, validateConnection as validate, type JinaCohereConnection } from '@dsh-ai-providers/jina-cohere'
+import { connectionHeaders, validateConnection as validate, type ApiConnection } from '@dsh-ai-providers/jina-cohere'
 import type { CohereConnectionConfig, Config } from './config.ts'
 
 /** A validated way to reach the API: its root, which ends with the version (`/v2`), and the name of the credential for it, if any. */
-export type CohereConnection = JinaCohereConnection
+export type CohereConnection = ApiConnection
 
 export { connectionHeaders }
 

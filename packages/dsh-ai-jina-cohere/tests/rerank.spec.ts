@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { JinaCohereRerankService } from '../src/rerank.ts'
+import { RerankApiService } from '../src/rerank.ts'
 
 interface Seen { path: string; auth: string | undefined; body: { model: string; query: string; documents: string[]; top_n?: number; return_documents?: boolean } }
 
@@ -12,7 +12,7 @@ let settings: { baseUrl: string; apiKeyEnv: string; rerankModel: string; timeout
 let key: string | undefined
 
 const field = <K extends keyof typeof settings>(name: K) => ({ get: () => settings[name] })
-const service = () => new JinaCohereRerankService({
+const service = () => new RerankApiService({
   provider: 'jina',
   config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), rerankModel: field('rerankModel'), timeoutMs: field('timeoutMs') } as never,
   connection: () => ({ baseUrl: settings.baseUrl.replace(/\/+$/, ''), apiKeyRef: settings.apiKeyEnv }),

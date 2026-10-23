@@ -1,6 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
-import { connectionHeaders, type JinaCohereConnection } from './connection.ts'
+import { connectionHeaders, type ApiConnection } from './connection.ts'
 
 /** The settings a rerank call reads, live, so a vendor passes the fields of its own configuration. */
 export interface RerankSettings {
@@ -10,17 +10,17 @@ export interface RerankSettings {
   timeoutMs: { get(): number }
 }
 
-export interface JinaCohereDeps {
+export interface RerankApiDeps<Options extends RerankOptions = RerankOptions> {
   config: RerankSettings
   /** The provider id the service reports. */
   provider: string
-  /** Fields added to every request body, such as a vendor's own limits. */
-  body?: () => Readonly<Record<string, unknown>>
+  /** Fields added to the request body, from the call's options and the vendor's configuration: a vendor's own limits and controls. */
+  body?: (options: Options) => Readonly<Record<string, unknown>>
   /** Whether to send `return_documents: false`, which Jina and compatible servers read and Cohere's v2 API does not know. */
   returnDocuments?: boolean
   /** The credentials service, looked up on each call: the key is never held. */
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
-  connection: () => JinaCohereConnection
+  connection: () => ApiConnection
   /** Replaceable for tests. */
   fetch?: typeof fetch
 }
@@ -46,11 +46,11 @@ const logistic = (score: number): number => 1 / (1 + Math.exp(-score))
  * that range (a cross-encoder's logits) all of them are mapped through a logistic function, which keeps
  * their order.
  */
-export class JinaCohereRerankService extends RerankService {
+export class RerankApiService<Options extends RerankOptions = RerankOptions> extends RerankService<Options> {
   readonly provider: string
   private readonly send: typeof fetch
 
-  constructor(private readonly deps: JinaCohereDeps) {
+  constructor(private readonly deps: RerankApiDeps<Options>) {
     super()
     this.provider = deps.provider
     this.send = deps.fetch ?? fetch
@@ -60,7 +60,7 @@ export class JinaCohereRerankService extends RerankService {
     return this.deps.config.rerankModel.get()
   }
 
-  async rerank(query: string, documents: readonly string[], options: RerankOptions = {}): Promise<RerankResult> {
+  async rerank(query: string, documents: readonly string[], options: Options = {} as Options): Promise<RerankResult> {
     const { config, credentials } = this.deps
     if (query.trim() === '') throw new AiError('invalid-input', 'the query is empty')
     documents.forEach((document, index) => {
@@ -84,7 +84,7 @@ export class JinaCohereRerankService extends RerankService {
         method: 'POST',
         headers,
         signal,
-        body: JSON.stringify({ ...this.deps.body?.(), model, query, documents, ...(options.topN === undefined ? {} : { top_n: options.topN }), ...this.deps.returnDocuments === false ? {} : { return_documents: false } }),
+        body: JSON.stringify({ ...this.deps.body?.(options), model, query, documents, ...(options.topN === undefined ? {} : { top_n: options.topN }), ...this.deps.returnDocuments === false ? {} : { return_documents: false } }),
       })
     } catch (error) {
       if (cancelled()) throw new AiError('cancelled', 'cancelled', { cause: error })

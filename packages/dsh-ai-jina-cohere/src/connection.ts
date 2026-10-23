@@ -2,10 +2,10 @@ import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credent
 import { AiError } from '@dsh-ai-providers/core'
 
 /** A validated way to reach a rerank or embedding API: its root, and the name of the credential for it, if any. */
-export interface JinaCohereConnection { baseUrl: string; apiKeyRef: string }
+export interface ApiConnection { baseUrl: string; apiKeyRef: string }
 
 /** Checks and normalizes a configured connection: no trailing slashes, HTTP or HTTPS only. */
-export function validateConnection(connection: { name: string; baseUrl: string; apiKeyRef: string }): JinaCohereConnection {
+export function validateConnection(connection: { name: string; baseUrl: string; apiKeyRef: string }): ApiConnection {
   const trimmed = connection.baseUrl.trim()
   let end = trimmed.length
   while (trimmed[end - 1] === '/') end -= 1
@@ -18,7 +18,7 @@ export function validateConnection(connection: { name: string; baseUrl: string; 
   return { baseUrl, apiKeyRef: connection.apiKeyRef.trim() }
 }
 
-export async function connectionHeaders(connection: JinaCohereConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
+export async function connectionHeaders(connection: ApiConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
   if (connection.apiKeyRef === '') return {}
   let key: Awaited<ReturnType<CredentialProvider['resolve']>>
   try { key = await credentials()?.resolve(credentialRef(connection.apiKeyRef)) }
