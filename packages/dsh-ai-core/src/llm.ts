@@ -49,6 +49,28 @@ export interface LlmModelSpec {
   sampling?: LlmSampling
 }
 
+/** Converts the model shape shared by provider configuration schemas into the runtime contract. */
+export function configuredLlmModel(model: {
+  id: string
+  name: string
+  vision?: boolean | undefined
+  contextWindow?: number | undefined
+  maxTokens?: number | undefined
+  reasoningLevels?: readonly LlmReasoningLevel[] | undefined
+  defaultReasoning?: string | undefined
+  sampling?: LlmSampling | undefined
+}): LlmModelSpec {
+  return {
+    id: model.id,
+    name: model.name,
+    inputs: model.vision === true ? ['text', 'image'] : ['text'],
+    ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow },
+    ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens },
+    ...model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : { reasoning: { levels: model.reasoningLevels, ...model.defaultReasoning === undefined ? {} : { default: model.defaultReasoning } } },
+    ...model.sampling === undefined ? {} : { sampling: model.sampling },
+  }
+}
+
 /** A named way to reach models: what DSH calls a provider and a chat selects with `provider/model`. */
 export interface LlmRouteSpec {
   id: string
@@ -77,6 +99,14 @@ export interface LlmCall {
   sampling: LlmSampling
   /** Headers that identify the harness to the endpoint; every request must carry them. */
   headers: Readonly<Record<string, string>>
+}
+
+/** Maps failures shared by streaming HTTP transports while keeping provider response errors intact. */
+export function llmTransportFailure(error: unknown, signal: AbortSignal | undefined, timedOut: boolean, idleMs: number, url: string): unknown {
+  if (error instanceof LlmRequestError || error instanceof AiError) return error
+  if (signal?.aborted === true) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, { cause: error })
+  if (timedOut) return new LlmRequestError('TIMEOUT', `${url} was silent for ${Math.round(idleMs / 1000)} seconds`, {}, { cause: error })
+  return new LlmRequestError('TRANSPORT', `${url} could not be reached or the connection dropped`, {}, { cause: error })
 }
 
 /** One operation a provider offers for the resident process behind a language model. */

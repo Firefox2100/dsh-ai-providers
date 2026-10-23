@@ -1,7 +1,7 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AiError, LlmRequestError, LlmService, ndjsonLines, type LlmCall, type LlmEndpointDraft, type LlmModelControl, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
-import type { Config, OllamaLlmModelConfig, OllamaLlmRouteConfig } from '../config.ts'
+import { AiError, configuredLlmModel, llmTransportFailure, LlmRequestError, LlmService, ndjsonLines, type LlmCall, type LlmEndpointDraft, type LlmModelControl, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
+import type { Config, OllamaLlmRouteConfig } from '../config.ts'
 import { connectionHeaders, validateConnection, type OllamaConnection } from '../connection.ts'
 import { PROVIDER_ID } from '../ids.ts'
 import { OllamaModelControl } from './control.ts'
@@ -23,18 +23,6 @@ export interface OllamaLlmDeps {
   fetch?: typeof fetch
 }
 
-function modelSpec(model: OllamaLlmModelConfig): LlmModelSpec {
-  return {
-    id: model.id,
-    name: model.name,
-    inputs: model.vision === true ? ['text', 'image'] : ['text'],
-    ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow },
-    ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens },
-    ...model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : { reasoning: { levels: model.reasoningLevels, ...model.defaultReasoning === undefined ? {} : { default: model.defaultReasoning } } },
-    ...model.sampling === undefined ? {} : { sampling: model.sampling },
-  }
-}
-
 function addressOf(baseUrl: string | undefined): string | undefined {
   let trimmed = baseUrl?.trim()
   while (trimmed?.endsWith('/')) trimmed = trimmed.slice(0, -1)
@@ -45,7 +33,7 @@ function routeSpec(route: OllamaLlmRouteConfig, baseUrl: string | undefined): Ll
   return {
     id: route.id,
     name: route.name,
-    models: route.models.map(modelSpec),
+    models: route.models.map(configuredLlmModel),
     ...route.sampling === undefined ? {} : { sampling: route.sampling },
     ...baseUrl === undefined ? {} : { baseUrl },
     ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
@@ -123,20 +111,14 @@ export class OllamaLlmService extends LlmService {
           headers: { ...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'content-type': 'application/json', accept: 'application/x-ndjson' },
           body: JSON.stringify(body),
         })
-      } catch (error) { throw this.failed(error, call, timedOut, idle, connection.apiUrl) }
+      } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.apiUrl) }
       if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
       if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
-      try { yield * translate(ndjsonLines(response.body, pulse, signal)) } catch (error) { throw this.failed(error, call, timedOut, idle, connection.apiUrl) }
+      try { yield * translate(ndjsonLines(response.body, pulse, signal)) } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.apiUrl) }
     } finally {
       clearTimeout(timer)
       controller.abort()
     }
   }
 
-  private failed(error: unknown, call: LlmCall, timedOut: boolean, idle: number, url: string): unknown {
-    if (error instanceof LlmRequestError || error instanceof AiError) return error
-    if (call.options.signal?.aborted === true) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, { cause: error })
-    if (timedOut) return new LlmRequestError('TIMEOUT', `${url} was silent for ${Math.round(idle / 1000)} seconds`, {}, { cause: error })
-    return new LlmRequestError('TRANSPORT', `${url} could not be reached or the connection dropped`, {}, { cause: error })
-  }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, ndjsonLines, requestJson, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, cosineSimilarity, llmTransportFailure, ndjsonLines, requestJson, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -65,6 +65,26 @@ describe('bounded JSON requests', () => {
     const controller = new AbortController()
     controller.abort()
     await expect(requestJson((async () => { throw new Error('aborted') }) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf, controller.signal)).rejects.toMatchObject({ code: 'cancelled' })
+  })
+})
+
+describe('shared language-model configuration', () => {
+  it('keeps optional model capabilities only when configured', () => {
+    expect(configuredLlmModel({ id: 'plain', name: 'Plain' })).toEqual({ id: 'plain', name: 'Plain', inputs: ['text'] })
+    expect(configuredLlmModel({ id: 'rich', name: 'Rich', vision: true, contextWindow: 8192, maxTokens: 512, reasoningLevels: [{ id: 'on', name: 'On', body: { think: true } }], defaultReasoning: 'on', sampling: { temperature: 0.2 } })).toEqual({
+      id: 'rich', name: 'Rich', inputs: ['text', 'image'], contextWindow: 8192, maxTokens: 512,
+      reasoning: { levels: [{ id: 'on', name: 'On', body: { think: true } }], default: 'on' }, sampling: { temperature: 0.2 },
+    })
+  })
+
+  it('classifies shared streaming transport failures', () => {
+    const existing = new LlmRequestError('SERVER', 'failed')
+    expect(llmTransportFailure(existing, undefined, false, 1000, 'http://x')).toBe(existing)
+    const controller = new AbortController()
+    controller.abort()
+    expect(llmTransportFailure(new Error('x'), controller.signal, false, 1000, 'http://x')).toMatchObject({ failure: 'ABORTED' })
+    expect(llmTransportFailure(new Error('x'), undefined, true, 1500, 'http://x')).toMatchObject({ failure: 'TIMEOUT', message: expect.stringContaining('2 seconds') })
+    expect(llmTransportFailure(new Error('x'), undefined, false, 1000, 'http://x')).toMatchObject({ failure: 'TRANSPORT' })
   })
 })
 

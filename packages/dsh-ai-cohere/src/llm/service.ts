@@ -1,7 +1,7 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AiError, LlmRequestError, LlmService, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
-import type { CohereLlmModelConfig, CohereLlmRouteConfig, Config } from '../config.ts'
+import { AiError, configuredLlmModel, llmTransportFailure, LlmRequestError, LlmService, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
+import type { CohereLlmRouteConfig, Config } from '../config.ts'
 import { connectionHeaders, validateConnection, type CohereConnection } from '../connection.ts'
 import { PROVIDER_ID } from '../ids.ts'
 import { discoverModels } from './discovery.ts'
@@ -22,23 +22,11 @@ export interface CohereLlmDeps {
   fetch?: typeof fetch
 }
 
-function modelSpec(model: CohereLlmModelConfig): LlmModelSpec {
-  return {
-    id: model.id,
-    name: model.name,
-    inputs: model.vision === true ? ['text', 'image'] : ['text'],
-    ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow },
-    ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens },
-    ...model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : { reasoning: { levels: model.reasoningLevels, ...model.defaultReasoning === undefined ? {} : { default: model.defaultReasoning } } },
-    ...model.sampling === undefined ? {} : { sampling: model.sampling },
-  }
-}
-
 function routeSpec(route: CohereLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec {
   return {
     id: route.id,
     name: route.name,
-    models: route.models.map(modelSpec),
+    models: route.models.map(configuredLlmModel),
     ...route.sampling === undefined ? {} : { sampling: route.sampling },
     ...baseUrl === undefined ? {} : { baseUrl },
     ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
@@ -111,20 +99,14 @@ export class CohereLlmService extends LlmService {
           headers: { ...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'content-type': 'application/json', accept: 'text/event-stream' },
           body: JSON.stringify(body),
         })
-      } catch (error) { throw this.failed(error, call, timedOut, idle, connection.baseUrl) }
+      } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.baseUrl) }
       if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
       if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
-      try { yield * translate(sseData(response.body, pulse, signal)) } catch (error) { throw this.failed(error, call, timedOut, idle, connection.baseUrl) }
+      try { yield * translate(sseData(response.body, pulse, signal)) } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.baseUrl) }
     } finally {
       clearTimeout(timer)
       controller.abort()
     }
   }
 
-  private failed(error: unknown, call: LlmCall, timedOut: boolean, idle: number, url: string): unknown {
-    if (error instanceof LlmRequestError || error instanceof AiError) return error
-    if (call.options.signal?.aborted === true) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, { cause: error })
-    if (timedOut) return new LlmRequestError('TIMEOUT', `${url} was silent for ${Math.round(idle / 1000)} seconds`, {}, { cause: error })
-    return new LlmRequestError('TRANSPORT', `${url} could not be reached or the connection dropped`, {}, { cause: error })
-  }
 }
