@@ -2,16 +2,18 @@
 
 ## Runtime-owned surfaces
 
+- Providers: one shared settings entry containing reusable connection and credential editors from every installed vendor.
 - Capability settings: embedding, reranking, text-to-speech, speech-to-text, and image generation.
 - Language models: route and model status, probes, and provider editors.
 - Concurrency: shared-resource limits, route/capability assignment, and live queue state.
 
 ## Vendor-owned slot content
 
-- OpenAI-compatible: reusable connections, credentials, capability defaults, routes, models, reasoning levels, sampling, discovery, and timeouts.
-- Jina / Cohere: reusable reranking connections, credentials, model, and timeout.
-- Anthropic: reusable connections, credentials, Messages API routes, model ids, native route JSON, version, and timeout.
-- LocalAI: explanatory hand-off to its OpenAI-compatible configuration.
+- OpenAI-compatible: connection editor in Providers; capability defaults, routes, models, reasoning levels, sampling, discovery, and timeouts in service pages.
+- Jina: connection editor in Providers; reranking and embedding models and timeout in service pages.
+- Anthropic: connection editor in Providers; Messages API routes, model ids, native route JSON, version, and timeout in Language models.
+- Ollama and Cohere: connection editors in Providers; models and capability options in service pages.
+- LocalAI: connection editor in Providers; models, native request fields, image controls, and routes in service pages.
 
 ## Outside this audit
 

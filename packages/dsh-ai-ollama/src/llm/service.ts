@@ -36,7 +36,8 @@ function modelSpec(model: OllamaLlmModelConfig): LlmModelSpec {
 }
 
 function addressOf(baseUrl: string | undefined): string | undefined {
-  const trimmed = baseUrl?.trim().replace(/\/+$/, '')
+  let trimmed = baseUrl?.trim()
+  while (trimmed?.endsWith('/')) trimmed = trimmed.slice(0, -1)
   return trimmed === undefined || trimmed === '' ? undefined : trimmed
 }
 

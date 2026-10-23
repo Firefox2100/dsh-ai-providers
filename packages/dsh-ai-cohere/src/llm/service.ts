@@ -58,7 +58,8 @@ export class CohereLlmService extends LlmService {
   routes(): readonly LlmRouteSpec[] {
     const connections = this.deps.config.connections.get()
     return this.deps.config.llmRoutes.get().map((route) => {
-      const baseUrl = connections.find(item => item.id === route.connection)?.baseUrl.trim().replace(/\/+$/, '')
+      let baseUrl = connections.find(item => item.id === route.connection)?.baseUrl.trim()
+      while (baseUrl?.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
       return routeSpec(route, baseUrl === undefined || baseUrl === '' ? undefined : baseUrl)
     })
   }

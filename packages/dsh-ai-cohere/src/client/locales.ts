@@ -4,7 +4,7 @@ import type { Dictionaries } from './i18n.ts'
 export type Key = 'label' | 'connectionsNav' | 'connectionsTitle' | 'connectionsDescription' | 'addConnection' | 'remove' | 'name' | 'baseUrl' | 'keyRef' | 'key' | 'saveKey' | 'keySet' | 'keyUnset'
   | 'llmTitle' | 'llmDescription' | 'addRoute' | 'routeId' | 'connection' | 'models' | 'modelsHint' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'add'
   | 'advanced' | 'advancedHint' | 'invalidJson' | 'idle' | 'idleHint'
-  | 'rerankTitle' | 'rerankDescription' | 'rerankModel' | 'rerankModelHint' | 'rerankMaxTokens' | 'rerankMaxTokensHint' | 'timeoutMsHintRerank'
+  | 'rerankTitle' | 'rerankDescription' | 'rerankModel' | 'rerankModelHint' | 'rerankMaxTokens' | 'rerankInputLimitHint' | 'timeoutMsHintRerank'
   | 'embeddingTitle' | 'embeddingDescription' | 'connectionNone' | 'connectionHint' | 'embeddingModel' | 'embeddingModelHint' | 'embeddingDimensions' | 'embeddingDimensionsHint'
   | 'embeddingOverflow' | 'embeddingOverflowHint' | 'overflowTruncate' | 'overflowError'
   | 'batchSize' | 'batchSizeHint' | 'timeoutMs' | 'timeoutMsHint'
@@ -23,7 +23,7 @@ export const dictionaries: Dictionaries<Key> = {
     idle: 'Silence limit (ms)', idleHint: 'How long a model may stay silent before the request is given up.',
     rerankTitle: 'Cohere reranking', rerankDescription: 'Reranking through the v2 rerank API.',
     rerankModel: 'Rerank model', rerankModelHint: 'The model name, such as rerank-v3.5.',
-    rerankMaxTokens: 'Tokens per document', rerankMaxTokensHint: 'The most tokens of a document the model reads (max_tokens_per_doc). 0 leaves it to the model.',
+    rerankMaxTokens: 'Tokens per document', rerankInputLimitHint: 'The most tokens of a document the model reads (max_tokens_per_doc). 0 leaves it to the model.',
     timeoutMsHintRerank: 'How long a rerank request may take.',
     embeddingTitle: 'Cohere embeddings', embeddingDescription: 'Embeddings through the v2 embed API. A query or a document is sent as Cohere\'s input type, so retrieval models embed each the way they were trained to.',
     connectionNone: 'None', connectionHint: 'The connection this capability uses.',
@@ -45,7 +45,7 @@ export const dictionaries: Dictionaries<Key> = {
     idle: '静默上限（毫秒）', idleHint: '模型沉默多久后放弃请求。',
     rerankTitle: 'Cohere 重排', rerankDescription: '通过 v2 重排 API 进行重排。',
     rerankModel: '重排模型', rerankModelHint: '模型名称，例如 rerank-v3.5。',
-    rerankMaxTokens: '每篇文档的 token 数', rerankMaxTokensHint: '模型读取每篇文档的最大 token 数（max_tokens_per_doc）。0 表示由模型决定。',
+    rerankMaxTokens: '每篇文档的 token 数', rerankInputLimitHint: '模型读取每篇文档的最大 token 数（max_tokens_per_doc）。0 表示由模型决定。',
     timeoutMsHintRerank: '一次重排请求允许的最长时间。',
     embeddingTitle: 'Cohere 嵌入', embeddingDescription: '通过 v2 嵌入 API 生成嵌入向量。查询和文档会按 Cohere 的输入类型发送，检索模型即可按训练时的方式分别处理。',
     connectionNone: '无', connectionHint: '此能力使用的连接。',

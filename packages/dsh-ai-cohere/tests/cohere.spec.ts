@@ -117,7 +117,7 @@ describe('failure classes', () => {
   })
 })
 
-const config = (patch: Record<string, unknown> = {}) => Config({ connections: [{ id: 'c', name: 'Cohere', baseUrl: 'https://api.cohere.test/v2/', apiKeyRef: '' }], llmRoutes: [{ id: 'cohere', name: 'Cohere', connection: 'c', models: [{ id: 'command-a-03-2025', name: 'Command A', sampling: { safetyMode: 'OFF', thinking: 'enabled' } }] }], ...patch })
+const config = (patch: Record<string, unknown> = {}) => Config({ connections: [{ id: 'c', name: 'Cohere', baseUrl: 'https://api.cohere.test/v2///', apiKeyRef: '' }], llmRoutes: [{ id: 'cohere', name: 'Cohere', connection: 'c', models: [{ id: 'command-a-03-2025', name: 'Command A', sampling: { safetyMode: 'OFF', thinking: 'enabled' } }] }], ...patch })
 const sse = (...values: unknown[]) => new Response(values.map(value => `event: x\ndata: ${JSON.stringify(value)}\n\n`).join(''), { headers: { 'content-type': 'text/event-stream' } })
 
 describe('configuration', () => {
@@ -166,6 +166,18 @@ describe('service', () => {
       { id: 'command-a-03-2025', name: 'command-a-03-2025', inputs: ['text'], contextWindow: 256000 },
       { id: 'command-a-vision-07-2025', name: 'command-a-vision-07-2025', inputs: ['text', 'image'], contextWindow: 128000 },
     ])
+  })
+
+  it('describes optional route capabilities and rejects missing route configuration', async () => {
+    const rich = config({ llmRoutes: [{
+      id: 'rich', name: 'Rich', connection: 'c', retry: { mode: 'always' }, sampling: { temperature: 0.2 },
+      models: [{ id: 'vision', name: 'Vision', vision: true, contextWindow: 8192, maxTokens: 512, reasoningLevels: [{ id: 'on', name: 'On', body: { thinking: { type: 'enabled' } } }], defaultReasoning: 'on', sampling: { topP: 0.8 } }],
+    }] })
+    const service = new CohereLlmService({ config: rich, credentials: () => undefined, fetch: (async () => Response.json({ models: [] })) as typeof fetch })
+    expect(service.routes()[0]).toMatchObject({ retry: { mode: 'always' }, sampling: { temperature: 0.2 }, models: [{ inputs: ['text', 'image'], contextWindow: 8192, maxTokens: 512, reasoning: { default: 'on' }, sampling: { topP: 0.8 } }] })
+    await expect(service.discover('missing')).rejects.toMatchObject({ code: 'not-configured' })
+    await expect(new CohereLlmService({ config: config({ connections: [] }), credentials: () => undefined }).discover('cohere')).rejects.toMatchObject({ code: 'not-configured' })
+    expect(await service.interrogate({ baseUrl: 'https://draft.test/v2' })).toEqual([])
   })
 })
 

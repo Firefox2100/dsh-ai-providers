@@ -100,7 +100,7 @@ describe('failure classes', () => {
   })
 })
 
-const config = (patch: Record<string, unknown> = {}) => Config({ connections: [{ id: 'local', name: 'Local', baseUrl: 'http://ollama.test:11434/api/', apiKeyRef: '' }], embeddingConnection: 'local', llmRoutes: [{ id: 'local', name: 'Local', connection: 'local', models: [{ id: 'qwen3:8b', name: 'qwen3:8b', sampling: { numCtx: 8192, think: 'high' } }], sampling: { mirostat: 1 } }], ...patch })
+const config = (patch: Record<string, unknown> = {}) => Config({ connections: [{ id: 'local', name: 'Local', baseUrl: 'http://ollama.test:11434/api///', apiKeyRef: '' }], embeddingConnection: 'local', llmRoutes: [{ id: 'local', name: 'Local', connection: 'local', models: [{ id: 'qwen3:8b', name: 'qwen3:8b', sampling: { numCtx: 8192, think: 'high' } }], sampling: { mirostat: 1 } }], ...patch })
 const ndjson = (...values: unknown[]) => new Response(values.map(value => `${JSON.stringify(value)}\n`).join(''), { headers: { 'content-type': 'application/x-ndjson' } })
 
 describe('configuration', () => {
@@ -163,6 +163,19 @@ describe('service', () => {
     await control.load?.('local', 'qwen3:8b')
     await control.unload?.('local', 'qwen3:8b')
     expect(calls.filter(item => item.url.endsWith('/generate')).map(item => item.body)).toEqual([{ model: 'qwen3:8b', stream: false }, { model: 'qwen3:8b', keep_alive: 0, stream: false }])
+  })
+
+  it('describes optional route capabilities and rejects missing route configuration', async () => {
+    const rich = config({ llmRoutes: [{
+      id: 'rich', name: 'Rich', connection: 'local', retry: { mode: 'always' }, sampling: { temperature: 0.2 },
+      models: [{ id: 'vision', name: 'Vision', vision: true, contextWindow: 8192, maxTokens: 512, reasoningLevels: [{ id: 'on', name: 'On', body: { think: true } }], defaultReasoning: 'on', sampling: { topP: 0.8 } }],
+    }] })
+    const fetcher = (async (url: string) => url.endsWith('/tags') ? Response.json({ models: [] }) : Response.json({})) as typeof fetch
+    const service = new OllamaLlmService({ config: rich, credentials: () => undefined, fetch: fetcher })
+    expect(service.routes()[0]).toMatchObject({ retry: { mode: 'always' }, sampling: { temperature: 0.2 }, models: [{ inputs: ['text', 'image'], contextWindow: 8192, maxTokens: 512, reasoning: { default: 'on' }, sampling: { topP: 0.8 } }] })
+    await expect(service.discover('missing')).rejects.toMatchObject({ code: 'not-configured' })
+    await expect(new OllamaLlmService({ config: config({ connections: [] }), credentials: () => undefined }).discover('local')).rejects.toMatchObject({ code: 'not-configured' })
+    expect(await service.interrogate({ baseUrl: 'http://draft.test' })).toEqual([])
   })
 })
 

@@ -231,7 +231,7 @@ export function RerankSettings(props: P & PropsRuntime<'ai.provider.rerank'>) {
             <small>{t('connectionHint')}</small>
           </label>
           <SettingsValueField id="cohere-rerank-model" label={t('rerankModel')} hint={t('rerankModelHint')} {...common} {...state.rerankModel} onEdit={(value) => { props.edit('rerankModel', value) }} onReset={() => { props.resetField('rerankModel') }} />
-          <SettingsValueField id="cohere-rerank-max-tokens" numeric label={t('rerankMaxTokens')} hint={t('rerankMaxTokensHint')} {...common} {...state.rerankMaxTokensPerDoc} onEdit={(value) => { props.edit('rerankMaxTokensPerDoc', value) }} onReset={() => { props.resetField('rerankMaxTokensPerDoc') }} />
+          <SettingsValueField id="cohere-rerank-max-tokens" numeric label={t('rerankMaxTokens')} hint={t('rerankInputLimitHint')} {...common} {...state.rerankMaxTokensPerDoc} onEdit={(value) => { props.edit('rerankMaxTokensPerDoc', value) }} onReset={() => { props.resetField('rerankMaxTokensPerDoc') }} />
           <SettingsValueField id="cohere-rerank-timeout" numeric label={t('timeoutMs')} hint={t('timeoutMsHintRerank')} {...common} {...state.timeoutMs} onEdit={(value) => { props.edit('timeoutMs', value) }} onReset={() => { props.resetField('timeoutMs') }} />
         </div>
       </SettingsForm>
