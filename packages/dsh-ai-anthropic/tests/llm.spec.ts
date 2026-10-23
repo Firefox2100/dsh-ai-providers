@@ -58,6 +58,8 @@ describe('Anthropic service',()=>{
     expect(await service.interrogate({baseUrl:'https://draft.test/v1',apiKey:'draft-key'})).toEqual([{id:'claude-a',name:'Claude A',inputs:['text','image']}])
     expect(seen.at(-1)?.url).toBe('https://draft.test/v1/models?limit=100')
     expect(seen.at(-1)?.init.headers).toEqual({'x-api-key':'draft-key','anthropic-version':'2023-06-01'})
+    expect(await service.interrogate({baseUrl:'https://draft.test/without-key'})).toEqual([{id:'claude-a',name:'Claude A',inputs:['text','image']}])
+    expect(seen.at(-1)?.init.headers).toEqual({'anthropic-version':'2023-06-01'})
     expect(service.routes()[0]).toMatchObject({id:'claude',baseUrl:'https://api.anthropic.com/v1'})
   })
 })

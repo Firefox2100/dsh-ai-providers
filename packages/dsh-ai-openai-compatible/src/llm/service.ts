@@ -50,7 +50,8 @@ function routeSpec(route: OpenAiLlmRouteConfig, baseUrl: string | undefined): Ll
 
 /** The address a route's connection names, read without judging it: a bad address is reported when a request needs it. */
 const addressOf = (connection: { baseUrl: string } | undefined): string | undefined => {
-  const address = connection?.baseUrl.trim().replace(/\/+$/, '')
+  let address = connection?.baseUrl.trim()
+  while (address?.endsWith('/')) address = address.slice(0, -1)
   return address === undefined || address === '' ? undefined : address
 }
 

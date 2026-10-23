@@ -13,7 +13,11 @@ interface AttachmentReader {readImage(ref: never, signal?: AbortSignal): Promise
 export interface AnthropicLlmDeps {config: Config; credentials: () => Pick<CredentialProvider, 'resolve'> | undefined; attachments?: () => AttachmentReader | undefined; fetch?: typeof fetch}
 const sampling = (value: AnthropicSamplingConfig | undefined): LlmSampling | undefined => value
 const modelSpec = (model: AnthropicLlmModelConfig): LlmModelSpec => ({id: model.id, name: model.name, inputs: model.vision === true ? ['text', 'image'] : ['text'], ...(model.contextWindow === undefined ? {} : {contextWindow: model.contextWindow}), ...(model.maxTokens === undefined ? {} : {maxTokens: model.maxTokens}), ...(model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : {reasoning: {levels: model.reasoningLevels, ...(model.defaultReasoning === undefined ? {} : {default: model.defaultReasoning})}}), ...(model.sampling === undefined ? {} : {sampling: sampling(model.sampling)!})})
-const addressOf = (connection: {baseUrl: string} | undefined): string | undefined => { const address = connection?.baseUrl.trim().replace(/\/+$/, ''); return address === undefined || address === '' ? undefined : address }
+const addressOf = (connection: {baseUrl: string} | undefined): string | undefined => {
+  let address = connection?.baseUrl.trim()
+  while (address?.endsWith('/')) address = address.slice(0, -1)
+  return address === undefined || address === '' ? undefined : address
+}
 const routeSpec = (route: AnthropicLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec => ({id: route.id, name: route.name, models: route.models.map(modelSpec), ...(route.sampling === undefined ? {} : {sampling: sampling(route.sampling)!}), ...(baseUrl === undefined ? {} : {baseUrl}), ...(route.retry === undefined ? {} : {retry: route.retry as RetryPolicyConfig})})
 
 export class AnthropicLlmService extends LlmService {
