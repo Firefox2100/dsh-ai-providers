@@ -3,7 +3,7 @@ title: 创建或扩展提供方
 sidebar_position: 1
 ---
 
-提供方插件针对某个厂商 API 实现一项或多项统一契约。可参考 `@dsh-ai-providers/openai` 和 `@dsh-ai-providers/jina-cohere`，但只应公开目标 API 确实支持的能力。
+提供方插件针对某个厂商 API 实现一项或多项统一契约。可参考 `@dsh-ai-providers/openai` 和 `@dsh-ai-providers/jina`，以及 `@dsh-ai-providers/openai-compatible` 和 `@dsh-ai-providers/jina-cohere`——它们是多个厂商共用、而厂商之间互不依赖的协议库，但只应公开目标 API 确实支持的能力。
 
 ## 1. 定义并验证配置
 
@@ -22,6 +22,23 @@ sidebar_position: 1
 ### 路由、重试与发现
 
 路由（`LlmRouteSpec`）可以带有 `baseUrl`（其配置固定的端点）和 `retry`（DSH 重试策略），运行时会把两者报告给 DSH。如果模型的聊天模板会把对话中任意位置改变的系统消息当作完整的系统提示，可为该模型设置 `systemPromptUpdate: 'in-history'`。重写 `LlmService.interrogate(draft, signal)`，可列出尚未配置的端点所拥有的模型（`draft.baseUrl`，以及仅为这一次提问提供的密钥 `draft.apiKey`）；默认实现会抛出 `unsupported` 错误。列出已配置路由的模型仍用 `discover(route)`。
+
+### 厂商控制项（采样中）
+
+厂商包的目标是在配置保持同一结构的前提下，暴露厂商 API 的能力。模型请求的控制项请遵循以下约定：
+
+- 路由、模型和策略都携带同一个 `sampling` 对象，按此顺序逐字段合并，最后是请求自身的值。核心包中的 `LlmSampling` 规定了所有提供方通用的字段（`temperature`、`topP`、`topK`、`minP`、各类惩罚、`seed`、`stop`、`maxTokens`、`toolChoice`），以及 `body`——用于任何其他顶层请求字段的逃生口。凡是能对应上的，请使用这些名称和含义，并自行映射到厂商的线上名称。
+- 厂商自有的控制项是同一个扁平对象里的额外可选字段，使用 camelCase，并以厂商参数命名（`num_ctx` 对应 `numCtx`）。请在继承 `LlmSampling` 的接口中声明，并写入路由与模型相同的 `sampling` 模式。缺省始终表示服务器默认值；不要填入厂商文档中没有的默认值。
+- 只有当某个控制项是厂商 API 的稳定设置时才为它设置字段。实验性的、或只针对某个模型的参数，放进 `body`；用于选择思考等级的参数，则放进推理等级的 `body`。
+- `LlmSampling` 之外的字段会原样通过运行时的合并，所以了解该厂商的使用方可以通过返回厂商的扩展类型，在策略中设置它们；不了解该厂商的使用方完全不需要关心。
+- 厂商无法满足的控制项不要凭空模拟：请记录哪些会被忽略，并对会改变请求含义的情况保持明确失败。
+- 在提供方页面中按线上名称记录每个字段。
+
+Ollama 提供方是参考实现：`OllamaSampling` 继承 `LlmSampling`，其页面列出每个字段及对应的请求名称。
+
+### 流式响应
+
+`@dsh-ai-providers/core` 提供了流式响应体的读取器，厂商无需自己编写：`sseData(body, activity, signal)` 逐个产出服务器发送事件的数据，`ndjsonLines(body, activity, signal)` 逐行产出按行分隔的流。两者都会在收到每一段数据时调用 `activity`（供静默看门狗使用），即使底层读取忽略信号也会在信号触发时结束，并且在流结束时没有最终换行的情况下仍会读出最后一个事件或最后一行。
 
 ### 可选的 LLM 模型控制
 

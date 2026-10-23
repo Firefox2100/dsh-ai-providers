@@ -1,0 +1,55 @@
+---
+slug: dsh-ai-providers-0-4-0
+title: DSH AI Providers 0.4.0 统一提供方配置
+description: 统一的提供方设置页、原生 Cohere 与 Ollama 软件包、独立 Jina 提供方，以及更清晰的服务配置方式。
+authors: [firefox2100]
+tags: [dsh-ai-providers, release]
+---
+
+DSH AI Providers 0.4.0 用一条简单规则重新组织配置：提供方连接只注册一次，模型与参数则在使用它的服务中选择。本次发布还加入原生 Cohere 和 Ollama 软件包，把 Jina 拆分为独立提供方，并扩展了提供方作者使用的共用 API。
+
+{/* truncate */}
+
+## 在一个页面管理提供方连接
+
+旧版本会让部分厂商软件包在设置侧栏中各自增加入口。同类信息因此散落在多个位置，LocalAI 配置也被分到 OpenAI 兼容连接和一个主要用于说明的厂商页面中。
+
+0.4.0 改为统一使用 **设置 > 提供方**。每个已安装厂商都在这个页面贡献自己的连接编辑器。连接保存端点、显示名称和 DSH 凭据引用，密钥本身仍由 DSH 凭据库管理。
+
+模型与请求控制项保留在对应的服务页面。语言模型路由在**语言模型**中配置；嵌入、重排、语音和图像页面分别选择提供方连接，并显示该服务的控制项。因此，一个 LocalAI 端点只需注册一次即可复用，不必把所有 LocalAI 选项塞进一张过大的表单。
+
+[配置指南](/dsh-ai-providers/zh-Hans/docs/getting-started/configuration)展示了新界面，也说明了为何连接 ID 应作为稳定引用保留。
+
+## Cohere 与 Ollama 使用原生 API
+
+完整软件包现在包含 Cohere 和 Ollama 原生提供方。两者直接使用厂商自己的 API，而不是把所有请求都压缩成 OpenAI 兼容结构。
+
+[Cohere 提供方](/dsh-ai-providers/zh-Hans/docs/official-providers/cohere)通过 Cohere v2 API 支持语言模型、模型发现、嵌入和重排。聊天适配器支持流式文本、工具调用、思考、引用、结构化回答和 Cohere 专属控制项。
+
+[Ollama 提供方](/dsh-ai-providers/zh-Hans/docs/official-providers/ollama)通过 Ollama 原生端点支持聊天、模型发现与控制，以及嵌入。原生配置可使用 `num_ctx`、`keep_alive`、Mirostat、运行时放置参数，以及 Ollama 的模型加载与卸载操作。
+
+Jina 现在是可独立安装的[嵌入与重排提供方](/dsh-ai-providers/zh-Hans/docs/official-providers/jina)。Jina 与 Cohere 共用的传输代码保留在 `@dsh-ai-providers/jina-cohere` 中，但该软件包现在是代码库而非 DSH 插件。两个提供方互不依赖。
+
+## 扩展 API 更清晰
+
+提供方软件包通过新的 `ai.provider.connection` 插槽注册连接编辑器。运行时负责统一的提供方页面，厂商软件包负责自己的连接结构和界面。现有服务插槽继续承载模型及能力专属配置。
+
+核心软件包还导出了服务器发送事件和换行分隔 JSON 的共用流读取器。OpenAI 兼容与 Anthropic 流式响应使用共用 SSE 读取器，Ollama 则使用 NDJSON 读取器。把消息分帧放在核心层，新提供方就能获得一致的取消与不完整流处理，而不必依赖另一个厂商软件包。
+
+LocalAI 仍与 OpenAI 提供方相互独立。线路格式一致时，它可以复用底层 OpenAI 兼容代码库；超出标准 API 的原生参数和能力则由 LocalAI 插件自己维护。
+
+## 软件包与兼容性
+
+所有公开软件包统一升级到 0.4.0。安装完整套件仍是最直接的方式：
+
+```bash
+dsh plugin --profile <配置档> add @dsh-ai-providers/all
+```
+
+也可以把单个提供方与 `@dsh-ai-providers/runtime` 一起安装。运行时提供设置页面和能力选择，厂商软件包提供连接与服务。`core`、`openai-compatible` 和 `jina-cohere` 等代码库面向插件开发者，本身不会增加设置页面。
+
+本次发布针对 DSH 0.2.0-rc.2 和 0.2.1-rc.2 完成测试。[安装指南](/dsh-ai-providers/zh-Hans/docs/getting-started/installation)列出了用这些语言模型路由替换 DSH 自带适配器，以及让 API 语音转文字替换当前所选内置提供方时需要调整的配置档项目。
+
+## 在实际使用服务的位置配置参数
+
+新界面明确区分了两类问题。提供方页面决定请求发往哪里、使用哪项凭据；服务页面决定运行哪个模型、请求如何执行。今后新增提供方和能力也会沿用这一边界，不再为每个厂商创造新的顶层设置模式。

@@ -1,0 +1,12 @@
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@dsh-ai-providers/jina-cohere': fileURLToPath(new URL('../dsh-ai-jina-cohere/src/index.ts', import.meta.url)),
+      '@dsh-ai-providers/core': fileURLToPath(new URL('../dsh-ai-core/src/index.ts', import.meta.url)),
+      '@dsh-ai-providers/runtime': fileURLToPath(new URL('../dsh-ai-providers/src/index.ts', import.meta.url)),
+    },
+  },
+})

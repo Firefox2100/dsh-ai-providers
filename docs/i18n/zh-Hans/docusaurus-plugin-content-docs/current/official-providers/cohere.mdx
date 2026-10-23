@@ -1,0 +1,64 @@
+---
+title: Cohere
+sidebar_position: 5
+---
+
+`@dsh-ai-providers/cohere` 是 Firefox2100 在本项目中维护的 Cohere 原生提供方。它直接使用 Cohere 的 v2 API，涵盖语言模型、嵌入和重排。它不是 DSH 或 Cohere 官方软件包。
+
+## 支持能力
+
+| 能力 | 原生端点 |
+| --- | --- |
+| 语言模型 | `POST /v2/chat`（服务器发送事件） |
+| 模型发现 | `GET /v1/models?endpoint=chat` |
+| 嵌入 | `POST /v2/embed` |
+| 重排 | `POST /v2/rerank` |
+
+本插件不涉及 Cohere 的 TTS、STT 或图像生成，因此不会注册这些服务。嵌入和重排的传输层来自共用的 `@dsh-ai-providers/jina-cohere` 库，[Jina](./jina) 提供方也使用它；两个提供方之间没有依赖。
+
+## 配置连接
+
+打开 **设置 > 提供方 > Cohere 连接**。默认连接为：
+
+![DSH 设置中的 Cohere 连接与凭据引用](/img/screenshots/providers/cohere-settings.png)
+
+| 设置 | 默认值 |
+| --- | --- |
+| 基础 URL | `https://api.cohere.com/v2` |
+| 凭据引用 | `COHERE_API_KEY` |
+| 流静默上限 | 5 分钟 |
+| 嵌入与重排超时 | 1 分钟 |
+
+基础 URL 需包含版本。密钥通过 DSH 凭据服务保存，不会写入配置档案，并以 `Authorization: Bearer` 发送。模型发现读取与版本化 API 并列的 `/v1/models`。
+
+## 语言模型
+
+创建路由，选择连接，并添加 Cohere 模型名称，例如 `command-a-03-2025`。点击 **列出账户可用的模型** 会添加模型，并带上 Cohere 报告的上下文长度，以及其声明的视觉支持。
+
+提供方支持系统提示、文本与图像内容（图像以 data URL 发送，请使用支持视觉的模型）、工具声明与结果、流式文本、思考和工具调用，以及包含缓存读取的 token 用量。助手在调用工具前说的话是 Cohere 的 `tool_plan`：它以文本流式输出，并在回传历史时放回该字段。工具选择按 DSH 的要求工作：`required` 对应 `tool_choice: REQUIRED`，指定某个工具时同样用 `REQUIRED` 并只提供该工具，`none` 则不提供任何工具。
+
+采样设置在同一个对象里，既有通用字段，也有 Cohere 自己的字段。缺省表示使用服务器默认值。
+
+| 字段 | 请求字段 | 说明 |
+| --- | --- | --- |
+| `temperature`、`seed`、`frequencyPenalty`、`presencePenalty` | 同名 | 惩罚范围为 0 到 1 |
+| `topP`、`topK` | `p`、`k` | |
+| `maxTokens`、`stop` | `max_tokens`、`stop_sequences` | 停止字符串最多 5 个 |
+| `minP`、`repetitionPenalty` | 无 | Cohere 没有对应控制项，会被忽略 |
+| `thinking`、`thinkingBudget` | `thinking.type`、`thinking.token_budget` | 适用于会思考的模型 |
+| `safetyMode` | `safety_mode` | `CONTEXTUAL`、`STRICT` 或 `OFF` |
+| `strictTools` | `strict_tools` | 严格遵循工具模式 |
+| `citationMode` | `citation_options.mode` | |
+| `responseFormat` | `response_format` | 例如 `{ "type": "json_object", "json_schema": {...} }` |
+| `priority` | `priority` | |
+| `body` | 顶层 | API 接受的其他任何字段，例如 `documents` |
+
+推理等级是请求片段，例如 `{ "thinking": { "type": "enabled", "token_budget": 4000 } }`，优先于带类型的字段。
+
+## 嵌入与重排
+
+在 **嵌入** 或 **重排序** 标签中选择 Cohere。嵌入默认使用 `embed-v4.0`，每批 96 条（Cohere 的上限）；使用方选择的查询或文档会作为 `search_query` 或 `search_document` 发送，未作选择的文本按文档发送。**向量维度** 适用于 embed-v4 及更新版本。重排默认使用 `rerank-v3.5`，可选限制每篇文档读取的 token 数（`max_tokens_per_doc`）。Cohere 的 v2 重排没有 `return_documents`，因此不会发送。
+
+## 错误与取消
+
+HTTP 和流式失败会映射为 DSH 语言模型的失败类别：认证、限流、付费或用量上限、无效请求、上下文溢出（包括 Cohere 的 “too many tokens” 回答）、服务器故障、超时和取消。以 `ERROR` 或 `TIMEOUT` 结束的消息会按对应类别抛出。

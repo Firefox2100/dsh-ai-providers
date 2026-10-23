@@ -142,7 +142,7 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
         let found
         try { found = await owner.service.discover(owner.route.id) }
         catch (error) { throw new HttpError(502, error instanceof Error ? error.message : String(error)) }
-        const payload: LlmDiscoverPayload = { models: found.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens } })) }
+        const payload: LlmDiscoverPayload = { models: found.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens }, ...model.inputs === undefined ? {} : { inputs: [...model.inputs] }, ...model.reasoning === undefined ? {} : { reasoning: { levels: model.reasoning.levels.map(level => ({ id: level.id, name: level.name, body: { ...level.body } })), ...model.reasoning.default === undefined ? {} : { default: model.reasoning.default } } } })) }
         send(res, 200, payload)
       },
     },

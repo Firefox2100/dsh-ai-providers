@@ -1,0 +1,55 @@
+---
+slug: dsh-ai-providers-0-4-0
+title: DSH AI Providers 0.4.0 unifies provider configuration
+description: One provider settings page, native Cohere and Ollama packages, a standalone Jina provider, and clearer service configuration.
+authors: [firefox2100]
+tags: [dsh-ai-providers, release]
+---
+
+DSH AI Providers 0.4.0 reorganizes configuration around a simple rule: register a provider connection once, then choose its models and options in the service that uses it. The release also adds native Cohere and Ollama packages, separates Jina into its own provider, and extends the shared API used by provider authors.
+
+{/* truncate */}
+
+## One place for provider connections
+
+Earlier releases gave some vendor packages their own settings-sidebar entry. That made the same kind of information appear in several places and left LocalAI configuration split between an OpenAI-compatible connection and a mostly explanatory vendor page.
+
+0.4.0 replaces those entries with **Settings > Providers**. Every installed vendor contributes its connection editor to this page. A connection holds the endpoint, display name, and DSH credential reference. The secret remains in DSH's credential store.
+
+Models and request controls stay on the relevant service pages. Language-model routes are configured under **Language models**. Embedding, reranking, speech, and image settings each select a provider connection and expose the controls for that service. One LocalAI endpoint can therefore be registered once and reused without presenting every LocalAI option in one oversized form.
+
+The [configuration guide](/dsh-ai-providers/docs/getting-started/configuration) shows the new layout and explains how connection IDs remain stable references.
+
+## Native packages for Cohere and Ollama
+
+The bundle now includes native providers for Cohere and Ollama. Both use their vendors' own APIs instead of routing every request through an OpenAI-compatible shape.
+
+The [Cohere provider](/dsh-ai-providers/docs/official-providers/cohere) supports language models, model discovery, embeddings, and reranking through Cohere's v2 API. Its chat adapter covers streamed text, tool calls, thinking, citations, structured responses, and Cohere-specific controls.
+
+The [Ollama provider](/dsh-ai-providers/docs/official-providers/ollama) supports chat, model discovery and control, and embeddings through Ollama's native endpoints. Native configuration exposes controls such as `num_ctx`, `keep_alive`, Mirostat settings, runtime placement, and Ollama's model load and unload operations.
+
+Jina is now an installable [standalone provider](/dsh-ai-providers/docs/official-providers/jina) for embeddings and reranking. The transport code shared by Jina and Cohere remains in `@dsh-ai-providers/jina-cohere`, which is now a library rather than a DSH plugin. Neither provider depends on the other.
+
+## A clearer extension API
+
+Provider packages register connection editors through the new `ai.provider.connection` slot. The runtime owns the single Providers page, while vendor packages own their connection schema and UI. Existing service slots continue to hold model and capability-specific configuration.
+
+The core package also exports reusable stream readers for server-sent events and newline-delimited JSON. OpenAI-compatible and Anthropic streaming now use the shared SSE reader, while Ollama uses the NDJSON reader. Keeping framing in core gives new providers the same cancellation and incomplete-stream handling without coupling them to another vendor package.
+
+LocalAI remains independent of the OpenAI provider. It can reuse the low-level OpenAI-compatible library where the wire format matches, but its plugin owns the native options and capabilities that go beyond the standard API.
+
+## Packages and compatibility
+
+All public packages move together to version 0.4.0. The installable bundle is still the easiest starting point:
+
+```bash
+dsh plugin --profile <profile> add @dsh-ai-providers/all
+```
+
+Individual providers can be installed separately with `@dsh-ai-providers/runtime`. The runtime supplies the settings pages and capability selection; each vendor package supplies its connections and services. Library packages such as `core`, `openai-compatible`, and `jina-cohere` are intended for plugin developers and do not add a settings page by themselves.
+
+This release is tested against DSH 0.2.0-rc.2 and 0.2.1-rc.2. The [installation guide](/dsh-ai-providers/docs/getting-started/installation) lists the profile changes required when these language-model routes replace DSH's stock adapter and when API speech-to-text replaces the selected built-in provider.
+
+## Configure services where they are used
+
+The new layout makes the boundary explicit. Provider pages answer where a request goes and which credential it uses. Service pages answer which model runs and how the request behaves. That separation is also the direction for later providers and capabilities, so adding a vendor should not add another top-level settings pattern.

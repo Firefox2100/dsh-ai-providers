@@ -5,7 +5,11 @@
       name: '@dsh-ai-providers/openai'
     - id: ai-anthropic
       name: '@dsh-ai-providers/anthropic'
-    - id: ai-jina-cohere
-      name: '@dsh-ai-providers/jina-cohere'
+    - id: ai-jina
+      name: '@dsh-ai-providers/jina'
     - id: ai-localai
       name: '@dsh-ai-providers/localai'
+    - id: ai-ollama
+      name: '@dsh-ai-providers/ollama'
+    - id: ai-cohere
+      name: '@dsh-ai-providers/cohere'

@@ -1,11 +1,10 @@
 import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, LlmRequestError, LlmService, readJson, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
+import { AiError, LlmRequestError, LlmService, readJson, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
 import type { Config, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiSamplingConfig } from '../config.ts'
 import { connectionHeaders, validateConnection, type OpenAiConnection } from '../connection.ts'
 import { httpError } from './errors.ts'
 import { imageRefsOf, wireBody, type WireImages } from './serialize.ts'
-import { sseData } from './sse.ts'
 import { translate } from './translate.ts'
 
 /** What of DSH's attachment service a request needs: the stored bytes of a picture a message cites. */

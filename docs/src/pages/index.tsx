@@ -22,7 +22,9 @@ const providers = [
   ['OpenAI-compatible', 'LLM · embed · TTS · STT · image'],
   ['LocalAI', 'LLM · embed · rerank · TTS · STT · image'],
   ['Anthropic', 'LLM'],
-  ['Jina / Cohere', 'rerank'],
+  ['Ollama', 'LLM · embed'],
+  ['Cohere', 'LLM · embed · rerank'],
+  ['Jina', 'rerank · embed'],
 ] as const;
 
 function Arrow(): ReactNode {
@@ -41,7 +43,7 @@ function Backplane(): ReactNode {
         <code>await ctx.embeddings.embed(texts)</code>
       </div>
       <div className={styles.providerRail}>
-        <span>OpenAI</span><span>LocalAI</span><span>Anthropic</span><span>Jina / Cohere</span>
+        <span>OpenAI</span><span>LocalAI</span><span>Anthropic</span><span>Ollama</span><span>Cohere</span><span>Jina</span>
       </div>
       <div className={styles.bus}><span>@dsh-ai-providers/core</span><b><Translate id="homepage.backplane.contract">Stable consumer contract</Translate></b></div>
       <div className={styles.portGrid}>

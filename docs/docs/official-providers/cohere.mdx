@@ -1,0 +1,64 @@
+---
+title: Cohere
+sidebar_position: 5
+---
+
+`@dsh-ai-providers/cohere` is the native Cohere provider maintained by Firefox2100 as part of this project. It speaks Cohere's v2 API directly and covers language models, embeddings, and reranking. It is not an official DSH or Cohere package.
+
+## Supported capabilities
+
+| Capability | Native endpoint |
+| --- | --- |
+| Language models | `POST /v2/chat` (server-sent events) |
+| Model discovery | `GET /v1/models?endpoint=chat` |
+| Embeddings | `POST /v2/embed` |
+| Reranking | `POST /v2/rerank` |
+
+Cohere has no TTS, STT, or image-generation API in this plugin's scope, so those services are not registered. The embedding and rerank transports come from the shared `@dsh-ai-providers/jina-cohere` library, which the [Jina](./jina) provider also uses; neither provider depends on the other.
+
+## Configure a connection
+
+Open **Settings > Providers > Cohere connections**. The default connection is:
+
+![A Cohere connection and credential reference in DSH settings](/img/screenshots/providers/cohere-settings.png)
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `https://api.cohere.com/v2` |
+| Credential reference | `COHERE_API_KEY` |
+| Stream silence limit | 5 minutes |
+| Embedding and rerank timeout | 1 minute |
+
+The base URL includes the version. The key is stored through DSH's credential service, never in the profile, and sent as `Authorization: Bearer`. Model discovery reads `/v1/models` beside the versioned API.
+
+## Language models
+
+Create a route, select a connection, and add Cohere model names such as `command-a-03-2025`. **List models on the account** adds models with the context length Cohere reports and vision support where it says so.
+
+The provider supports system prompts, text and image content (images as data URLs; use a vision model), tool declarations and results, streamed text, thinking, and tool calls, and token usage with cache reads. Words an assistant says before calling tools are Cohere's `tool_plan`: they stream as text and are sent back in that field. Tool choice works as DSH asks: `required` becomes `tool_choice: REQUIRED`, a named tool is `REQUIRED` with only that tool offered, and `none` offers no tools.
+
+Sampling uses the common fields plus Cohere's own in the same object. Absent means the server's default.
+
+| Field | Request field | Notes |
+| --- | --- | --- |
+| `temperature`, `seed`, `frequencyPenalty`, `presencePenalty` | same names | Penalties range from 0 to 1 |
+| `topP`, `topK` | `p`, `k` | |
+| `maxTokens`, `stop` | `max_tokens`, `stop_sequences` | At most 5 stop strings |
+| `minP`, `repetitionPenalty` | none | Cohere has no such control; ignored |
+| `thinking`, `thinkingBudget` | `thinking.type`, `thinking.token_budget` | For models that think |
+| `safetyMode` | `safety_mode` | `CONTEXTUAL`, `STRICT` or `OFF` |
+| `strictTools` | `strict_tools` | Follow tool schemas exactly |
+| `citationMode` | `citation_options.mode` | |
+| `responseFormat` | `response_format` | For example `{ "type": "json_object", "json_schema": {...} }` |
+| `priority` | `priority` | |
+| `body` | top level | Anything else the API accepts, such as `documents` |
+
+Reasoning levels are request fragments, for example `{ "thinking": { "type": "enabled", "token_budget": 4000 } }`, and win over the typed fields.
+
+## Embeddings and reranking
+
+Select Cohere in the **Embedding** or **Reranking** tab. Embeddings default to `embed-v4.0` in batches of 96, the most Cohere accepts; the consumer's query or document choice is sent as `search_query` or `search_document`, and texts without a choice are sent as documents. **Vector dimensions** works for embed-v4 and newer. Reranking defaults to `rerank-v3.5`, with an optional limit on tokens read per document (`max_tokens_per_doc`). Cohere's v2 rerank has no `return_documents`, so it is not sent.
+
+## Errors and cancellation
+
+HTTP and stream failures are mapped to DSH language-model failure classes: authentication, rate limiting, payment or usage limits, invalid requests, context overflow (including Cohere's "too many tokens" answer), server failures, timeout, and cancellation. A message that ends with `ERROR` or `TIMEOUT` is raised as such.

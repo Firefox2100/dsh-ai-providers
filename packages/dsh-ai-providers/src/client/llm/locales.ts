@@ -13,7 +13,7 @@ export const dictionaries: Dictionaries<LlmLocaleKey> = {
     active: 'Served to DSH', inactive: 'Not served: {problem}', provider: 'Provider', models: 'Models', noModels: 'This route lists no models.',
     context: 'context {tokens}', output: 'output {tokens}',
     test: 'Test', testing: 'Testing…', testOk: 'Answered “{text}” in {milliseconds} ms{tokens}.', testFailed: 'Failed ({code}): {message}',
-    loadFailed: 'Could not read the routes: {message}', configuration: 'Configuration', noProviders: 'No provider that offers language models is installed. Install dsh-ai-openai.',
+    loadFailed: 'Could not read the routes: {message}', configuration: 'Configuration', noProviders: 'No provider that offers language models is installed. Install a provider plugin such as @dsh-ai-providers/openai.',
   },
   zh: {
     nav: '语言模型',
@@ -23,6 +23,6 @@ export const dictionaries: Dictionaries<LlmLocaleKey> = {
     active: '已提供给 DSH', inactive: '未提供：{problem}', provider: '提供方', models: '模型', noModels: '此路由没有列出模型。',
     context: '上下文 {tokens}', output: '输出 {tokens}',
     test: '测试', testing: '正在测试…', testOk: '回答“{text}”，用时 {milliseconds} 毫秒{tokens}。', testFailed: '失败（{code}）：{message}',
-    loadFailed: '无法读取路由：{message}', configuration: '配置', noProviders: '没有安装提供语言模型的提供方。请安装 dsh-ai-openai。',
+    loadFailed: '无法读取路由：{message}', configuration: '配置', noProviders: '没有安装提供语言模型的提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。',
   },
 }

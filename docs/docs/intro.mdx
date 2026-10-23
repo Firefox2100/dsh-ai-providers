@@ -10,7 +10,7 @@ The current services are:
 - embeddings and reranking;
 - text-to-speech and speech-to-text;
 - image generation;
-- OpenAI-compatible language-model routes.
+- language-model routes.
 
 Install the runtime and the provider plugins you need. Configure connections in DSH, select a provider for each capability, then consume the selected service from the Cordis context.
 
@@ -24,11 +24,14 @@ Provider-specific controls stay with their provider package. The shared contract
 | --- | --- |
 | `@dsh-ai-providers/core` | Provider-neutral contracts, errors, and shared types |
 | `@dsh-ai-providers/openai-compatible` | Shared OpenAI-compatible wire transports; not a plugin |
+| `@dsh-ai-providers/jina-cohere` | Shared Jina- and Cohere-style rerank and embedding transports; not a plugin |
 | `@dsh-ai-providers/runtime` | Provider registry, selected services, settings UI, API routes, and concurrency control |
 | `@dsh-ai-providers/openai` | OpenAI-compatible embeddings, LLM, TTS, STT, and image generation |
 | `@dsh-ai-providers/localai` | LocalAI embeddings, reranking, LLM, TTS, STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Anthropic-native language models |
-| `@dsh-ai-providers/jina-cohere` | Jina and Cohere compatible reranking |
+| `@dsh-ai-providers/ollama` | Ollama-native language models and embeddings |
+| `@dsh-ai-providers/cohere` | Cohere-native language models, embeddings, and reranking |
+| `@dsh-ai-providers/jina` | Jina reranking and embeddings |
 | `@dsh-ai-providers/all` | Metadata-only bundle containing the runtime and all providers maintained by this project |
 
 Start with [Installation](./getting-started/installation), or go directly to [Using services](./consumers/using-services) if you are integrating another plugin.
@@ -37,11 +40,13 @@ Start with [Installation](./getting-started/installation), or go directly to [Us
 
 These packages are maintained by Firefox2100 as part of this independent project. They are not official DeepSeek Harness packages and are not maintained or endorsed by the DSH maintainers.
 
-This project currently maintains four vendor packages:
+This project currently maintains six vendor packages:
 
 - [`@dsh-ai-providers/openai`](./official-providers/openai): OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation;
 - [`@dsh-ai-providers/localai`](./official-providers/localai): dedicated LocalAI language models, embeddings, reranking, speech, and image generation;
 - [`@dsh-ai-providers/anthropic`](./official-providers/anthropic): language models through Anthropic's native Messages API;
-- [`@dsh-ai-providers/jina-cohere`](./official-providers/jina-cohere): Jina- and Cohere-compatible reranking.
+- [`@dsh-ai-providers/ollama`](./official-providers/ollama): language models and embeddings through Ollama's native API, with its own request controls, discovery, and model load and unload;
+- [`@dsh-ai-providers/cohere`](./official-providers/cohere): language models, embeddings, and reranking through Cohere's native v2 API;
+- [`@dsh-ai-providers/jina`](./official-providers/jina): Jina reranking and embeddings.
 
 Third-party provider plugins can implement the same contracts and appear in the same settings UI.

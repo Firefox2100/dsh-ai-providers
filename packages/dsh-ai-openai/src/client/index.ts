@@ -33,12 +33,12 @@ export function apply(ctx: Context): void {
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-openai: form')
 
   ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
+    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('ai.provider.connection', () =>
       ctx.slots.register({
-        name: 'settings.section', id: 'ai-openai-connections', order: 44,
-        label: () => t('connectionsNav'), locale: NAMESPACE, inject: () => controller.inject(),
+        name: 'ai.provider.connection', id: `connection:${PROVIDER_ID}`, order: 0,
+        label: () => t('label'), locale: NAMESPACE, inject: () => controller.inject(),
       }, OpenAiConnections as never))),
-    'dsh-ai-openai: connections section',
+    'dsh-ai-openai: provider connection entry',
   )
 
   ctx.effect(

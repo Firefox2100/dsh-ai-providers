@@ -3,7 +3,7 @@ title: Creating or extending a provider
 sidebar_position: 1
 ---
 
-A provider plugin implements one or more provider-neutral contracts against a vendor API. Use `@dsh-ai-providers/openai` and `@dsh-ai-providers/jina-cohere` as implementation references, but expose only the capabilities the target API actually supports.
+A provider plugin implements one or more provider-neutral contracts against a vendor API. Use `@dsh-ai-providers/openai` and `@dsh-ai-providers/jina` as implementation references, and `@dsh-ai-providers/openai-compatible` and `@dsh-ai-providers/jina-cohere` as examples of protocol libraries that several vendors share without depending on each other, but expose only the capabilities the target API actually supports.
 
 ## 1. Define validated configuration
 
@@ -22,6 +22,23 @@ Factories must read live configuration when called. Do not capture a connection,
 ### Routes, retries and discovery
 
 A route (`LlmRouteSpec`) may carry `baseUrl`, the endpoint its configuration fixes, and `retry`, a DSH retry policy; the runtime reports both to DSH. A model may carry `systemPromptUpdate: 'in-history'` when its chat template reads a changed system message anywhere in the conversation. Override `LlmService.interrogate(draft, signal)` to list the models of an endpoint that is not configured yet (`draft.baseUrl`, and a key for this one question in `draft.apiKey`); the default throws an `unsupported` error. `discover(route)` stays the way to list the models of a configured route.
+
+### Vendor controls in sampling
+
+The aim of a vendor package is to expose what the vendor's API can do while the configuration keeps one shape. Follow this convention for the controls of a model request:
+
+- A route, a model and a policy all carry the same `sampling` object, merged field by field in that order, then the request's own values. `LlmSampling` in core names the fields every provider has (`temperature`, `topP`, `topK`, `minP`, the penalties, `seed`, `stop`, `maxTokens`, `toolChoice`) and `body`, the escape hatch for any other top-level request field. Use those names and meanings for anything that matches, and map them to the vendor's wire names yourself.
+- A vendor's own control is a further optional field of the same flat object, in camelCase, named after the vendor's parameter (`numCtx` for `num_ctx`). Declare it in an interface that extends `LlmSampling`, and in the same `sampling` schema of the route and the model. Absent always means the server's default; never fill in a default the vendor does not document.
+- Give a control a field only when it is a stable setting of the vendor's API. What is experimental, or specific to one model, belongs in `body`, and in a reasoning level's `body` when it selects a level of thinking.
+- Fields outside `LlmSampling` travel through the runtime's merge untouched, so a policy of a consumer who knows the vendor can set them by returning the vendor's extended type. A consumer that does not know the vendor never needs to.
+- A control the vendor cannot honour is not invented: document what is ignored, and keep fail-loud behaviour for what would change the meaning of the request.
+- Document each field with its wire name in the provider's page.
+
+The Ollama provider is the reference: `OllamaSampling` extends `LlmSampling`, and its page lists every field with its request name.
+
+### Streaming responses
+
+`@dsh-ai-providers/core` provides the readers of streamed bodies, so a vendor does not write its own: `sseData(body, activity, signal)` yields the data of each server-sent event, and `ndjsonLines(body, activity, signal)` yields each line of a newline-delimited stream. Both call `activity` for every part received (for a silence watchdog), end on the signal even when the underlying read ignores it, and read the last event or line when the stream ends without a final newline.
 
 ### Optional LLM model controls
 

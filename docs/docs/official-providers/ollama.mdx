@@ -1,0 +1,81 @@
+---
+title: Ollama
+sidebar_position: 4
+---
+
+`@dsh-ai-providers/ollama` is the native Ollama provider maintained by Firefox2100 as part of this project. It speaks Ollama's own API rather than its OpenAI-compatible layer, because the native API exposes request controls the compatible one leaves out. It is not an official DSH or Ollama package.
+
+## Supported capabilities
+
+| Capability | Native endpoint |
+| --- | --- |
+| Language models | `POST /api/chat` (newline-delimited JSON stream) |
+| Model discovery | `GET /api/tags`, then `POST /api/show` for each model |
+| Model control | `GET /api/ps` for status; `POST /api/generate` without a prompt to load, and with `keep_alive: 0` to unload |
+| Embeddings | `POST /api/embed` |
+
+Ollama has no reranking, TTS, STT, or image-generation API in this plugin's scope, so those services are not registered.
+
+## Configure a connection
+
+Open **Settings > Providers > Ollama connections**. The default connection is a local server:
+
+![An Ollama connection in DSH settings](/img/screenshots/providers/ollama-settings.png)
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `http://localhost:11434` (with or without a trailing `/api`) |
+| Credential reference | empty: a local server needs no key |
+| Stream silence limit | 5 minutes |
+| Embedding request timeout | 2 minutes |
+
+For a hosted or proxied server, enter a credential name and store the token; it is sent as `Authorization: Bearer`. The secret is stored through DSH's credential service, never in the profile.
+
+## Configure routes and models
+
+Create a route, select a connection, and add models by their exact Ollama names (for example `qwen3:8b`). **List models on the server** asks `/api/tags` and `/api/show` and adds a model with what the server reports it can do: image input, thinking, and its context window. Models that only embed are left out of the list.
+
+Thinking models get reasoning levels from discovery: **Off** and **On** (`think: false` and `think: true`) for most, and **Low**, **Medium** and **High** for `gpt-oss`, which takes a level and cannot turn thinking off.
+
+:::warning Set `numCtx`
+A model's context window is what it supports. The context Ollama allocates for a request is `num_ctx`, and when a request does not set it the server uses its own default, which is often 4096 tokens or less. A longer prompt is then cut silently from the start. DSH uses the model's `contextWindow` to decide when to compact a conversation, so the two must agree: set `numCtx` on the route or model to the context you want to pay for in memory. The provider never raises it for you, because the model's maximum can need far more memory than the machine has.
+:::
+
+## Controls
+
+Route, model and policy sampling use the common fields every provider has, plus Ollama's own, in the same object. Absent means the server's default.
+
+| Field | Request field | Notes |
+| --- | --- | --- |
+| `temperature`, `topP`, `topK`, `minP`, `seed`, `stop` | `options.*` | Common fields |
+| `frequencyPenalty`, `presencePenalty` | `options.frequency_penalty`, `options.presence_penalty` | Common fields |
+| `repetitionPenalty` | `options.repeat_penalty` | Common field |
+| `maxTokens` | `options.num_predict` | Common field; the model's output limit applies when nothing sets one |
+| `numCtx` | `options.num_ctx` | See the warning above |
+| `repeatLastN`, `typicalP`, `penalizeNewline` | `options.repeat_last_n`, `typical_p`, `penalize_newline` | |
+| `mirostat`, `mirostatTau`, `mirostatEta` | `options.mirostat*` | |
+| `numKeep`, `numBatch`, `numGpu`, `mainGpu`, `numThread`, `useMmap` | `options.*` | Runtime tuning |
+| `keepAlive` | `keep_alive` | `5m`, `1h`, `-1` for ever, `0` to unload at once |
+| `think` | `think` | `true`, `false`, or `low`, `medium`, `high` |
+| `format` | `format` | `json`, or a JSON schema the answer must follow |
+| `body` | top level | Anything else the server accepts |
+
+The reasoning level a chat selects, then `body`, win over the typed fields. `toolChoice: none` withholds the tools. Ollama has no way to require a tool call, so `required` and a named tool cannot be enforced and the model decides.
+
+## Native request mapping
+
+The provider supports system prompts, text and image content (images are sent as base64 and need a model marked for vision), tool declarations and tool results, streamed text, thinking, and tool calls, and token usage. Ollama returns a tool call whole and without an id, so the provider gives each call an id of its own. A tool result is matched to its tool by name. Files remain tool-readable text handles, and offloaded images remain placeholders.
+
+## Embeddings
+
+Select Ollama in the **Embedding** tab, choose a connection and a model (default `nomic-embed-text`). Texts are sent in batches of `batchSize`. Settings:
+
+- **Vector dimensions**: for models that can shorten theirs. Also a request option chosen before a session's first request.
+- **Context (`num_ctx`)** and **texts longer than the context**: cut to fit (the default) or refuse.
+- **Keep loaded**: how long the model stays in memory after a request.
+
+Ollama has no query/document distinction, so `inputType` is ignored.
+
+## Errors and cancellation
+
+HTTP and stream failures are mapped to DSH language-model failure classes: authentication, rate limiting, usage limits, invalid requests (including a model that is not pulled), context overflow, server failures, timeout, and cancellation. An error the server reports inside a stream is classified the same way.

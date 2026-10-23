@@ -5,7 +5,7 @@ import { defineConfig, type TsdownPlugin, type UserConfig } from 'tsdown'
 import pkg from './package.json' with { type: 'json' }
 
 const ID = pkg.name
-const shared = new Set(['react', 'react/jsx-runtime', '@deepseek-ai/cordis', '@deepseek-ai/dsh-client-ui-slots'])
+const shared = new Set(['react', 'react/jsx-runtime', '@deepseek-ai/cordis', '@deepseek-ai/dsh-client-store', '@deepseek-ai/dsh-client-ui-slots', '@deepseek-ai/dsh-client-ui-primitives'])
 
 function cssModules(): TsdownPlugin {
   const prefix = '\0css-module:'
@@ -22,7 +22,7 @@ function cssModules(): TsdownPlugin {
       this.addWatchFile(file)
       const { code, exports } = transform({ filename: file, code: await readFile(file), cssModules: { pattern: 'ai_[hash]_[local]' }, minify: true })
       const classes = Object.fromEntries(Object.entries(exports ?? {}).map(([name, value]) => [name, value.name]))
-      const key = relative(process.cwd(), file)
+      const key = `${ID}/${relative(process.cwd(), file)}`
       return [
         `const css = ${JSON.stringify(code.toString())};`,
         `const key = ${JSON.stringify(key)};`,

@@ -40,7 +40,9 @@ consumer plugin
       +-- OpenAI-compatible
       +-- LocalAI
       +-- Anthropic
-      +-- Jina/Cohere-compatible reranking
+      +-- Ollama
+      +-- Cohere
+      +-- Jina
 ```
 
 Consumer plugins depend on the contracts, not a particular vendor package. The runtime exposes the provider selected in the profile and applies shared concurrency controls. Provider packages keep ownership of their connections, request defaults, and vendor-specific settings.
@@ -65,7 +67,10 @@ Consumer plugins depend on the contracts, not a particular vendor package. The r
 | `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
-| `@dsh-ai-providers/jina-cohere` | Reranking through Jina- and Cohere-compatible APIs |
+| `@dsh-ai-providers/ollama` | Language models and embeddings through Ollama's native API |
+| `@dsh-ai-providers/cohere` | Language models, embeddings, and reranking through Cohere's native API |
+| `@dsh-ai-providers/jina` | Reranking and embeddings through Jina's API |
+| `@dsh-ai-providers/jina-cohere` | Reusable Jina- and Cohere-style rerank and embedding transports; not a plugin |
 | `@dsh-ai-providers/all` | Metadata-only DSH bundle containing the runtime and every provider maintained by this project |
 
 See the individual provider guides for configuration and supported features:
@@ -73,7 +78,9 @@ See the individual provider guides for configuration and supported features:
 - [OpenAI-compatible](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/openai)
 - [LocalAI](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/localai)
 - [Anthropic](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/anthropic)
-- [Jina and Cohere](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina-cohere)
+- [Ollama](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/ollama)
+- [Cohere](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/cohere)
+- [Jina](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina)
 
 ## Installation
 
@@ -85,7 +92,7 @@ Install the bundle into a DSH profile:
 dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-The bundle installs the runtime and all provider packages maintained by this project. Restart the profile, then configure connections, routes, and active services under **Settings > AI Providers**. Individual packages may also be installed separately for a custom deployment.
+The bundle installs the runtime and all provider packages maintained by this project. Restart the profile, configure reusable endpoints and credentials under **Settings > Providers**, then choose models and parameters in each service page. Individual packages may also be installed separately for a custom deployment.
 
 To use these language-model routes in place of DSH's stock routes, disable `@deepseek-ai/dsh-llm-pi-ai` and the stock `ui-settings-models` settings page in that profile. Keep DSH's core `llm` service enabled. For DSH Voice Input, keep its speech-to-text registry enabled but select the API-backed provider instead of the built-in SenseVoice provider.
 

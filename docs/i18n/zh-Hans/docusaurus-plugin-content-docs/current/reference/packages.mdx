@@ -29,11 +29,15 @@ LocalAI 专用提供方，涵盖语言模型、嵌入、重排、TTS、文件及
 
 配置与原生控制项请参阅 [LocalAI](../official-providers/localai)。
 
+## `@dsh-ai-providers/jina`
+
+Jina AI 提供方。它通过 `/rerank` 提供重排、通过 `/embeddings` 提供嵌入，使用方选择的查询或文档会作为 Jina 自己的任务类型发送。沿用这套重排 API 的服务器也可以通过自定义基础 URL 使用。连接与凭据的复用方式和 OpenAI 连接一致。
+
+配置与兼容细节请参阅 [Jina](../official-providers/jina)。
+
 ## `@dsh-ai-providers/jina-cohere`
 
-实现 Jina 和 Cohere 兼容的 `/rerank` API。连接与凭据的复用方式和 OpenAI 连接一致。
-
-配置与兼容细节请参阅 [Jina 与 Cohere](../official-providers/jina-cohere)。
+这是库而不是插件：包含 Jina、Cohere 及兼容服务器共用的 `/rerank` 传输层，以及 Jina `/embeddings` 和 Cohere v2 `/embed` API 的嵌入传输层。Jina 和 Cohere 提供方都基于它构建，就像 OpenAI 和 LocalAI 提供方基于 `openai-compatible` 一样，因此两者之间没有依赖。
 
 ## `@dsh-ai-providers/anthropic`
 
@@ -41,9 +45,21 @@ Anthropic 原生 Messages API 提供方，提供带流式文本、思考、工�
 
 配置与原生 API 行为请参阅 [Anthropic](../official-providers/anthropic)。
 
+## `@dsh-ai-providers/ollama`
+
+Ollama 原生提供方。它通过 `/api/chat` 提供语言模型路由，支持流式文本、思考、工具调用、图像输入、Ollama 自有的请求控制项、带能力报告的模型发现以及模型加载和卸载；并通过 `/api/embed` 提供嵌入。
+
+配置与原生 API 行为请参阅 [Ollama](../official-providers/ollama)。
+
+## `@dsh-ai-providers/cohere`
+
+Cohere 原生提供方。它通过 `/v2/chat` 提供语言模型路由，支持流式文本、思考、工具调用（包括可强制的工具选择）、图像输入、Cohere 自有的请求控制项和模型发现；并通过 `/v2/embed` 提供嵌入、通过 `/v2/rerank` 提供重排。它复用 `@dsh-ai-providers/jina-cohere` 库的嵌入与重排传输层。
+
+配置与原生 API 行为请参阅 [Cohere](../official-providers/cohere)。
+
 ## `@dsh-ai-providers/all`
 
-仅含元数据的 DSH 软件包组合，用于安装运行时及四个由本项目维护的提供方插件。
+仅含元数据的 DSH 软件包组合，用于安装运行时及六个由本项目维护的提供方插件。
 
 ## 选择依赖
 
@@ -59,6 +75,6 @@ Anthropic 原生 Messages API 提供方，提供带流式文本、思考、工�
 
 ## 整合包与库包
 
-运行时和四个厂商包是带有整合元数据的 DSH 插件。`core` 与 `openai-compatible` 是库：它们作为依赖安装，不是用户在配置档案中启用的行。`all` 只包含整合元数据，不会增加另一层运行时实现，因此不会引入重复服务层。
+运行时和六个厂商包是带有整合元数据的 DSH 插件。`core`、`openai-compatible` 与 `jina-cohere` 是库：它们作为依赖安装，不是用户在配置档案中启用的行。`all` 只包含整合元数据，不会增加另一层运行时实现，因此不会引入重复服务层。
 
 同一发行版中的所有公共包使用相同版本。直接声明多个依赖时应保持版本一致，尤其是针对共享契约编译的提供方实现。

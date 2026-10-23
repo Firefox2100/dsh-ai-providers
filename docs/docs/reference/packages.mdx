@@ -29,11 +29,15 @@ A dedicated LocalAI provider for language models, embeddings, reranking, TTS, fi
 
 See [LocalAI](../official-providers/localai) for configuration and native controls.
 
+## `@dsh-ai-providers/jina`
+
+The Jina AI provider. It supplies reranking over `/rerank` and embeddings over `/embeddings`, with the query/document choice sent as Jina's own task. A server that copies the rerank API also works with a custom base URL. Connections and credentials are reusable in the same way as OpenAI connections.
+
+See [Jina](../official-providers/jina) for configuration and compatibility details.
+
 ## `@dsh-ai-providers/jina-cohere`
 
-Reranking implementations for Jina and Cohere compatible `/rerank` APIs. Connections and credentials are reusable in the same way as OpenAI connections.
-
-See [Jina and Cohere](../official-providers/jina-cohere) for configuration and compatibility details.
+A library, not a plugin: the `/rerank` transport that Jina, Cohere and compatible servers share, and the embedding transport for the Jina `/embeddings` and Cohere v2 `/embed` APIs. The Jina and Cohere providers both build on it, as the OpenAI and LocalAI providers build on `openai-compatible`, so neither depends on the other.
 
 ## `@dsh-ai-providers/anthropic`
 
@@ -41,9 +45,21 @@ The native Anthropic Messages API provider. It supplies language-model routes wi
 
 See [Anthropic](../official-providers/anthropic) for configuration and native API behavior.
 
+## `@dsh-ai-providers/ollama`
+
+The native Ollama provider. It supplies language-model routes over `/api/chat` with streaming text, thinking, tool use, image input, Ollama's own request controls, model discovery with reported capabilities, and model load and unload, plus embeddings over `/api/embed`.
+
+See [Ollama](../official-providers/ollama) for configuration and native API behavior.
+
+## `@dsh-ai-providers/cohere`
+
+The native Cohere provider. It supplies language-model routes over `/v2/chat` with streaming text, thinking, tool use (including enforced tool choice), image input, Cohere's own request controls, and model discovery, plus embeddings over `/v2/embed` and reranking over `/v2/rerank`. It reuses the embedding and rerank transports of the `@dsh-ai-providers/jina-cohere` library.
+
+See [Cohere](../official-providers/cohere) for configuration and native API behavior.
+
 ## `@dsh-ai-providers/all`
 
-The metadata-only DSH bundle. It installs the runtime and all four provider plugins maintained by this project.
+The metadata-only DSH bundle. It installs the runtime and all six provider plugins maintained by this project.
 
 ## Choosing dependencies
 
@@ -59,6 +75,6 @@ Keep `core` as the public type boundary in consumer code. Runtime internals and 
 
 ## Bundle versus library packages
 
-The runtime and four vendor packages are DSH plugins with bundle metadata. `core` and `openai-compatible` are libraries: they are installed as dependencies and are not rows a user enables in a profile. The `all` package contains bundle metadata rather than an additional runtime implementation, so it does not introduce another service layer.
+The runtime and six vendor packages are DSH plugins with bundle metadata. `core`, `openai-compatible` and `jina-cohere` are libraries: they are installed as dependencies and are not rows a user enables in a profile. The `all` package contains bundle metadata rather than an additional runtime implementation, so it does not introduce another service layer.
 
 All public packages in a release use the same version. Keep package versions aligned when declaring several direct dependencies, especially for a provider implementation compiled against the shared contract.

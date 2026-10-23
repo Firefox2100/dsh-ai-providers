@@ -1,3 +1,0 @@
-- insert:
-    - id: ai-jina-cohere
-      name: '@dsh-ai-providers/jina-cohere'

@@ -64,6 +64,15 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Cache SonarQube packages
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -122,6 +131,9 @@ jobs:
       - name: Publish OpenAI-compatible transports
         if: steps.published.outputs.openai_compatible != 'true'
         run: pnpm run release:publish -- dsh-ai-openai-compatible
+      - name: Publish Jina/Cohere transports
+        if: steps.published.outputs.jina_cohere != 'true'
+        run: pnpm run release:publish -- dsh-ai-jina-cohere
       - name: Publish runtime
         if: steps.published.outputs.runtime != 'true'
         run: pnpm run release:publish -- dsh-ai-providers
@@ -131,12 +143,18 @@ jobs:
       - name: Publish Anthropic provider
         if: steps.published.outputs.anthropic != 'true'
         run: pnpm run release:publish -- dsh-ai-anthropic
-      - name: Publish Jina/Cohere provider
-        if: steps.published.outputs.jina_cohere != 'true'
-        run: pnpm run release:publish -- dsh-ai-jina-cohere
+      - name: Publish Jina provider
+        if: steps.published.outputs.jina != 'true'
+        run: pnpm run release:publish -- dsh-ai-jina
       - name: Publish LocalAI provider
         if: steps.published.outputs.localai != 'true'
         run: pnpm run release:publish -- dsh-ai-localai
+      - name: Publish Ollama provider
+        if: steps.published.outputs.ollama != 'true'
+        run: pnpm run release:publish -- dsh-ai-ollama
+      - name: Publish Cohere provider
+        if: steps.published.outputs.cohere != 'true'
+        run: pnpm run release:publish -- dsh-ai-cohere
       - name: Publish complete bundle
         if: steps.published.outputs.all != 'true'
         run: pnpm run release:publish -- dsh-ai-all

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, ndjsonLines, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -162,5 +162,30 @@ describe('localized text', () => {
     expect(localized({ en: 'Dimensions', zh: '维度' }, 'fr')).toBe('Dimensions')
     expect(localized({ de: 'Dimensionen' }, 'fr')).toBe('Dimensionen')
     expect(localized({}, 'en')).toBe('')
+  })
+})
+
+describe('stream readers', () => {
+  const body = (...parts: string[]) => new ReadableStream<Uint8Array>({ start(controller) { for (const part of parts) controller.enqueue(new TextEncoder().encode(part)); controller.close() } })
+  const collect = async (source: AsyncIterable<string>) => { const out: string[] = []; for await (const item of source) out.push(item); return out }
+
+  it('reads server-sent events however the bytes are cut, including an unterminated last event', async () => {
+    expect(await collect(sseData(body('data: {"a":', '1}\n\ndata: [DO', 'NE]\r\n\r\n', 'data: tail')))).toEqual(['{"a":1}', '[DONE]', 'tail'])
+  })
+
+  it('reads newline-delimited values however the bytes are cut, skipping blank lines', async () => {
+    expect(await collect(ndjsonLines(body('{"a":', '1}\n\n{"b"', ':2}\r\n{"c":3}')))).toEqual(['{"a":1}', '{"b":2}', '{"c":3}'])
+  })
+
+  it('reports activity for every part and ends on a signal even when the read never settles', async () => {
+    const parts: number[] = []
+    const never = new ReadableStream<Uint8Array>({ pull: () => new Promise(() => undefined) })
+    const controller = new AbortController()
+    const reading = collect(ndjsonLines(never, () => parts.push(1), controller.signal))
+    controller.abort(new Error('stop'))
+    await expect(reading).rejects.toThrow('stop')
+    let count = 0
+    await collect(ndjsonLines(body('1\n', '2\n'), () => count++))
+    expect(count).toBe(2)
   })
 })

@@ -5,7 +5,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@dsh-ai-providers/core': fileURLToPath(new URL('../dsh-ai-core/src/index.ts', import.meta.url)),
-      '@dsh-ai-providers/runtime': fileURLToPath(new URL('../dsh-ai-providers/src/index.ts', import.meta.url)),
     },
   },
 })

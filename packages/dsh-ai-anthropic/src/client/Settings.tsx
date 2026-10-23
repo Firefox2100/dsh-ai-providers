@@ -9,10 +9,12 @@ import css from './Settings.module.css'
 type P = PropsLocale<'ai.anthropic'> & InjectFace<Face>
 type Route = AnthropicLlmRouteConfig
 
-export function Connections(props: P & PropsRuntime<'settings.section'>) {
+type ConnectionProps = P & PropsRuntime<'ai.provider.connection'>
+
+export function Connections(props: ConnectionProps) {
   const state = props.useAnthropic(value => value)
   return <div className={css.section} data-testid="ai-anthropic-connections">
-    <h2 className={css.title}>{props.t('connectionsTitle')}</h2>
+    <h3 className={css.providerTitle}>{props.t('connectionsTitle')}</h3>
     <p className={css.description}>{props.t('connectionsDescription')}</p>
     <SettingsForm labels={formLabels(props.t)} state={state} onSave={props.save} onDiscard={props.discard}>
       <div className={css.list}>

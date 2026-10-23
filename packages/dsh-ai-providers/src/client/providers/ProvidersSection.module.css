@@ -1,0 +1,4 @@
+.section { display: flex; flex-direction: column; gap: 16px; }
+.title { margin: 0; font-size: 16px; font-weight: 500; line-height: 24px; color: var(--dsw-alias-label-primary); }
+.description { max-width: 72ch; margin: 0; font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-secondary); }
+.providers { display: flex; flex-direction: column; gap: 20px; }

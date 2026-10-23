@@ -3,11 +3,7 @@
   "compilerOptions": {
     "lib": ["ES2024"],
     "types": ["node"],
-    "paths": {
-      "@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"],
-      "@dsh-ai-providers/runtime": ["../dsh-ai-providers/src/index.ts"]
-    }
+    "paths": {"@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"]}
   },
-  "include": ["src", "tests", "tsdown.config.ts"],
-  "exclude": ["src/client"]
+  "include": ["src", "tests", "tsdown.config.ts"]
 }

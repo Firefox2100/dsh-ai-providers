@@ -12,6 +12,8 @@ import type { Capability } from './capabilities.ts'
  */
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
+    /** A provider's reusable endpoint and credential configuration, shown in the shared Providers tab. */
+    'ai.provider.connection': { kind: 'list'; scope: 'root'; owner: AiConnectionOwnerProps }
     'ai.provider.embedding': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
     'ai.provider.rerank': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
     'ai.provider.tts': { kind: 'list'; scope: 'root'; owner: AiProviderOwnerProps }
@@ -20,6 +22,11 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     /** A provider's editor of its language model routes, shown in the Language models tab. */
     'ai.provider.llm': { kind: 'list'; scope: 'root'; owner: AiLlmOwnerProps }
   }
+}
+
+/** What the Providers tab passes to each provider's connection editor. */
+export interface AiConnectionOwnerProps {
+  children?: never
 }
 
 

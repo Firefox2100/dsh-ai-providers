@@ -13,6 +13,7 @@ let key: string | undefined
 
 const field = <K extends keyof typeof settings>(name: K) => ({ get: () => settings[name] })
 const service = () => new JinaCohereRerankService({
+  provider: 'jina',
   config: { baseUrl: field('baseUrl'), apiKeyEnv: field('apiKeyEnv'), rerankModel: field('rerankModel'), timeoutMs: field('timeoutMs') } as never,
   connection: () => ({ baseUrl: settings.baseUrl.replace(/\/+$/, ''), apiKeyRef: settings.apiKeyEnv }),
   credentials: () => ({ resolve: () => Promise.resolve(key === undefined ? undefined : { value: key, source: 'file' }) }) as never,

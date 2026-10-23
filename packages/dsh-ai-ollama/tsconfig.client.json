@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {"jsx": "react-jsx", "lib": ["ES2024", "DOM", "DOM.Iterable"], "types": [], "paths": {"@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"], "@dsh-ai-providers/core/slots": ["../dsh-ai-core/src/slots.ts"]}},
+  "include": ["src/client", "src/ids.ts"]
+}

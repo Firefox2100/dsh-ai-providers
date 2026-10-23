@@ -1,21 +1,15 @@
 import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError } from '@dsh-ai-providers/core'
-import type { Config } from './config.ts'
 
+/** A validated way to reach a rerank or embedding API: its root, and the name of the credential for it, if any. */
 export interface JinaCohereConnection { baseUrl: string; apiKeyRef: string }
 
-const withoutTrailingSlashes = (value: string): string => {
-  let end = value.length
-  while (value[end - 1] === '/') end -= 1
-  return value.slice(0, end)
-}
-
-export function resolveConnection(config: Config): JinaCohereConnection {
-  const id = config.rerankConnection.get().trim()
-  if (id === '') throw new AiError('not-configured', 'no Jina / Cohere connection is selected for reranking')
-  const connection = config.connections.get().find(candidate => candidate.id === id)
-  if (connection === undefined) throw new AiError('not-configured', `the selected Jina / Cohere connection "${id}" does not exist`)
-  const baseUrl = withoutTrailingSlashes(connection.baseUrl.trim())
+/** Checks and normalizes a configured connection: no trailing slashes, HTTP or HTTPS only. */
+export function validateConnection(connection: { name: string; baseUrl: string; apiKeyRef: string }): JinaCohereConnection {
+  const trimmed = connection.baseUrl.trim()
+  let end = trimmed.length
+  while (trimmed[end - 1] === '/') end -= 1
+  const baseUrl = trimmed.slice(0, end)
   if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
   let url: URL
   try { url = new URL(baseUrl) }

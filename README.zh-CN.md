@@ -38,7 +38,9 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
     +-- OpenAI 兼容接口
     +-- LocalAI
     +-- Anthropic
-    +-- Jina/Cohere 兼容重排序接口
+    +-- Ollama
+    +-- Cohere
+    +-- Jina
 ```
 
 消费方插件依赖公共契约，而不是某个供应商包。运行时公开当前配置所选择的服务，并应用共用的并发控制。连接、请求默认值和供应商特有设置仍由各供应商包负责。
@@ -63,7 +65,10 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 | `@dsh-ai-providers/openai` | OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/localai` | LocalAI 的语言模型、嵌入、重排序、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/anthropic` | 通过 Anthropic Messages API 提供语言模型 |
-| `@dsh-ai-providers/jina-cohere` | 通过 Jina 和 Cohere 兼容 API 提供重排序 |
+| `@dsh-ai-providers/ollama` | 通过 Ollama 原生 API 提供语言模型和嵌入 |
+| `@dsh-ai-providers/cohere` | 通过 Cohere 原生 API 提供语言模型、嵌入和重排序 |
+| `@dsh-ai-providers/jina` | 通过 Jina API 提供重排序和嵌入 |
+| `@dsh-ai-providers/jina-cohere` | 可复用的 Jina 与 Cohere 风格重排序和嵌入传输层；不是插件 |
 | `@dsh-ai-providers/all` | 仅包含元数据的 DSH 安装包，集合本项目维护的运行时和全部供应商插件 |
 
 各供应商的配置和能力范围请参阅对应指南：
@@ -71,7 +76,9 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 - [OpenAI 兼容接口](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/openai)
 - [LocalAI](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/localai)
 - [Anthropic](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/anthropic)
-- [Jina 和 Cohere](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/jina-cohere)
+- [Ollama](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/ollama)
+- [Cohere](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/cohere)
+- [Jina](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/jina)
 
 ## 安装
 
@@ -83,7 +90,7 @@ DSH AI Providers 需要 Node.js 22 或更高版本，目前支持 DSH `>=0.2.0-r
 dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-完整安装包会加入运行时和本项目维护的全部供应商插件。重启该配置档案，然后在 **设置 > AI Providers** 中配置连接、路由、凭据引用和当前使用的服务。需要自定义组合时，也可以单独安装各个包。
+完整安装包会加入运行时和本项目维护的全部供应商插件。重启该配置档案，在 **设置 > 提供方** 中配置可复用端点和凭据，再到各项服务页面选择模型与参数。需要自定义组合时，也可以单独安装各个包。
 
 如果要使用这里提供的语言模型路由替换 DSH 的内置路由，请在该配置档案中停用 `@deepseek-ai/dsh-llm-pi-ai` 和内置的 `ui-settings-models` 设置页，但保留 DSH 的核心 `llm` 服务。使用 DSH Voice Input 时，请保留它的语音转文本注册表，并选择 API 供应商代替内置 SenseVoice 供应商。
 

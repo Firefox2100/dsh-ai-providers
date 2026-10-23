@@ -24,7 +24,7 @@ export async function index(ctx: Context, texts: string[]) {
 
 `embed()` 按输入顺序返回向量、实际响应的模型、向量维度，以及提供方报告的 token 用量。本项目维护的 OpenAI 兼容服务会拒绝空字符串。`embedOne()` 用于处理单个字符串。
 
-如果提供方区分两类输入，搜索问题使用 `inputType: 'query'`，被索引内容使用 `inputType: 'document'`。OpenAI 嵌入 API 没有对应字段，因此 OpenAI 兼容传输层不会发送它；面向指令式嵌入模型的提供方可以把它转换为模型所需的前缀或字段。不同模型或维度的向量不得比较。`@dsh-ai-providers/core` 的 `cosineSimilarity()` 会在比较前验证维度。
+如果提供方区分两类输入，搜索问题使用 `inputType: 'query'`，被索引内容使用 `inputType: 'document'`。OpenAI 嵌入 API 没有对应字段，因此 OpenAI 兼容传输层不会发送它；Jina 和 Cohere 提供方都会把它作为模型自身的任务类型发送（`retrieval.query` 或 `search_query`，以及对应的文档类型），Ollama 没有对应字段，会忽略它；面向指令式嵌入模型的提供方可以把它转换为模型所需的前缀或字段。不同模型或维度的向量不得比较。`@dsh-ai-providers/core` 的 `cosineSimilarity()` 会在比较前验证维度。
 
 ## 预取与分批
 

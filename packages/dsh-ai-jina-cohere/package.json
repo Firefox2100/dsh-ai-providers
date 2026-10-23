@@ -1,71 +1,36 @@
 {
   "name": "@dsh-ai-providers/jina-cohere",
-  "version": "0.3.0",
-  "description": "DSH plugin that supplies reranking from any Jina- or Cohere-style /rerank API (Jina, Cohere, LocalAI, vLLM...), to dsh-ai-providers.",
+  "version": "0.4.0",
+  "description": "Reusable Jina- and Cohere-style rerank and embedding transports for DSH AI providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
+  "types": "src/index.ts",
   "exports": {
-    ".": "./lib/index.js",
-    "./client": "./lib/client.js",
+    ".": {"types": "./src/index.ts", "default": "./lib/index.js"},
     "./package.json": "./package.json"
   },
-  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2"},
+  "engines": {"node": ">=22"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-jina-cohere"},
-  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina-cohere",
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
-  "keywords": ["deepseek-harness", "dsh", "jina", "cohere", "reranking"],
+  "keywords": ["deepseek-harness", "dsh", "jina", "cohere", "reranking", "embedding", "ai-provider"],
   "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
-  "dsh": {
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    },
-    "client": {
-      "inject": [
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-settings"
-      ],
-      "platform": "web"
-    }
-  },
   "scripts": {
     "build": "tsdown",
-    "watch": "tsdown --watch",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
-  "files": [
-    "lib/*.js",
-    "lib/client.js",
-    "lib/client.js.map",
-    "cordis.patch.yml",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["lib", "src", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2",
-    "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.3.0"
-  },
-  "dependencies": {
-    "@dsh-ai-providers/runtime": "workspace:0.3.0"
+    "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || 0.2.1-rc.2",
+    "@dsh-ai-providers/core": "workspace:0.4.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
-    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-store": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
     "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
-    "@deepseek-ai/schemastery": "^3.18.5",
+    "@dsh-ai-providers/core": "workspace:0.4.0",
     "@types/node": "^22.20.0",
-    "@types/react": "~18.3.31",
-    "@dsh-ai-providers/core": "workspace:0.3.0",
-    "lightningcss": "^1.33.0",
-    "react": "^18.3.1",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"

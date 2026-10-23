@@ -11,7 +11,7 @@ These routes replace the routes supplied by DSH's stock model adapter. Disable t
 
 ## Configure a route
 
-In **Settings > AI Providers > Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.
+In **Settings > Language models**, create a route with a stable ID and display name, choose a reusable connection, then add its models. Model discovery uses `GET /models`; models can also be entered manually.
 
 Each model can declare:
 
@@ -22,7 +22,7 @@ Each model can declare:
 - whether its chat template reads a changed system prompt anywhere in the conversation (`systemInHistory`); leave it off for templates that insist the system message comes first;
 - sampling overrides.
 
-Route-level sampling applies to every model unless overridden at model or request level. Supported controls include temperature, top-p, top-k, min-p, frequency and presence penalties, repetition penalty, seed, stop strings, output limit, tool choice, and additional JSON body fields.
+Route-level sampling applies to every model unless overridden at model or request level. Supported controls include temperature, top-p, top-k, min-p, frequency and presence penalties, repetition penalty, seed, stop strings, output limit, tool choice, and additional JSON body fields. A provider can add its own controls to the same object, such as Ollama's `numCtx`, `keepAlive` and `think`; see [Vendor controls](../providers/creating-provider#vendor-controls-in-sampling).
 
 ## OpenAI-compatible behavior
 
@@ -48,7 +48,7 @@ Beyond its models, each route reports the following to DSH. Nothing here needs e
 - **Retry policy.** The optional route setting `retry` has the shape of DSH's own policy: `mode` (`normal` retries transient failures up to `maxRetries` times, `always` retries every failure), `retryableCodes`, and `backoff` (`initialDelayMs`, `maxDelayMs`, `jitterRatio`). Without it DSH uses its defaults. A wrong policy makes the route unavailable, with the reason shown on the route; a change applies as soon as it is saved. The Anthropic provider takes the same setting in its route JSON.
 - **One reading per call.** DSH prepares a call and then sends it. The model facts and the request come from the same reading of the routes, so editing a route in between cannot mix the old facts with the new endpoint settings.
 - **Configurable providers.** Every route is listed in DSH's directory of configurable providers as one that the configuration declared, with the address of its connection and any problem that keeps it from being served. The entry points at the section of the plugin that holds the route.
-- **Model discovery.** DSH can ask a section for models. A route that is already configured answers with its own models. A draft endpoint that is still being edited is asked with `GET /models`, using the key given for that one question; nothing is stored. This works for the OpenAI-compatible providers, LocalAI and Anthropic.
+- **Model discovery.** DSH can ask a section for models. A route that is already configured answers with its own models. A draft endpoint that is still being edited is asked with `GET /models`, using the key given for that one question; nothing is stored. This works for the OpenAI-compatible providers, LocalAI, Anthropic and Ollama.
 - **Images and tools.** Pictures are sent exactly as stored, so DSH's default request-image size applies and no image pricing is declared; DSH uses its neutral estimate. Every request carries the complete tool list, so the providers do not declare mid-conversation tool updates.
 
 ## Policies

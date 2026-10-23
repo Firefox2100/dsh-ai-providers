@@ -18,7 +18,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     provider: 'Provider',
     providerNone: 'Disabled',
     providerNotLoaded: 'not loaded',
-    noProviders: 'No embedding provider is installed. Install a provider plugin such as dsh-ai-openai.',
+    noProviders: 'No embedding provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.',
     chooseProvider: 'Choose a provider to configure it.',
     status: 'Service',
     statusAvailable: 'Available: other plugins can use embedding now.',
@@ -44,7 +44,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     provider: '提供方',
     providerNone: '已禁用',
     providerNotLoaded: '未加载',
-    noProviders: '尚未安装任何嵌入提供方。请安装如 dsh-ai-openai 之类的提供方插件。',
+    noProviders: '尚未安装任何嵌入提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。',
     chooseProvider: '选择一个提供方后即可配置。',
     status: '服务',
     statusAvailable: '可用：其他插件现在可以使用嵌入。',
@@ -71,7 +71,7 @@ const rerank: Dictionaries<CapabilityLocaleKey> = {
     nav: 'Reranking',
     title: 'Reranking',
     description: 'Judges how well each of a few texts answers a question by reading them together, which is more accurate than comparing vectors. Other plugins use it to put the best of what a cheaper search found first. Choose which provider supplies it and configure that provider.',
-    noProviders: 'No reranking provider is installed. Install a provider plugin such as dsh-ai-jina-cohere.',
+    noProviders: 'No reranking provider is installed. Install a provider plugin such as @dsh-ai-providers/jina.',
     statusAvailable: 'Available: other plugins can use reranking now.',
     testOk: 'Works: {model}, {milliseconds} ms.',
   },
@@ -80,7 +80,7 @@ const rerank: Dictionaries<CapabilityLocaleKey> = {
     nav: '重排序',
     title: '重排序',
     description: '把问题和几段文本放在一起阅读，判断每段文本回答问题的程度，比单独比较向量更准确。其他插件用它把较便宜的检索找到的内容按相关度排好。选择由哪个提供方提供该服务并完成配置。',
-    noProviders: '尚未安装任何重排序提供方。请安装如 dsh-ai-jina-cohere 之类的提供方插件。',
+    noProviders: '尚未安装任何重排序提供方。请安装如 @dsh-ai-providers/jina 之类的提供方插件。',
     statusAvailable: '可用：其他插件现在可以使用重排序。',
     testOk: '可用：{model}，{milliseconds} 毫秒。',
   },
@@ -92,7 +92,7 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
     nav: 'Text to speech',
     title: 'Text to speech',
     description: 'Turns text into streamed speech audio. Choose which provider supplies it and configure its model, voice and output defaults.',
-    noProviders: 'No text-to-speech provider is installed. Install a provider plugin such as dsh-ai-openai.',
+    noProviders: 'No text-to-speech provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.',
     statusAvailable: 'Available: other plugins can synthesize speech now.',
     testOk: 'Works: {model}, {milliseconds} ms.',
   },
@@ -101,20 +101,20 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
     nav: '文本转语音',
     title: '文本转语音',
     description: '把文本转换为流式语音音频。选择由哪个提供方提供，并配置其模型、声音和输出默认值。',
-    noProviders: '尚未安装任何文本转语音提供方。请安装如 dsh-ai-openai 之类的提供方插件。',
+    noProviders: '尚未安装任何文本转语音提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。',
     statusAvailable: '可用：其他插件现在可以合成语音。',
     testOk: '可用：{model}，{milliseconds} 毫秒。',
   },
 }
 
 const stt: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'API speech to text', title: 'API speech to text', description: 'Transcribes completed recordings through the same provider shape as DSH Voice Input; a provider may also support realtime transcription. This API service can be disabled while DSH Voice Input uses SenseVoice.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can use API transcription now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: 'API 语音转文本', title: 'API 语音转文本', description: '使用与 DSH 语音输入提供方相同的接口转录完整录音；提供方还可选择支持实时转录。此 API 服务可以禁用，同时让 DSH 语音输入使用 SenseVoice。', noProviders: '尚未安装任何语音转文本提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以使用 API 转录。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'API speech to text', title: 'API speech to text', description: 'Transcribes completed recordings through the same provider shape as DSH Voice Input; a provider may also support realtime transcription. This API service can be disabled while DSH Voice Input uses SenseVoice.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can use API transcription now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: 'API 语音转文本', title: 'API 语音转文本', description: '使用与 DSH 语音输入提供方相同的接口转录完整录音；提供方还可选择支持实时转录。此 API 服务可以禁用，同时让 DSH 语音输入使用 SenseVoice。', noProviders: '尚未安装任何语音转文本提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以使用 API 转录。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 const image: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'Image generation', title: 'Image generation', description: 'Creates bitmap images from text prompts. Choose which provider supplies it and configure its model and output defaults.', noProviders: 'No image generation provider is installed. Install a provider plugin such as dsh-ai-openai.', statusAvailable: 'Available: other plugins can generate images now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: '图像生成', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 dsh-ai-openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'Image generation', title: 'Image generation', description: 'Creates bitmap images from text prompts. Choose which provider supplies it and configure its model and output defaults.', noProviders: 'No image generation provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can generate images now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '图像生成', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 /** The copy of each capability's tab. */

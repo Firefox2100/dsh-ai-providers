@@ -83,7 +83,7 @@ export type LlmProbeResult =
 
 /** `GET /ai-api/llm/discover?provider=&route=`: the models the endpoint of a route lists. */
 export interface LlmDiscoverPayload {
-  models: { id: string; name: string; contextWindow?: number; maxTokens?: number }[]
+  models: { id: string; name: string; contextWindow?: number; maxTokens?: number; inputs?: ('text' | 'image')[]; reasoning?: { levels: { id: string; name: string; body: Record<string, unknown> }[]; default?: string } }[]
 }
 
 /** What one limit of the gate serves and keeps waiting right now. */

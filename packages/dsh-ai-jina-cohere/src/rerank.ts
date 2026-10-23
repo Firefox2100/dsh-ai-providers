@@ -1,11 +1,23 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { AiError, RerankService, httpFailure, readJson, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
-import type { Config } from './config.ts'
-import { PROVIDER_ID } from './ids.ts'
 import { connectionHeaders, type JinaCohereConnection } from './connection.ts'
 
+/** The settings a rerank call reads, live, so a vendor passes the fields of its own configuration. */
+export interface RerankSettings {
+  /** The rerank model, as the API names it. */
+  rerankModel: { get(): string }
+  /** How long a request may take before it is given up, in milliseconds. */
+  timeoutMs: { get(): number }
+}
+
 export interface JinaCohereDeps {
-  config: Config
+  config: RerankSettings
+  /** The provider id the service reports. */
+  provider: string
+  /** Fields added to every request body, such as a vendor's own limits. */
+  body?: () => Readonly<Record<string, unknown>>
+  /** Whether to send `return_documents: false`, which Jina and compatible servers read and Cohere's v2 API does not know. */
+  returnDocuments?: boolean
   /** The credentials service, looked up on each call: the key is never held. */
   credentials: () => Pick<CredentialProvider, 'resolve'> | undefined
   connection: () => JinaCohereConnection
@@ -35,11 +47,12 @@ const logistic = (score: number): number => 1 / (1 + Math.exp(-score))
  * their order.
  */
 export class JinaCohereRerankService extends RerankService {
-  readonly provider = PROVIDER_ID
+  readonly provider: string
   private readonly send: typeof fetch
 
   constructor(private readonly deps: JinaCohereDeps) {
     super()
+    this.provider = deps.provider
     this.send = deps.fetch ?? fetch
   }
 
@@ -71,7 +84,7 @@ export class JinaCohereRerankService extends RerankService {
         method: 'POST',
         headers,
         signal,
-        body: JSON.stringify({ model, query, documents, ...(options.topN === undefined ? {} : { top_n: options.topN }), return_documents: false }),
+        body: JSON.stringify({ ...this.deps.body?.(), model, query, documents, ...(options.topN === undefined ? {} : { top_n: options.topN }), ...this.deps.returnDocuments === false ? {} : { return_documents: false } }),
       })
     } catch (error) {
       if (cancelled()) throw new AiError('cancelled', 'cancelled', { cause: error })

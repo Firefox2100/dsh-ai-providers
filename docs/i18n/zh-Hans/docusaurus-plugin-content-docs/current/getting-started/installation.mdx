@@ -9,7 +9,7 @@ sidebar_position: 1
 dsh plugin --profile <配置档案> add @dsh-ai-providers/all
 ```
 
-软件包组合会安装运行时以及 OpenAI、LocalAI、Anthropic 和 Jina/Cohere 软件包。安装后重启该配置档案，让 DSH 加载相应的配置行和设置页面。
+软件包组合会安装运行时以及 OpenAI、LocalAI、Anthropic、Ollama、Cohere 和 Jina 软件包。安装后重启该配置档案，让 DSH 加载相应的配置行和设置页面。
 
 该组合本身不会增加 AI 助手，也不会主动发起请求。请配置所需的提供方，再使用会调用这些服务的插件。
 
@@ -26,7 +26,7 @@ dsh plugin --profile <配置档案> add @dsh-ai-providers/localai
 
 每个厂商软件包都依赖运行时软件包，因此其模块会一并安装；但 DSH 会显式启用各个 bundle 层，安装厂商软件包不会自动启用运行时 bundle。每个厂商 bundle 只添加自身条目，因此可以组合任意数量的提供方，而不会重复加载运行时。
 
-`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库，不会作为 DSH 插件加载。
+`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库；`@dsh-ai-providers/jina-cohere` 同样提供 Jina 与 Cohere 共用的传输实现。两者都不会作为 DSH 插件加载。
 
 ## 环境要求
 
@@ -38,13 +38,15 @@ OpenAI 插件同时支持 OpenAI 和兼容服务器。实际可用能力取决�
 
 ## 验证安装
 
-重启后打开 **设置 > AI Providers**。完整安装会显示连接配置、能力选择器、并发设置，以及每个已加载提供方插件的设置区域。若缺少某个提供方，请确认它的整合行与运行时已在同一配置档案中启用。
+重启后打开 DSH 设置。完整安装会显示一个集中管理所有已安装厂商连接的**提供方**页面，以及语言模型、各项能力与并发页面。提供方专属模型和选项位于其实现的服务页面中，不会作为厂商入口出现在侧栏。若缺少某个提供方，请确认它的整合行与运行时已在同一配置档案中启用。
 
 运行时会保持空闲，直到使用方调用服务。要验证完整链路，请先配置一个连接，为一项能力选择该连接，再运行对应服务页面的最小示例，或使用已经安装的使用方插件。
 
 ## 升级与移除
 
 相关包应一起升级，使运行时、核心契约和本项目维护的提供方保持同一发行版本。改变已安装版本或整合启用状态后，应重启配置档案。
+
+若从 `@dsh-ai-providers/jina-cohere` 仍是提供方插件的版本升级，请移除配置档案中旧的 `ai-jina-cohere` 条目，改为安装或启用 `@dsh-ai-providers/jina`。重新选择 Jina 作为嵌入或重排提供方，并把旧连接设置复制到 Jina 连接中。`jina-cohere` 现在只是共用库，不再提供设置页面或注册提供方。
 
 移除提供方包会移除其注册实现和设置页面，但不会删除 DSH 凭据存储中的凭据。移除运行时之前，应更新或移除把这些服务声明为必需 Cordis 注入的插件，否则 DSH 会正确报告依赖缺失。
 

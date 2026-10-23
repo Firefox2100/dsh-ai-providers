@@ -1,0 +1,3 @@
+- insert:
+    - id: ai-cohere
+      name: '@dsh-ai-providers/cohere'

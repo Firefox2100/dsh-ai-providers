@@ -13,5 +13,5 @@ export type { OpenAiImageDeps, OpenAiImageFormat, OpenAiImageOptions } from './i
 export { OpenAiLlmService } from './llm/service.ts'
 export type { ImageReader, OpenAiLlmDeps } from './llm/service.ts'
 export { imageRefsOf, wireBody, wireMessages } from './llm/serialize.ts'
-export { sseData } from './llm/sse.ts'
+export { sseData } from '@dsh-ai-providers/core'
 export { translate } from './llm/translate.ts'

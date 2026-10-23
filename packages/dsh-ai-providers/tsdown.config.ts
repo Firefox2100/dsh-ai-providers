@@ -43,7 +43,7 @@ function cssModules(): TsdownPlugin {
       this.addWatchFile(file)
       const { code, exports } = transform({ filename: file, code: await readFile(file), cssModules: { pattern: 'ai_[hash]_[local]' }, minify: true })
       const classes = Object.fromEntries(Object.entries(exports ?? {}).map(([name, value]) => [name, value.name]))
-      const key = relative(process.cwd(), file)
+      const key = `${ID}/${relative(process.cwd(), file)}`
       // A reloaded bundle must replace its own stylesheet, not leave the stale one in place.
       return [
         `const css = ${JSON.stringify(code.toString())};`,

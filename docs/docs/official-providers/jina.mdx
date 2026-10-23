@@ -1,0 +1,55 @@
+---
+title: Jina
+sidebar_position: 6
+---
+
+`@dsh-ai-providers/jina` is the Jina AI provider maintained by Firefox2100 as part of this project. It supplies reranking and embeddings. It is not an official DSH or Jina AI package.
+
+## Supported capabilities
+
+| Capability | Endpoint |
+| --- | --- |
+| Reranking | `POST {base URL}/rerank` |
+| Embeddings | `POST {base URL}/embeddings` |
+
+The rerank API is the one Cohere introduced and Jina, vLLM and others copied, so a server that speaks it also works through this provider with a custom base URL. The transports live in the library package `@dsh-ai-providers/jina-cohere`, which this provider and the [Cohere](./cohere) provider both use; neither depends on the other.
+
+## Configure a connection
+
+Create one or more connections with an ID, name, base URL, and DSH credential reference in **Settings > Providers > Jina connections**. The default is:
+
+![A Jina connection and credential reference in DSH settings](/img/screenshots/providers/jina-settings.png)
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `https://api.jina.ai/v1` |
+| Credential reference | `JINA_API_KEY` |
+| Rerank model | `jina-reranker-v2-base-multilingual` |
+| Embedding model | `jina-embeddings-v3` |
+| Timeout | 60 seconds |
+
+Then open the Reranking or Embedding capability tab and select **Jina** as the active provider. Use separate connections when endpoints need different credentials or base URLs; a connection ID is configuration identity, so keep it stable once a selection refers to it. The credential reference names a DSH-managed secret, not the secret value. Self-hosted servers can leave it empty. The provider appends `/rerank` or `/embeddings`, so do not include them in the base URL.
+
+## Embeddings
+
+The consumer's choice of query or document is sent as Jina's `task`: `retrieval.query` or `retrieval.passage`. Without a choice no task is sent. The `task` request option overrides the choice and accepts the model's other tasks (`text-matching`, `classification`, `separation`).
+
+| Setting | Request field | Default |
+| --- | --- | --- |
+| Vector dimensions | `dimensions` | 0: the model's own; also a request option chosen before a session's first request |
+| Texts longer than the input | `truncate` | cut to fit |
+| Batch size | texts per request | 64 |
+
+Vectors of different sizes or models cannot be compared, so choose the dimensions before the first request and keep the model.
+
+## Reranking
+
+Requests contain `model`, `query`, `documents`, optional `top_n`, and `return_documents: false`. Responses may use either `relevance_score` or `score`. Token usage is read when present. The service rejects empty queries and documents, sorts results by descending score, and normalizes raw logits outside 0 to 1 through a logistic function, which keeps their order.
+
+Every result must identify its input document by index. Indices outside the submitted list, missing scores, or non-numeric scores are malformed responses and fail the call. Jina and Cohere do not promise identical models, limits, or score calibration: keep candidate sets within the service's limits and compare scores only within one response.
+
+## Diagnosing compatibility
+
+If a server rejects the request, verify the configured prefix and model, then compare its request shape with the fields above. Authentication, quota, and unknown-model responses become `rejected`; connectivity and server failures become `unavailable`; malformed caller input is `invalid-input`.
+
+See [Reranking](../services/reranking) and [Embeddings](../services/embeddings) for consumer usage.

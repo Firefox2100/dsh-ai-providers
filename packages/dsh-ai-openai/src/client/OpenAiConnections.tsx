@@ -5,13 +5,13 @@ import type { OpenAiCardFace } from './controller.ts'
 import { formLabels } from './locales.ts'
 import css from './OpenAiSurface.module.css'
 
-export type OpenAiConnectionsProps = PropsRuntime<'settings.section'> & PropsLocale<'ai.openai'> & InjectFace<OpenAiCardFace>
+export type OpenAiConnectionsProps = PropsRuntime<'ai.provider.connection'> & PropsLocale<'ai.openai'> & InjectFace<OpenAiCardFace>
 
 export function OpenAiConnections(props: OpenAiConnectionsProps) {
   const state = props.useOpenAiCard(snapshot => snapshot)
   const { t } = props
   return <div data-testid="ai-openai-connections" className={css.section}>
-    <h2 className={css.title}>{t('connectionsTitle')}</h2>
+    <h3 className={css.providerTitle}>{t('connectionsTitle')}</h3>
     <p className={css.description}>{t('connectionsDescription')}</p>
     <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
       <div className={css.list}>

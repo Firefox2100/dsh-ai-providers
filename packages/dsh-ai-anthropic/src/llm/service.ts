@@ -1,12 +1,11 @@
 import type {RetryPolicyConfig, StreamChunk} from '@deepseek-ai/dsh-llm'
 import type {CredentialProvider} from '@deepseek-ai/dsh-credentials'
-import {AiError, LlmRequestError, LlmService, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
+import {AiError, LlmRequestError, LlmService, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
 import type {AnthropicLlmModelConfig, AnthropicLlmRouteConfig, AnthropicSamplingConfig, Config} from '../config.ts'
 import {connectionHeaders, validateConnection, type AnthropicConnection} from '../connection.ts'
 import {PROVIDER_ID} from '../ids.ts'
 import {httpError} from './errors.ts'
 import {wireBody} from './serialize.ts'
-import {sseData} from './sse.ts'
 import {translate} from './translate.ts'
 
 interface AttachmentReader {readImage(ref: never, signal?: AbortSignal): Promise<{data: Uint8Array; ref: {mediaType: string}}>}

@@ -24,7 +24,7 @@ const ordered = answer.results.map(({index, score}) => ({
 
 分数适合在同一次响应内排序或筛选。不要跨提供方或模型持久化统一阈值，因为分数校准不属于共享契约。
 
-本项目维护的 Jina/Cohere 提供方调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0 到 1 范围的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
+本项目维护的 Jina 和 Cohere 提供方共用同一个传输层（`@dsh-ai-providers/jina-cohere`），调用 `POST /rerank`，同时接受响应中的 `relevance_score` 和 `score`。如果兼容服务器返回超出 0 到 1 范围的原始 logit，提供方会用 logistic 函数统一映射，同时保持排序不变。
 
 ## 检索模式
 

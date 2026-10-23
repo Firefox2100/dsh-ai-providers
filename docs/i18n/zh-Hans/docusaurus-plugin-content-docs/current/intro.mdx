@@ -10,7 +10,7 @@ DSH AI Providers 为 [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-
 - 文本嵌入与重排；
 - 文本转语音与语音转文本；
 - 图像生成；
-- OpenAI 兼容的语言模型路由。
+- 语言模型路由。
 
 安装运行时及所需的提供方插件，在 DSH 中配置连接，再为各项能力选择提供方。其他插件随后可通过 Cordis 上下文使用所选服务。
 
@@ -24,11 +24,14 @@ DSH AI Providers 为 [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-
 | --- | --- |
 | `@dsh-ai-providers/core` | 与提供方无关的接口、错误和公共类型 |
 | `@dsh-ai-providers/openai-compatible` | 共享的 OpenAI 兼容协议实现；不是插件 |
+| `@dsh-ai-providers/jina-cohere` | 共用的 Jina 与 Cohere 风格重排和嵌入传输层；不是插件 |
 | `@dsh-ai-providers/runtime` | 提供方注册、服务选择、设置界面、API 路由及并发控制 |
 | `@dsh-ai-providers/openai` | OpenAI 兼容的嵌入、LLM、TTS、STT 和图像生成 |
 | `@dsh-ai-providers/localai` | LocalAI 嵌入、重排、LLM、TTS、STT 和图像生成 |
 | `@dsh-ai-providers/anthropic` | Anthropic 原生语言模型 |
-| `@dsh-ai-providers/jina-cohere` | Jina 与 Cohere 兼容的重排服务 |
+| `@dsh-ai-providers/ollama` | Ollama 原生语言模型和嵌入 |
+| `@dsh-ai-providers/cohere` | Cohere 原生语言模型、嵌入和重排 |
+| `@dsh-ai-providers/jina` | Jina 重排和嵌入 |
 | `@dsh-ai-providers/all` | 仅含元数据的完整软件包组合 |
 
 请从[安装](./getting-started/installation)开始。如果正在集成其他插件，可直接阅读[使用服务](./consumers/using-services)。
@@ -37,11 +40,13 @@ DSH AI Providers 为 [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSeek-
 
 这些软件包由 Firefox2100 在本独立项目中维护，并非 DeepSeek Harness 官方软件包，也不由 DSH 维护者维护或认可。
 
-本项目目前维护四个提供方软件包：
+本项目目前维护六个提供方软件包：
 
 - [`@dsh-ai-providers/openai`](./official-providers/openai)：OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成；
 - [`@dsh-ai-providers/localai`](./official-providers/localai)：专用于 LocalAI 的语言模型、嵌入、重排、语音和图像生成；
 - [`@dsh-ai-providers/anthropic`](./official-providers/anthropic)：通过 Anthropic 原生 Messages API 使用语言模型；
-- [`@dsh-ai-providers/jina-cohere`](./official-providers/jina-cohere)：兼容 Jina 和 Cohere 的重排服务。
+- [`@dsh-ai-providers/ollama`](./official-providers/ollama)：通过 Ollama 原生 API 使用语言模型和嵌入，支持其自有请求控制项、模型发现以及模型加载和卸载；
+- [`@dsh-ai-providers/cohere`](./official-providers/cohere)：通过 Cohere 原生 v2 API 使用语言模型、嵌入和重排；
+- [`@dsh-ai-providers/jina`](./official-providers/jina)：Jina 重排和嵌入。
 
 第三方提供方插件也可实现相同接口，并出现在同一个设置界面中。
