@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, ndjsonLines, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, RerankService, SERVICE_NAMES, SttService, TtsService, cosineSimilarity, ndjsonLines, requestJson, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -44,6 +44,27 @@ describe('AiError', () => {
     expect(error).toBeInstanceOf(Error)
     expect([error.name, error.code, error.message, (error.cause as Error).message]).toEqual(['AiError', 'rejected', 'bad key', '401'])
     expect(AI_ERROR_CODES).toContain('not-configured')
+  })
+})
+
+describe('bounded JSON requests', () => {
+  const messageOf = (body: unknown) => (body as { message?: string } | undefined)?.message ?? ''
+
+  it('chooses the method, serializes a body and returns JSON', async () => {
+    let seen: RequestInit | undefined
+    const send = (async (_url: string, init: RequestInit) => { seen = init; return Response.json({ ok: true }) }) as typeof fetch
+    expect(await requestJson<{ ok: boolean }>(send, 'https://api.test/x', { headers: { authorization: 'x' }, body: { a: 1 } }, 1000, messageOf)).toEqual({ ok: true })
+    expect(seen).toMatchObject({ method: 'POST', body: '{"a":1}', redirect: 'error' })
+    expect(new Headers(seen?.headers).get('content-type')).toBe('application/json')
+  })
+
+  it('keeps vendor error text and distinguishes cancellation, transport and invalid JSON', async () => {
+    await expect(requestJson((async () => Response.json({ message: 'bad key' }, { status: 401 })) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf)).rejects.toMatchObject({ code: 'rejected', message: expect.stringContaining('bad key') })
+    await expect(requestJson((async () => new Response('not json')) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf)).rejects.toMatchObject({ code: 'unavailable' })
+    await expect(requestJson((async () => { throw new Error('offline') }) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf)).rejects.toMatchObject({ code: 'unavailable', message: expect.stringContaining('offline') })
+    const controller = new AbortController()
+    controller.abort()
+    await expect(requestJson((async () => { throw new Error('aborted') }) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf, controller.signal)).rejects.toMatchObject({ code: 'cancelled' })
   })
 })
 

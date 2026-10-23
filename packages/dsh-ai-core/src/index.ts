@@ -1,7 +1,7 @@
 export { AI_ERROR_CODES, AiError, type AiErrorCode } from './errors.ts'
 export { CAPABILITIES, SERVICE_NAMES, parseProviderSlotId, providerSlotId, providerSlotName, type Capability, type CapabilityServices, type ProviderSlotName } from './capabilities.ts'
 export { AI_API_PREFIX, AI_API_ROUTES, type CapabilitiesPayload, type ConcurrencyPayload, type ConcurrencyStatus, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type LlmRouteSummary, type CapabilityState, type CredentialsPayload, type CredentialStatus, type CredentialWrite, type ProbeResult, type ProviderSummary } from './api.ts'
-export { httpFailure, readJson } from './http.ts'
+export { httpFailure, readJson, requestJson, type JsonRequest } from './http.ts'
 export { ndjsonLines, sseData } from './stream.ts'
 export { LLM_FAILURE_CODES, LlmRequestError, LlmService, type AiModelControls, type LlmCall, type LlmEndpointDraft, type LlmFailureCode, type LlmFailureFacts, type LlmModelControl, type LlmModelOperation, type LlmModelRuntimeStatus, type LlmModelSpec, type LlmPolicy, type LlmReasoningLevel, type LlmRouteSpec, type LlmSampling } from './llm.ts'
 export { AiService, type CallOptions, type RequestPriority, type ServiceIdentity } from './service.ts'
