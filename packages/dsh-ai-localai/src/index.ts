@@ -5,10 +5,12 @@ import { OpenAiEmbeddingService, OpenAiSttService, OpenAiTtsService, resolveConn
 import { Config } from './config.ts'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
 import { LocalAiImageGenerationService } from './image.ts'
+import { localAiDecision } from './decision.ts'
 import { LocalAiRerankService } from './rerank.ts'
 import { LocalAiLlmService } from './llm.ts'
 
 export { Config } from './config.ts'
+export { localAiDecision } from './decision.ts'
 export { LocalAiRerankService } from './rerank.ts'
 export { LocalAiImageGenerationService, type LocalAiImageOptions } from './image.ts'
 export { LocalAiLlmService, type LocalAiLlmDeps } from './llm.ts'
@@ -30,6 +32,7 @@ export function apply(ctx: Context, config: Config): void {
       tts: () => new OpenAiTtsService({ ...common, connection: () => resolveConnection(config, 'tts'), body: () => config.ttsBody.get() }),
       stt: () => new OpenAiSttService({ ...common, connection: () => resolveConnection(config, 'stt') }) as OpenAiSttService,
       image: () => new LocalAiImageGenerationService({ config, credentials, connection: () => resolveConnection(config, 'image') }),
+      decision: () => localAiDecision(config, credentials),
     },
     llm: () => new LocalAiLlmService({ ...common, images: () => (ctx as unknown as { get(name: 'attachments'): never }).get('attachments') }),
     requestOptions: {

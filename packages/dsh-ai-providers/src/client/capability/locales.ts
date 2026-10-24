@@ -117,8 +117,13 @@ const image: Dictionaries<CapabilityLocaleKey> = {
   zh: { ...embedding.zh, nav: '图像生成', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
+const decision: Dictionaries<CapabilityLocaleKey> = {
+  en: { ...embedding.en, nav: 'Decisions', title: 'Decisions', description: 'Answers typed questions about a text (does a statement hold, which option fits, where it falls on a scale) with a model that scores the options in one pass instead of writing text. The answers are probabilities, so a plugin can act on a confident one and leave an unsure one to a slower model. Choose which provider supplies it and configure that provider.', noProviders: 'No decision provider is installed. Install a provider plugin such as @dsh-ai-providers/typesafe or @dsh-ai-providers/localai.', statusAvailable: 'Available: other plugins can ask decisions now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '决策', title: '决策', description: '针对一段文本回答带类型的问题（某个陈述是否成立、哪个选项最合适、在量表上处于什么位置），由一个一次性为各选项打分、而不是逐字生成文本的模型完成。答案是概率，因此插件可以采纳把握大的答案，把没把握的交给更慢的模型。选择由哪个提供方提供该服务并完成配置。', noProviders: '尚未安装任何决策提供方。请安装如 @dsh-ai-providers/typesafe 或 @dsh-ai-providers/localai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以请求决策。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+}
+
 /** The copy of each capability's tab. */
-export const dictionariesOf = { embedding, rerank, tts, stt, image } as const satisfies Record<Capability, Dictionaries<CapabilityLocaleKey>>
+export const dictionariesOf = { embedding, rerank, tts, stt, image, decision } as const satisfies Record<Capability, Dictionaries<CapabilityLocaleKey>>
 
 export const formLabels = (t: (key: CapabilityLocaleKey) => string): SettingsFormLabels => ({
   unavailable: t('unavailable'),

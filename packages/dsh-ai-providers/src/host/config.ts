@@ -15,6 +15,8 @@ export interface Config {
   stt: Volatile<string>
   /** The id of the provider that supplies image generation; empty for none. */
   image: Volatile<string>
+  /** The id of the provider that supplies decisions; empty for none. */
+  decision: Volatile<string>
   /** How long a vector prepared with `prefetch` waits to be retrieved before it is dropped, in seconds. */
   holdSeconds: Volatile<number>
   /** The shared resources and how many calls each serves at once; calls beyond that wait their turn, people's before background work. Empty limits nothing. */
@@ -31,6 +33,7 @@ export const Config = z.object({
   tts: z.string().default('').volatile(),
   stt: z.string().default('').volatile(),
   image: z.string().default('').volatile(),
+  decision: z.string().default('').volatile(),
   holdSeconds: z.natural().default(300).volatile(),
   limits: z.array(z.object({
     id: z.string().required(),

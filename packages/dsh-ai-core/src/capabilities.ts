@@ -3,6 +3,7 @@ import type { RerankService } from './rerank.ts'
 import type { TtsService } from './tts.ts'
 import type { SttService } from './stt.ts'
 import type { ImageGenerationService } from './image.ts'
+import type { DecisionService } from './decision.ts'
 
 /**
  * The service each capability is offered as. Adding a capability is adding a line here, a
@@ -14,15 +15,16 @@ export interface CapabilityServices {
   tts: TtsService
   stt: SttService
   image: ImageGenerationService
+  decision: DecisionService
 }
 
 export type Capability = keyof CapabilityServices
 
 /** Every capability, in the order a settings UI lists them. */
-export const CAPABILITIES = ['embedding', 'rerank', 'tts', 'stt', 'image'] as const satisfies readonly Capability[]
+export const CAPABILITIES = ['embedding', 'rerank', 'tts', 'stt', 'image', 'decision'] as const satisfies readonly Capability[]
 
 /** The name of the service that offers each capability on the Cordis context (`ctx.embeddings`, `ctx.rerankers`). */
-export const SERVICE_NAMES = { embedding: 'embeddings', rerank: 'rerankers', tts: 'textToSpeech', stt: 'apiSpeechToText', image: 'imageGeneration' } as const satisfies Record<Capability, string>
+export const SERVICE_NAMES = { embedding: 'embeddings', rerank: 'rerankers', tts: 'textToSpeech', stt: 'apiSpeechToText', image: 'imageGeneration', decision: 'decisions' } as const satisfies Record<Capability, string>
 
 /** The slot a capability's tab declares for its providers' configuration: a slot has one declarer, so each tab has its own. */
 export type ProviderSlotName = `ai.provider.${Capability}`

@@ -1,0 +1,38 @@
+{
+  "name": "@dsh-ai-providers/systemone",
+  "version": "0.5.0",
+  "description": "Reusable System One decision transport for DSH AI providers.",
+  "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {"types": "./src/index.ts", "default": "./lib/index.js"},
+    "./package.json": "./package.json"
+  },
+  "engines": {"node": ">=22"},
+  "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-systemone"},
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
+  "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
+  "keywords": ["deepseek-harness", "dsh", "system-one", "decision-model", "ai-provider"],
+  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "files": ["lib", "src", "README.md", "LICENSE"],
+  "license": "GPL-3.0-only",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || 0.2.1-rc.2",
+    "@dsh-ai-providers/core": "workspace:0.5.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
+    "@dsh-ai-providers/core": "workspace:0.5.0",
+    "@types/node": "^22.20.0",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

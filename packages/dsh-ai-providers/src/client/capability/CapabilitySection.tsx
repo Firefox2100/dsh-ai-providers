@@ -10,7 +10,7 @@ import type { CapabilityFace } from './controller.ts'
 export type CapabilitySectionProps =
   PropsRuntime<'settings.section'>
   & PropsLocale<'ai.embedding'>
-  & PropsRenderSlots<'ai.provider.embedding' | 'ai.provider.rerank' | 'ai.provider.tts' | 'ai.provider.stt' | 'ai.provider.image'>
+  & PropsRenderSlots<'ai.provider.embedding' | 'ai.provider.rerank' | 'ai.provider.tts' | 'ai.provider.stt' | 'ai.provider.image' | 'ai.provider.decision'>
   & InjectFace<CapabilityFace>
 
 /** The tab of a capability, shown for the one it is registered for. */

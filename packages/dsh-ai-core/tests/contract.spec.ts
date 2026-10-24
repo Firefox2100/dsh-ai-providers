@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, configuredLlmRoute, cosineSimilarity, llmTransportFailure, ndjsonLines, requestJson, sseData, streamLlmHttp, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, DecisionService, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, configuredLlmRoute, cosineSimilarity, llmTransportFailure, ndjsonLines, validateDecisionRequest, requestJson, sseData, streamLlmHttp, localized, parseProviderSlotId, providerSlotId, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -16,7 +16,7 @@ class Fake extends EmbeddingService {
 
 describe('the capabilities', () => {
   it('each have a service name on the context', () => {
-    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image'])
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image', 'decision'])
     expect(SERVICE_NAMES.embedding).toBe('embeddings')
   })
 })
@@ -169,7 +169,7 @@ describe('reranking', () => {
   }
 
   it('is a capability with its own service name, scored best first with positions into the list given', async () => {
-    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image'])
+    expect(CAPABILITIES).toEqual(['embedding', 'rerank', 'tts', 'stt', 'image', 'decision'])
     expect(SERVICE_NAMES.rerank).toBe('rerankers')
     const service = new Reverse()
     expect(service.capability).toBe('rerank')
@@ -179,6 +179,45 @@ describe('reranking', () => {
   it('has a provider entry id in the settings UI like any other capability', () => {
     expect(providerSlotId('rerank', 'jina-cohere')).toBe('rerank:jina-cohere')
     expect(parseProviderSlotId('rerank:jina-cohere')).toEqual({ capability: 'rerank', providerId: 'jina-cohere' })
+  })
+})
+
+describe('decisions', () => {
+  class Fixed extends DecisionService {
+    readonly provider = 'fixed'
+    readonly model = 'fixed-1'
+    decide<Questions extends DecisionQuestions>(_state: DecisionState, questions: Questions): Promise<DecisionResult<Questions>> {
+      const answers = Object.fromEntries(Object.entries(questions).map(([name, question]) => [name, question.type === 'noul' ? { type: 'noul', probability: 0.9 } : question.type === 'choice' ? { type: 'choice', choice: Object.keys(question.criteria)[0], confidence: 1, probabilities: { [Object.keys(question.criteria)[0]!]: 1 } } : { type: 'score', score: 0, confidence: 1, probabilities: [1] }]))
+      return Promise.resolve({ answers: answers as never, model: this.model })
+    }
+  }
+
+  it('is a capability with its own service name and provider entry', async () => {
+    expect(SERVICE_NAMES.decision).toBe('decisions')
+    const service = new Fixed()
+    expect(service.capability).toBe('decision')
+    const { answers } = await service.decide('I was charged twice.', { angry: { type: 'noul', instructions: 'Is the customer angry?' }, topic: { type: 'choice', instructions: 'What is it about?', criteria: { billing: 'money', bug: 'a fault' } } } as const)
+    expect([answers.angry.probability, answers.topic.choice]).toEqual([0.9, 'billing'])
+    expect(providerSlotId('decision', 'typesafe')).toBe('decision:typesafe')
+    expect(parseProviderSlotId('decision:typesafe')).toEqual({ capability: 'decision', providerId: 'typesafe' })
+  })
+
+  it('refuses a malformed request the same way for every provider', () => {
+    const noul = { type: 'noul', instructions: 'Is it urgent?' } as const
+    expect(() => { validateDecisionRequest('text', { urgent: noul }) }).not.toThrow()
+    expect(() => { validateDecisionRequest({ any: ['json'] }, { urgent: noul }) }).not.toThrow()
+    const refused = (state: DecisionState, questions: DecisionQuestions): unknown => { try { validateDecisionRequest(state, questions) } catch (error) { return error } return undefined }
+    for (const [state, questions] of [
+      ['  ', { urgent: noul }],
+      ['text', {}],
+      ['text', { urgent: { type: 'noul', instructions: ' ' } }],
+      ['text', { '': noul }],
+      ['text', { pick: { type: 'choice', instructions: 'Which?', criteria: { only: 'one option' } } }],
+      ['text', { pick: { type: 'choice', instructions: 'Which?', criteria: { a: 'first', b: ' ' } } }],
+      ['text', { level: { type: 'score', instructions: 'How much?', criteria: ['one'] } }],
+      ['text', { level: { type: 'score', instructions: 'How much?', criteria: Array.from({ length: 11 }, (_, index) => `level ${index}`) } }],
+      ['text', { odd: { type: 'ranking', instructions: 'Rank' } }],
+    ] as [DecisionState, DecisionQuestions][]) expect(refused(state, questions), JSON.stringify(questions)).toMatchObject({ name: 'AiError', code: 'invalid-input' })
   })
 })
 

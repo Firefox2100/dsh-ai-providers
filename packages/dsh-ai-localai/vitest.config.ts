@@ -6,6 +6,7 @@ export default defineConfig({
     alias: [
       { find: '@dsh-ai-providers/openai-compatible/config', replacement: fileURLToPath(new URL('../dsh-ai-openai-compatible/src/config.ts', import.meta.url)) },
       { find: '@dsh-ai-providers/openai-compatible', replacement: fileURLToPath(new URL('../dsh-ai-openai-compatible/src/index.ts', import.meta.url)) },
+      { find: '@dsh-ai-providers/systemone', replacement: fileURLToPath(new URL('../dsh-ai-systemone/src/index.ts', import.meta.url)) },
       { find: '@dsh-ai-providers/core', replacement: fileURLToPath(new URL('../dsh-ai-core/src/index.ts', import.meta.url)) },
     ],
   },

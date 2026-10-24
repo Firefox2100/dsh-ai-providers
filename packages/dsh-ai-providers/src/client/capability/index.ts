@@ -17,6 +17,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     'ai.tts': CapabilityLocaleKey
     'ai.stt': CapabilityLocaleKey
     'ai.image': CapabilityLocaleKey
+    'ai.decision': CapabilityLocaleKey
   }
 }
 
@@ -27,7 +28,8 @@ const TABS = {
   tts: { id: 'ai-tts', order: 47, namespace: 'ai.tts' },
   stt: { id: 'ai-stt', order: 48, namespace: 'ai.stt' },
   image: { id: 'ai-image', order: 49, namespace: 'ai.image' },
-} as const satisfies Record<Capability, { id: string; order: number; namespace: 'ai.embedding' | 'ai.rerank' | 'ai.tts' | 'ai.stt' | 'ai.image' }>
+  decision: { id: 'ai-decision', order: 50, namespace: 'ai.decision' },
+} as const satisfies Record<Capability, { id: string; order: number; namespace: 'ai.embedding' | 'ai.rerank' | 'ai.tts' | 'ai.stt' | 'ai.image' | 'ai.decision' }>
 
 function registerTab(ctx: Context, capability: Capability): void {
   const { id, order, namespace } = TABS[capability]

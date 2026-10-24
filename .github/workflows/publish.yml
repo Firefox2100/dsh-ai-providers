@@ -134,6 +134,9 @@ jobs:
       - name: Publish Jina/Cohere transports
         if: steps.published.outputs.jina_cohere != 'true'
         run: pnpm run release:publish -- dsh-ai-jina-cohere
+      - name: Publish System One transport
+        if: steps.published.outputs.systemone != 'true'
+        run: pnpm run release:publish -- dsh-ai-systemone
       - name: Publish runtime
         if: steps.published.outputs.runtime != 'true'
         run: pnpm run release:publish -- dsh-ai-providers
@@ -158,6 +161,9 @@ jobs:
       - name: Publish DashScope provider
         if: steps.published.outputs.dashscope != 'true'
         run: pnpm run release:publish -- dsh-ai-dashscope
+      - name: Publish TypeSafe provider
+        if: steps.published.outputs.typesafe != 'true'
+        run: pnpm run release:publish -- dsh-ai-typesafe
       - name: Publish complete bundle
         if: steps.published.outputs.all != 'true'
         run: pnpm run release:publish -- dsh-ai-all

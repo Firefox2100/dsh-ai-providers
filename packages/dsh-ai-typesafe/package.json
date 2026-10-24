@@ -1,0 +1,75 @@
+{
+  "name": "@dsh-ai-providers/typesafe",
+  "version": "0.5.0",
+  "description": "TypeSafe AI's Jev decision provider for dsh-ai-providers.",
+  "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2"},
+  "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-typesafe"},
+  "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/typesafe",
+  "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
+  "keywords": ["deepseek-harness", "dsh", "typesafe", "jev", "system-one", "decision-model", "ai-provider"],
+  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"},
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
+    "test": "vitest run"
+  },
+  "files": [
+    "lib/*.js",
+    "lib/client.js",
+    "lib/client.js.map",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "GPL-3.0-only",
+  "peerDependencies": {
+    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2",
+    "@deepseek-ai/schemastery": "^3.18.4",
+    "@dsh-ai-providers/core": "workspace:0.5.0"
+  },
+  "dependencies": {
+    "@dsh-ai-providers/runtime": "workspace:0.5.0",
+    "@dsh-ai-providers/systemone": "workspace:0.5.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-store": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.5",
+    "@types/node": "^22.20.0",
+    "@types/react": "~18.3.31",
+    "@dsh-ai-providers/core": "workspace:0.5.0",
+    "@dsh-ai-providers/systemone": "workspace:0.5.0",
+    "lightningcss": "^1.33.0",
+    "react": "^18.3.1",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

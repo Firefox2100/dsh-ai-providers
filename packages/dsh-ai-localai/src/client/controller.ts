@@ -9,9 +9,10 @@ import type { OpenAiConnectionConfig, OpenAiLlmRouteConfig } from '@dsh-ai-provi
 
 export interface Settings {
   connections?: OpenAiConnectionConfig[]
-  embeddingConnection?: string; rerankConnection?: string; ttsConnection?: string; sttConnection?: string; imageConnection?: string
+  embeddingConnection?: string; rerankConnection?: string; ttsConnection?: string; sttConnection?: string; imageConnection?: string; decisionConnection?: string
   embeddingModel?: string; embeddingDimensions?: number; embeddingBody?: Record<string, unknown>
   rerankModel?: string; rerankBody?: Record<string, unknown>
+  decisionModel?: string; decisionBody?: Record<string, unknown>
   ttsModel?: string; ttsVoice?: string; ttsResponseFormat?: string; ttsSpeed?: number; ttsBody?: Record<string, unknown>
   sttModel?: string; sttRealtimeModel?: string
   imageModel?: string; imageSize?: string; imageQuality?: string; imageOutputFormat?: string; imageOutputCompression?: number
@@ -19,9 +20,9 @@ export interface Settings {
   llmRoutes?: OpenAiLlmRouteConfig[]; llmIdleTimeoutMs?: number; batchSize?: number; timeoutMs?: number
 }
 
-type TextKey = 'embeddingConnection' | 'rerankConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection' | 'embeddingModel' | 'rerankModel' | 'ttsModel' | 'ttsVoice' | 'ttsResponseFormat' | 'sttModel' | 'sttRealtimeModel' | 'imageModel' | 'imageSize' | 'imageQuality' | 'imageOutputFormat' | 'imageReferences'
+type TextKey = 'embeddingConnection' | 'rerankConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection' | 'decisionConnection' | 'embeddingModel' | 'rerankModel' | 'decisionModel' | 'ttsModel' | 'ttsVoice' | 'ttsResponseFormat' | 'sttModel' | 'sttRealtimeModel' | 'imageModel' | 'imageSize' | 'imageQuality' | 'imageOutputFormat' | 'imageReferences'
 type NumberKey = 'embeddingDimensions' | 'ttsSpeed' | 'imageOutputCompression' | 'imageHighresScale' | 'imageHighresSteps' | 'llmIdleTimeoutMs' | 'batchSize' | 'timeoutMs'
-type JsonKey = 'embeddingBody' | 'rerankBody' | 'ttsBody' | 'imageBody'
+type JsonKey = 'embeddingBody' | 'rerankBody' | 'decisionBody' | 'ttsBody' | 'imageBody'
 export type FieldKey = TextKey | NumberKey | JsonKey
 
 export interface State extends SettingsFormShell {
@@ -56,9 +57,9 @@ const listField = (field: string): SettingsFieldSpec => ({
   },
 })
 
-const TEXT_FIELDS: readonly TextKey[] = ['embeddingConnection', 'rerankConnection', 'ttsConnection', 'sttConnection', 'imageConnection', 'embeddingModel', 'rerankModel', 'ttsModel', 'ttsVoice', 'ttsResponseFormat', 'sttModel', 'sttRealtimeModel', 'imageModel', 'imageSize', 'imageQuality', 'imageOutputFormat', 'imageReferences']
+const TEXT_FIELDS: readonly TextKey[] = ['embeddingConnection', 'rerankConnection', 'ttsConnection', 'sttConnection', 'imageConnection', 'decisionConnection', 'embeddingModel', 'rerankModel', 'decisionModel', 'ttsModel', 'ttsVoice', 'ttsResponseFormat', 'sttModel', 'sttRealtimeModel', 'imageModel', 'imageSize', 'imageQuality', 'imageOutputFormat', 'imageReferences']
 const NUMBER_FIELDS: readonly NumberKey[] = ['embeddingDimensions', 'ttsSpeed', 'imageOutputCompression', 'imageHighresScale', 'imageHighresSteps', 'llmIdleTimeoutMs', 'batchSize', 'timeoutMs']
-const JSON_FIELDS: readonly JsonKey[] = ['embeddingBody', 'rerankBody', 'ttsBody', 'imageBody']
+const JSON_FIELDS: readonly JsonKey[] = ['embeddingBody', 'rerankBody', 'decisionBody', 'ttsBody', 'imageBody']
 
 export class Controller {
   private readonly form: SettingsFormModel<Settings>
@@ -100,7 +101,7 @@ export class Controller {
       updateConnection: (id, field, value) => { this.setConnections(this.connections().map(connection => connection.id === id ? { ...connection, [field]: value } : connection)) },
       removeConnection: id => {
         this.setConnections(this.connections().filter(connection => connection.id !== id))
-        for (const capability of ['embedding', 'rerank', 'tts', 'stt', 'image'] as const) if (this.form.field(`${capability}Connection`).text === id) this.form.actions().edit(`${capability}Connection`, '')
+        for (const capability of ['embedding', 'rerank', 'tts', 'stt', 'image', 'decision'] as const) if (this.form.field(`${capability}Connection`).text === id) this.form.actions().edit(`${capability}Connection`, '')
       },
       saveKey: (id, value) => this.writeKey(id, value),
       setLlmRoutes: routes => { this.form.actions().edit('llmRoutes', JSON.stringify(routes)) },

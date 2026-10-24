@@ -158,8 +158,8 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
     [AI_API_ROUTES.probe]: {
       POST: async (_req, res, url) => {
         const capability = url.searchParams.get('capability')
-        if (capability !== 'embedding' && capability !== 'rerank' && capability !== 'tts' && capability !== 'stt' && capability !== 'image') throw new HttpError(400, 'unknown capability')
-        send(res, 200, capability === 'embedding' ? await probeEmbedding(services, registry) : capability === 'rerank' ? await probeRerank(services, registry) : capability === 'tts' ? await probeTts(services, registry) : capability === 'stt' ? await probeStt(services, registry) : await probeImage(services, registry))
+        if (capability !== 'embedding' && capability !== 'rerank' && capability !== 'tts' && capability !== 'stt' && capability !== 'image' && capability !== 'decision') throw new HttpError(400, 'unknown capability')
+        send(res, 200, capability === 'embedding' ? await probeEmbedding(services, registry) : capability === 'rerank' ? await probeRerank(services, registry) : capability === 'tts' ? await probeTts(services, registry) : capability === 'stt' ? await probeStt(services, registry) : capability === 'image' ? await probeImage(services, registry) : await probeDecision(services, registry))
       },
     },
   }
@@ -300,6 +300,26 @@ export async function probeImage(services: AiServices, registry: AiProviders): P
     const service = factory()
     const answer = await service.generate('A small red circle centered on a plain white background.')
     if (answer.images[0]?.data.size === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned no image data` }
+    return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
+  } catch (error) {
+    if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
+    return { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+/** Ask the selected provider two questions it can only answer one way, and report it as the user would meet it: a customer who was charged twice is angry and writes about billing. */
+export async function probeDecision(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
+  const id = services.selected('decision')
+  const factory = id === '' ? undefined : registry.get(id)?.capabilities.decision
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no decision provider is selected, or the selected one is not loaded' }
+  const started = performance.now()
+  try {
+    const service = factory()
+    const answer = await service.decide('Customer: I was charged twice for the same order and nobody answers my emails. This is unacceptable.', {
+      angry: { type: 'noul', instructions: 'The customer is angry.' },
+      topic: { type: 'choice', instructions: 'What is the message about?', criteria: { billing: 'Being charged, refunds and payments.', shipping: 'Delivery of a parcel and where it is.', account: 'Signing in, passwords and profile settings.' } },
+    } as const)
+    if (answer.answers.topic.choice !== 'billing' || answer.answers.angry.probability < 0.5) return { ok: false, code: 'unavailable', message: `${service.provider} decided oddly: the customer charged twice and ignored was not found angry and writing about billing` }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }

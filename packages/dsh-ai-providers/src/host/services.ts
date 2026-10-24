@@ -8,6 +8,7 @@ import { ConfiguredRerank } from './rerank.ts'
 import { ConfiguredTts } from './tts.ts'
 import { ConfiguredStt } from './stt.ts'
 import { ConfiguredImageGeneration } from './image.ts'
+import { ConfiguredDecision } from './decision.ts'
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
 
@@ -23,6 +24,7 @@ export class AiServices {
   readonly tts: ConfiguredTts
   readonly stt: ConfiguredStt
   readonly image: ConfiguredImageGeneration
+  readonly decision: ConfiguredDecision
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config, gate?: RequestGate) {
     for (const capability of CAPABILITIES) ctx.provide(SERVICE_NAMES[capability])
@@ -37,6 +39,7 @@ export class AiServices {
     this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry, ...gate === undefined ? {} : { gate } })
     this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry, ...gate === undefined ? {} : { gate } })
     this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry, ...gate === undefined ? {} : { gate } })
+    this.decision = new ConfiguredDecision({ selected: () => config.decision.get(), registry, ...gate === undefined ? {} : { gate } })
     this.sync()
     ctx.effect(() => registry.subscribe(() => { this.sync() }), 'dsh-ai-providers: providers changed')
     ctx.on('loader/volatile-update', () => { this.sync() })
@@ -58,7 +61,7 @@ export class AiServices {
       const name = SERVICE_NAMES[capability]
       const offered = selected !== '' && this.registry.get(selected)?.capabilities[capability] !== undefined
       const present = this.ctx.get(name) !== undefined
-      if (offered && !present) this.ctx.set(name, capability === 'embedding' ? this.embedding : capability === 'rerank' ? this.rerank : capability === 'tts' ? this.tts : capability === 'stt' ? this.stt : this.image)
+      if (offered && !present) this.ctx.set(name, this[capability])
       else if (!offered && present) this.ctx.set(name, undefined as never)
     }
     const stt = this.registry.get(this.selected('stt'))?.capabilities.stt?.()

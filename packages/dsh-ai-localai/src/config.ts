@@ -6,6 +6,10 @@ export interface Config extends OpenAiCompatibleConfig {
   rerankConnection: Volatile<string>
   rerankModel: Volatile<string>
   rerankBody: Volatile<Record<string, unknown>>
+  /** The connection that serves decisions (`POST /v1/systemone`), and the decision model installed in LocalAI. */
+  decisionConnection: Volatile<string>
+  decisionModel: Volatile<string>
+  decisionBody: Volatile<Record<string, unknown>>
   embeddingBody: Volatile<Record<string, unknown>>
   ttsBody: Volatile<Record<string, unknown>>
   imageBody: Volatile<Record<string, unknown>>
@@ -33,6 +37,9 @@ export const Config = z.object({
     rerankConnection: z.string().default('localai').volatile(),
     rerankModel: z.string().default('').volatile(),
     rerankBody: z.dict(z.any()).default({}).volatile(),
+    decisionConnection: z.string().default('localai').volatile(),
+    decisionModel: z.string().default('').volatile(),
+    decisionBody: z.dict(z.any()).default({}).volatile(),
     embeddingBody: z.dict(z.any()).default({}).volatile(),
     ttsBody: z.dict(z.any()).default({}).volatile(),
     imageBody: z.dict(z.any()).default({}).volatile(),

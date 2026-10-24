@@ -6,6 +6,7 @@
     "paths": {
       "@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"],
       "@dsh-ai-providers/openai-compatible": ["../dsh-ai-openai-compatible/src/index.ts"],
+      "@dsh-ai-providers/systemone": ["../dsh-ai-systemone/src/index.ts"],
       "@dsh-ai-providers/openai-compatible/config": ["../dsh-ai-openai-compatible/src/config.ts"]
     }
   },

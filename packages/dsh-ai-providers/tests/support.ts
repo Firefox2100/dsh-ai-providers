@@ -1,5 +1,5 @@
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmModelSpec, LlmRouteSpec, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
+import { DecisionService, EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmModelSpec, LlmRouteSpec, type DecisionOptions, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {
@@ -53,11 +53,39 @@ export class FakeStt extends SttService {
   }
 }
 
-export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank, tts?: FakeTts, stt?: FakeStt): AiProvider => ({
+/** Answers a noul with a fixed probability and a choice with the option whose words the state shares most. */
+export class FakeDecision extends DecisionService {
+  readonly provider = 'fake'
+  model = 'decide-1'
+  calls: { state: DecisionState; questions: DecisionQuestions; options: DecisionOptions }[] = []
+  failWith: Error | undefined
+  noul = 0.9
+  /** What to answer instead of the scores, to test a provider that misbehaves. */
+  answers: Record<string, unknown> | undefined
+
+  decide<Questions extends DecisionQuestions>(state: DecisionState, questions: Questions, options: DecisionOptions = {}): Promise<DecisionResult<Questions>> {
+    this.calls.push({ state, questions, options })
+    if (this.failWith !== undefined) return Promise.reject(this.failWith)
+    if (this.answers !== undefined) return Promise.resolve({ answers: this.answers as never, model: this.model })
+    const words = new Set(JSON.stringify(state).toLowerCase().split(/\W+/))
+    const answers = Object.fromEntries(Object.entries(questions).map(([name, question]) => {
+      if (question.type === 'noul') return [name, { type: 'noul', probability: this.noul }]
+      if (question.type === 'score') return [name, { type: 'score', score: 0, confidence: 1, probabilities: question.criteria.map((_level, index) => (index === 0 ? 1 : 0)) }]
+      const shared = Object.entries(question.criteria).map(([key, description]) => [key, 0.01 + `${key} ${description}`.toLowerCase().split(/\W+/).filter(word => word.length > 3 && words.has(word)).length] as const)
+      const total = shared.reduce((sum, [, weight]) => sum + weight, 0)
+      const probabilities = Object.fromEntries(shared.map(([key, weight]) => [key, weight / total]))
+      const [choice] = [...shared].sort((a, b) => b[1] - a[1])[0]!
+      return [name, { type: 'choice', choice, confidence: probabilities[choice]!, probabilities }]
+    }))
+    return Promise.resolve({ answers: answers as never, model: this.model, tokens: 12 })
+  }
+}
+
+export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank, tts?: FakeTts, stt?: FakeStt, decision?: FakeDecision): AiProvider => ({
   id,
   label: id.toUpperCase(),
   configEntryId: `ai-${id}`,
-  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }), ...(tts === undefined ? {} : { tts: () => tts }), ...(stt === undefined ? {} : { stt: () => stt }) },
+  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }), ...(tts === undefined ? {} : { tts: () => tts }), ...(stt === undefined ? {} : { stt: () => stt }), ...(decision === undefined ? {} : { decision: () => decision }) },
 })
 
 export const settle = (ms = 30): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))

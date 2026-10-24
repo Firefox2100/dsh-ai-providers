@@ -3,16 +3,17 @@ import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Context } from '@deepseek-ai/cordis'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApiHandler, probeEmbedding, probeRerank } from '../src/host/http.ts'
+import { createApiHandler, probeDecision, probeEmbedding, probeRerank } from '../src/host/http.ts'
 import { AiProviders } from '../src/host/registry.ts'
 import { AiServices } from '../src/host/services.ts'
-import { FakeEmbedding, FakeRerank, providerOf } from './support.ts'
+import { FakeDecision, FakeEmbedding, FakeRerank, providerOf } from './support.ts'
 
 let ctx: Context
 let registry: AiProviders
 let services: AiServices
 let service: FakeEmbedding
 let ranker: FakeRerank
+let decider: FakeDecision
 let reranking: string
 let selected: string
 let rejection: 401 | 403 | undefined
@@ -26,12 +27,14 @@ beforeEach(() => {
   reranking = 'ranks'
   services = new AiServices(ctx, registry, {
     embedding: { get: () => selected }, rerank: { get: () => reranking },
-    tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, holdSeconds: { get: () => 300 },
+    tts: { get: () => '' }, stt: { get: () => '' }, image: { get: () => '' }, decision: { get: () => 'decides' }, holdSeconds: { get: () => 300 },
   } as never)
   service = new FakeEmbedding()
   ranker = new FakeRerank()
+  decider = new FakeDecision()
   registry.register(providerOf('fake', service))
   registry.register(providerOf('ranks', undefined, ranker))
+  registry.register(providerOf('decides', undefined, undefined, undefined, undefined, decider))
   registry.register(providerOf('plain', undefined))
   rejection = undefined
   stored = new Map()
@@ -76,6 +79,7 @@ describe('the API', () => {
       { capability: 'tts', providers: [], available: false },
       { capability: 'stt', providers: [], available: false },
       { capability: 'image', providers: [], available: false },
+      { capability: 'decision', providers: [{ id: 'decides', label: 'DECIDES', configEntryId: 'ai-decides' }], selected: 'decides', available: true },
     ] })
     registry.register({ ...providerOf('tuned', service), requestOptions: { embedding: [{ key: 'dimensions', type: 'integer', label: 'Dimensions', min: 1, atStart: true }] } })
     const listed = ((await call('GET', '/capabilities')).body as { capabilities: { providers: { id: string; requestOptions?: unknown }[] }[] }).capabilities[0]!.providers
@@ -125,5 +129,20 @@ describe('testing the rerank provider', () => {
     ranker.answer = undefined
     ranker.failWith = Object.assign(new Error('bad key'), { name: 'AiError' })
     expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'internal' })
+  })
+})
+
+describe('testing the decision provider', () => {
+  it('asks it two questions with one right answer and reports what a user would see', async () => {
+    const ok = (await call('POST', '/probe?capability=decision')).body as { ok: boolean; provider: string; model: string }
+    expect([ok.ok, ok.provider, ok.model]).toEqual([true, 'fake', 'decide-1'])
+    expect(decider.calls[0]?.questions).toHaveProperty('topic')
+  })
+
+  it('says so when the provider decides oddly or fails', async () => {
+    decider.noul = 0.1
+    expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('decided oddly') })
+    decider.failWith = Object.assign(new Error('no key'), { name: 'AiError' })
+    expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'internal' })
   })
 })

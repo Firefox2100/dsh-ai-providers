@@ -9,6 +9,7 @@ export { EmbeddingService, type EmbedOptions, type EmbeddingInputType, type Embe
 export { RerankService, type RerankedDocument, type RerankOptions, type RerankResult } from './rerank.ts'
 export { TtsService, type TtsOptions, type TtsResult, type TtsVoice } from './tts.ts'
 export { SttService, supportsStreamingStt, type SpeechInput, type SpeechProviderInfo, type StreamingSttService, type Transcript, type SttLiveEvent, type SttLiveOptions, type SttLiveSession } from './stt.ts'
+export { DecisionService, MAX_SCORE_LEVELS, validateDecisionRequest, type AnswerOf, type ChoiceAnswer, type ChoiceQuestion, type DecisionAnswers, type DecisionOptions, type DecisionQuestion, type DecisionQuestions, type DecisionResult, type DecisionState, type NoulAnswer, type NoulQuestion, type ScoreAnswer, type ScoreQuestion } from './decision.ts'
 export { ImageGenerationService, type GeneratedImage, type ImageGenerationOptions, type ImageGenerationResult, type ImageReference } from './image.ts'
 export { localized, type LocalizedText, type RequestOption } from './options.ts'
 export { cosineSimilarity } from './similarity.ts'

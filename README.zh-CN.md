@@ -10,6 +10,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 
 - 语言模型；
 - 嵌入和重排序；
+- 决策（带类型的答案，以概率给出）；
 - 文本转语音和语音转文本；
 - 图像生成。
 
@@ -42,6 +43,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
     +-- Cohere
     +-- DashScope
     +-- Jina
+    +-- TypeSafe
 ```
 
 消费方插件依赖公共契约，而不是某个供应商包。运行时公开当前配置所选择的服务，并应用共用的并发控制。连接、请求默认值和供应商特有设置仍由各供应商包负责。
@@ -64,13 +66,15 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 | `@dsh-ai-providers/openai-compatible` | 可复用的 OpenAI 兼容传输实现；它不是插件 |
 | `@dsh-ai-providers/runtime` | 供应商注册、服务选择、并发控制、API 路由和设置界面 |
 | `@dsh-ai-providers/openai` | OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成 |
-| `@dsh-ai-providers/localai` | LocalAI 的语言模型、嵌入、重排序、TTS、文件及实时 STT 和图像生成 |
+| `@dsh-ai-providers/localai` | LocalAI 的语言模型、嵌入、重排序、决策、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/anthropic` | 通过 Anthropic Messages API 提供语言模型 |
 | `@dsh-ai-providers/ollama` | 通过 Ollama 原生 API 提供语言模型和嵌入 |
 | `@dsh-ai-providers/cohere` | 通过 Cohere 原生 API 提供语言模型、嵌入和重排序 |
 | `@dsh-ai-providers/dashscope` | 通过阿里云 DashScope（通义千问）原生 API 提供语言模型、嵌入、重排序、语音和图像 |
 | `@dsh-ai-providers/jina` | 通过 Jina API 提供重排序和嵌入 |
+| `@dsh-ai-providers/typesafe` | 通过 TypeSafe 托管的 Jev 模型提供决策 |
 | `@dsh-ai-providers/jina-cohere` | 可复用的 Jina 与 Cohere 风格重排序和嵌入传输层；不是插件 |
+| `@dsh-ai-providers/systemone` | 可复用的 System One 决策传输层；不是插件 |
 | `@dsh-ai-providers/all` | 仅包含元数据的 DSH 安装包，集合本项目维护的运行时和全部供应商插件 |
 
 各供应商的配置和能力范围请参阅对应指南：
@@ -82,6 +86,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 - [Cohere](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/cohere)
 - [DashScope](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/dashscope)
 - [Jina](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/jina)
+- [TypeSafe](https://firefox2100.github.io/dsh-ai-providers/zh-Hans/docs/official-providers/typesafe)
 
 ## 安装
 

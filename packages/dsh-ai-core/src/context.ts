@@ -25,5 +25,7 @@ declare module '@deepseek-ai/cordis' {
     streamingSpeechToText: StreamingSttService
     /** The image generation service the profile has selected. */
     imageGeneration: CapabilityServices['image']
+    /** The decision service the profile has selected: typed questions answered in one pass, as probabilities. Exists only while its provider is selected and loaded. */
+    decisions: CapabilityServices['decision']
   }
 }

@@ -1,14 +1,14 @@
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as plugin from '../src/index.ts'
-import { FakeEmbedding, FakeRerank, FakeStt, FakeTts, providerOf, settle } from './support.ts'
+import { FakeDecision, FakeEmbedding, FakeRerank, FakeStt, FakeTts, providerOf, settle } from './support.ts'
 
 let ctx: Context
-let selection: Record<'embedding' | 'rerank' | 'tts' | 'stt' | 'image', string>
-const config = (embedding: string, rerank = '', tts = '', stt = '') => {
-  selection = { embedding, rerank, tts, stt, image: '' }
+let selection: Record<'embedding' | 'rerank' | 'tts' | 'stt' | 'image' | 'decision', string>
+const config = (embedding: string, rerank = '', tts = '', stt = '', decision = '') => {
+  selection = { embedding, rerank, tts, stt, image: '', decision }
   const field = (key: keyof typeof selection) => ({ get: () => selection[key] })
-  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 } }
+  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), decision: field('decision'), holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 } }
 }
 
 beforeEach(() => { ctx = new Context() })
@@ -19,6 +19,11 @@ const edited = (): void => { (ctx as unknown as { emit(name: string): void }).em
 
 async function load(embedding: string, rerank = '', tts = ''): Promise<void> {
   plugin.apply(ctx as never, config(embedding, rerank, tts) as never)
+  await settle()
+}
+
+async function loadWithDecision(decision: string): Promise<void> {
+  plugin.apply(ctx as never, config('', '', '', '', decision) as never)
   await settle()
 }
 
@@ -88,6 +93,25 @@ describe('the rerank service on the context', () => {
     ctx.aiProviders.register(providerOf('other', undefined, new FakeRerank()))
     expect(ctx.get('embeddings')).toBeDefined()
     expect(ctx.get('rerankers')).toBeDefined()
+  })
+})
+
+describe('the decision service on the context', () => {
+  it('is there while a provider that offers decisions is selected and loaded, and follows the selection and the provider', async () => {
+    await loadWithDecision('fake')
+    expect(ctx.get('decisions')).toBeUndefined()
+    const remove = ctx.aiProviders.register(providerOf('fake', undefined, undefined, undefined, undefined, new FakeDecision()))
+    expect(ctx.decisions).toBeInstanceOf(plugin.ConfiguredDecision)
+    expect(ctx.get('embeddings')).toBeUndefined()
+    const { answers } = await ctx.decisions.decide('I need a refund for a double charge.', { topic: { type: 'choice', instructions: 'About?', criteria: { billing: 'charge refund payment', bug: 'a fault in the product' } } } as const)
+    expect(answers.topic.choice).toBe('billing')
+    remove()
+    expect(ctx.get('decisions')).toBeUndefined()
+    ctx.aiProviders.register(providerOf('fake', undefined, undefined, undefined, undefined, new FakeDecision()))
+    expect(ctx.get('decisions')).toBeDefined()
+    selection.decision = ''
+    edited()
+    expect(ctx.get('decisions')).toBeUndefined()
   })
 })
 

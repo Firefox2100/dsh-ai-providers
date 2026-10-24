@@ -15,3 +15,5 @@
       name: '@dsh-ai-providers/cohere'
     - id: ai-dashscope
       name: '@dsh-ai-providers/dashscope'
+    - id: ai-typesafe
+      name: '@dsh-ai-providers/typesafe'

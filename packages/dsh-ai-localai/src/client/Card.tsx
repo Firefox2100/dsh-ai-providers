@@ -3,16 +3,17 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type { Face, FieldKey } from './controller.ts'
 import css from './Card.module.css'
 
-type Capability = 'embedding' | 'rerank' | 'tts' | 'stt' | 'image'
+type Capability = 'embedding' | 'rerank' | 'tts' | 'stt' | 'image' | 'decision'
 type Props = PropsRuntime<'ai.provider.embedding'> & PropsLocale<'ai.localai'> & InjectFace<Face>
 type T = Props['t']
 
 const CONNECTION_FIELD: Record<Capability, FieldKey> = {
-  embedding: 'embeddingConnection', rerank: 'rerankConnection', tts: 'ttsConnection', stt: 'sttConnection', image: 'imageConnection',
+  embedding: 'embeddingConnection', rerank: 'rerankConnection', tts: 'ttsConnection', stt: 'sttConnection', image: 'imageConnection', decision: 'decisionConnection',
 }
 const SERVICE_FIELDS: Record<Capability, readonly [FieldKey, string, boolean?][]> = {
   embedding: [['embeddingModel', 'embeddingModel'], ['embeddingDimensions', 'embeddingDimensions', true], ['batchSize', 'batchSize', true], ['embeddingBody', 'requestBody']],
   rerank: [['rerankModel', 'rerankModel'], ['rerankBody', 'requestBody']],
+  decision: [['decisionModel', 'decisionModel'], ['decisionBody', 'requestBody']],
   tts: [['ttsModel', 'ttsModel'], ['ttsVoice', 'ttsVoice'], ['ttsResponseFormat', 'ttsResponseFormat'], ['ttsSpeed', 'ttsSpeed', true], ['ttsBody', 'requestBody']],
   stt: [['sttModel', 'sttModel'], ['sttRealtimeModel', 'sttRealtimeModel']],
   image: [['imageModel', 'imageModel'], ['imageSize', 'imageSize'], ['imageQuality', 'imageQuality'], ['imageOutputFormat', 'imageOutputFormat'], ['imageOutputCompression', 'imageOutputCompression', true], ['imageReferences', 'imageReferences'], ['imageHighresScale', 'imageHighresScale', true], ['imageHighresSteps', 'imageHighresSteps', true], ['imageBody', 'requestBody']],

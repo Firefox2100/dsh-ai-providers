@@ -1,8 +1,8 @@
 # @dsh-ai-providers/localai
 
-Dedicated LocalAI language model, embedding, reranking, speech, and image generation services for DeepSeek Harness, including LocalAI-specific controls.
+Dedicated LocalAI language model, embedding, reranking, decision, speech, and image generation services for DeepSeek Harness, including LocalAI-specific controls.
 
-It lets users configure a LocalAI connection and credential once, then reuse them across consumer plugins and capabilities. It supports LocalAI's OpenAI-compatible endpoints while retaining LocalAI-specific sampling fields, request bodies, defaults, and native reranking. It shares only the neutral wire implementation with the OpenAI provider and does not depend on that plugin.
+It lets users configure a LocalAI connection and credential once, then reuse them across consumer plugins and capabilities. It supports LocalAI's OpenAI-compatible endpoints while retaining LocalAI-specific sampling fields, request bodies, defaults, native reranking, and System One decision models. It shares neutral protocol libraries with the OpenAI and TypeSafe providers and does not depend on either vendor plugin.
 
 Installing it alone does not start LocalAI or make requests; a consumer plugin must request one of the services.
 

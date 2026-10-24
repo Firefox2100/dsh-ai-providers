@@ -1,0 +1,3 @@
+- insert:
+    - id: ai-typesafe
+      name: '@dsh-ai-providers/typesafe'

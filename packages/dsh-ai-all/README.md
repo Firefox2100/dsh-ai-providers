@@ -2,7 +2,7 @@
 
 The complete AI provider foundation for DeepSeek Harness (DSH), maintained by Firefox2100 as part of the dsh-ai-providers project.
 
-It installs the shared runtime plus the OpenAI, LocalAI, Anthropic, Ollama, Cohere, DashScope, and Jina provider plugins. Users configure each connection and DSH-managed credential once, then plugins can reuse it across language models, retrieval, speech, and image generation.
+It installs the shared runtime plus the OpenAI, LocalAI, Anthropic, Ollama, Cohere, DashScope, Jina, and TypeSafe provider plugins. Users configure each connection and DSH-managed credential once, then plugins can reuse it across language models, retrieval, decisions, speech, and image generation.
 
 This package contains bundle metadata only; it has no JavaScript API. Installing it alone does not add an assistant or make AI requests. It supplies capabilities to other DSH plugins that consume the shared services.
 
