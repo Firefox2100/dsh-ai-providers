@@ -9,7 +9,7 @@ Install the bundle into the target profile:
 dsh plugin --profile <profile> add @dsh-ai-providers/all
 ```
 
-The bundle installs the runtime plus the OpenAI, LocalAI, Anthropic, Ollama, Cohere, and Jina packages. Restart the profile after installation so DSH can load their configuration rows and settings pages.
+The bundle installs the runtime plus the OpenAI, LocalAI, Anthropic, Ollama, Cohere, DashScope, Jina, and TypeSafe packages. Restart the profile after installation so DSH can load their configuration rows and settings pages.
 
 The bundle does not add an assistant or send requests on its own. Configure the providers you need, then use a plugin that consumes their services.
 
@@ -26,11 +26,11 @@ dsh plugin --profile <profile> add @dsh-ai-providers/localai
 
 Every vendor package depends on the runtime package so its module is installed, but DSH activates bundle layers explicitly: installing a vendor does not implicitly enable the runtime bundle. Each vendor bundle contributes only its own row, so any number of providers can be combined without loading the runtime twice.
 
-`@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. `@dsh-ai-providers/openai-compatible` is an implementation library shared by the OpenAI and LocalAI packages. `@dsh-ai-providers/jina-cohere` similarly contains transports shared by the Jina and Cohere packages. Neither library is loaded as a DSH plugin.
+`@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. Three implementation libraries are installed only as dependencies. `@dsh-ai-providers/openai-compatible` serves OpenAI and LocalAI, `@dsh-ai-providers/jina-cohere` serves Jina and Cohere, and `@dsh-ai-providers/systemone` serves TypeSafe and LocalAI decisions. None of these libraries adds a DSH plugin row.
 
 ## Requirements
 
-- DeepSeek Harness 0.2.x
+- A DSH release accepted by the packages' `engines.dsh` range (currently `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`)
 - Node.js 22 or later
 - A DSH profile with the web UI for interactive configuration
 

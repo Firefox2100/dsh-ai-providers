@@ -28,6 +28,7 @@ The runtime exposes service facades for the selected providers:
 | `ctx.apiSpeechToText` | File transcription |
 | `ctx.streamingSpeechToText` | Live transcription, when supported |
 | `ctx.imageGeneration` | Image generation |
+| `ctx.decisions` | Decisions |
 
 The facades resolve the current provider on each call. Configuration changes therefore take effect without rebuilding dependent plugins.
 

@@ -35,12 +35,13 @@ const sidebars: SidebarsConfig = {
         'services/text-to-speech',
         'services/speech-to-text',
         'services/image-generation',
+        'services/decisions',
       ],
     },
     {
       type: 'category',
       label: 'Project-maintained providers',
-      items: ['official-providers/openai', 'official-providers/localai', 'official-providers/anthropic', 'official-providers/ollama', 'official-providers/cohere', 'official-providers/jina'],
+      items: ['official-providers/openai', 'official-providers/localai', 'official-providers/anthropic', 'official-providers/ollama', 'official-providers/cohere', 'official-providers/dashscope', 'official-providers/jina', 'official-providers/typesafe'],
     },
     {
       type: 'category',

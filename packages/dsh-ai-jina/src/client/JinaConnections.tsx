@@ -47,7 +47,7 @@ function ConnectionRow(props: JinaConnectionsProps & { connection: { id: string;
       disabled={disabled || saving || status?.writable === false || connection.apiKeyRef.trim() === ''} text={key}
       configured={status?.configured ?? false} stateLabel={status?.configured === true ? t('apiKeySet') : t('apiKeyUnset')} onEdit={setKey} />
     <div className={css.actions}>
-      <Button variant="outline" size="sm" disabled={key.trim() === '' || saving || status?.writable === false} onClick={() => { void saveKey() }}>{saving ? t('saving') : t('apiKeySave')}</Button>
+      <Button variant="outline" size="sm" disabled={disabled || key.trim() === '' || saving || status?.writable === false} onClick={() => { void saveKey() }}>{saving ? t('saving') : t('apiKeySave')}</Button>
       <Button variant="outline" size="sm" disabled={disabled} onClick={() => { props.removeConnection(connection.id) }}>{t('connectionRemove')}</Button>
     </div>
   </section>

@@ -1,6 +1,6 @@
 ---
 title: Jina
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 `@dsh-ai-providers/jina` 是 Firefox2100 在本项目中维护的 Jina AI 提供方，提供重排和嵌入。它不是 DSH 或 Jina AI 官方软件包。
@@ -45,6 +45,8 @@ sidebar_position: 6
 ## 重排
 
 请求包含 `model`、`query`、`documents`、可选 `top_n` 及 `return_documents: false`。响应可使用 `relevance_score` 或 `score`，有用量信息时会读取。服务会拒绝空查询和空文档，按分数从高到低排序，并用 logistic 函数把超出 0 到 1 的原始分数归一化，同时保持其顺序。
+
+Jina 的重排接口除 `top_n` 和 `return_documents` 外没有其他参数，因此该提供方不描述重排请求选项。`jina-reranker-m0` 还能对图像排序，但重排契约只承载文本，所以文档始终是文本。
 
 每条结果都必须用索引指明对应的输入文档。超出候选列表的索引、缺失或非数值分数都属于格式错误，会使调用失败。Jina 与 Cohere 并不保证模型、限制或分数校准一致：候选集应保持在服务限制内，分数只应在同一次响应内比较。
 

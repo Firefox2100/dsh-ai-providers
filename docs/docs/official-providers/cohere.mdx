@@ -59,6 +59,8 @@ Reasoning levels are request fragments, for example `{ "thinking": { "type": "en
 
 Select Cohere in the **Embedding** or **Reranking** tab. Embeddings default to `embed-v4.0` in batches of 96, the most Cohere accepts; the consumer's query or document choice is sent as `search_query` or `search_document`, and texts without a choice are sent as documents. **Vector dimensions** works for embed-v4 and newer. Reranking defaults to `rerank-v3.5`, with an optional limit on tokens read per document (`max_tokens_per_doc`). Cohere's v2 rerank has no `return_documents`, so it is not sent.
 
+Two request options let a consumer change this per call. `maxTokensPerDoc` overrides the configured limit (Cohere's own default is 4096). `queuePriority` is sent as Cohere's `priority`, where lower numbers are served first; it is separate from the foreground/background priority the concurrency gate uses. `relevant_spans`, which newer rerank models can return, is not exposed, because the result contract has only an index and a score per document.
+
 ## Errors and cancellation
 
 HTTP and stream failures are mapped to DSH language-model failure classes: authentication, rate limiting, payment or usage limits, invalid requests, context overflow (including Cohere's "too many tokens" answer), server failures, timeout, and cancellation. A message that ends with `ERROR` or `TIMEOUT` is raised as such.

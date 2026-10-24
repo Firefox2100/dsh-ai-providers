@@ -12,6 +12,7 @@ It currently covers:
 
 - language models;
 - embeddings and reranking;
+- typed, probability-backed decisions;
 - text-to-speech and speech-to-text;
 - image generation.
 
@@ -44,6 +45,7 @@ consumer plugin
       +-- Cohere
       +-- DashScope
       +-- Jina
+      +-- TypeSafe
 ```
 
 Consumer plugins depend on the contracts, not a particular vendor package. The runtime exposes the provider selected in the profile and applies shared concurrency controls. Provider packages keep ownership of their connections, request defaults, and vendor-specific settings.
@@ -66,13 +68,15 @@ Consumer plugins depend on the contracts, not a particular vendor package. The r
 | `@dsh-ai-providers/openai-compatible` | Reusable OpenAI-compatible wire transports; not a plugin |
 | `@dsh-ai-providers/runtime` | Provider registry, service selection, concurrency control, API routes, and settings UI |
 | `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
-| `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, TTS, file and live STT, and image generation |
+| `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, decisions, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
 | `@dsh-ai-providers/ollama` | Language models and embeddings through Ollama's native API |
 | `@dsh-ai-providers/cohere` | Language models, embeddings, and reranking through Cohere's native API |
 | `@dsh-ai-providers/dashscope` | Language models, embeddings, reranking, speech, and images through Alibaba Cloud DashScope's native API (Qwen) |
 | `@dsh-ai-providers/jina` | Reranking and embeddings through Jina's API |
+| `@dsh-ai-providers/typesafe` | Decisions from TypeSafe's hosted Jev model |
 | `@dsh-ai-providers/jina-cohere` | Reusable Jina- and Cohere-style rerank and embedding transports; not a plugin |
+| `@dsh-ai-providers/systemone` | Reusable System One decision transport; not a plugin |
 | `@dsh-ai-providers/all` | Metadata-only DSH bundle containing the runtime and every provider maintained by this project |
 
 See the individual provider guides for configuration and supported features:
@@ -84,6 +88,7 @@ See the individual provider guides for configuration and supported features:
 - [Cohere](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/cohere)
 - [DashScope](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/dashscope)
 - [Jina](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina)
+- [TypeSafe](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/typesafe)
 
 ## Installation
 

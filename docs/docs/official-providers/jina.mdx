@@ -1,6 +1,6 @@
 ---
 title: Jina
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 `@dsh-ai-providers/jina` is the Jina AI provider maintained by Firefox2100 as part of this project. It supplies reranking and embeddings. It is not an official DSH or Jina AI package.
@@ -45,6 +45,8 @@ Vectors of different sizes or models cannot be compared, so choose the dimension
 ## Reranking
 
 Requests contain `model`, `query`, `documents`, optional `top_n`, and `return_documents: false`. Responses may use either `relevance_score` or `score`. Token usage is read when present. The service rejects empty queries and documents, sorts results by descending score, and normalizes raw logits outside 0 to 1 through a logistic function, which keeps their order.
+
+Jina's rerank API takes nothing beyond `top_n` and `return_documents`, so this provider describes no rerank request options. `jina-reranker-m0` can also rank images, but the rerank contract carries text only, so documents are always text.
 
 Every result must identify its input document by index. Indices outside the submitted list, missing scores, or non-numeric scores are malformed responses and fail the call. Jina and Cohere do not promise identical models, limits, or score calibration: keep candidate sets within the service's limits and compare scores only within one response.
 

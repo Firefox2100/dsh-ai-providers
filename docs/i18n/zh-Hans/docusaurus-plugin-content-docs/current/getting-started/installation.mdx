@@ -9,7 +9,7 @@ sidebar_position: 1
 dsh plugin --profile <配置档案> add @dsh-ai-providers/all
 ```
 
-软件包组合会安装运行时以及 OpenAI、LocalAI、Anthropic、Ollama、Cohere 和 Jina 软件包。安装后重启该配置档案，让 DSH 加载相应的配置行和设置页面。
+软件包组合会安装运行时以及 OpenAI、LocalAI、Anthropic、Ollama、Cohere、DashScope、Jina 和 TypeSafe 软件包。安装后重启该配置档案，让 DSH 加载相应的配置行和设置页面。
 
 该组合本身不会增加 AI 助手，也不会主动发起请求。请配置所需的提供方，再使用会调用这些服务的插件。
 
@@ -26,11 +26,11 @@ dsh plugin --profile <配置档案> add @dsh-ai-providers/localai
 
 每个厂商软件包都依赖运行时软件包，因此其模块会一并安装；但 DSH 会显式启用各个 bundle 层，安装厂商软件包不会自动启用运行时 bundle。每个厂商 bundle 只添加自身条目，因此可以组合任意数量的提供方，而不会重复加载运行时。
 
-`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。`@dsh-ai-providers/openai-compatible` 是 OpenAI 与 LocalAI 共享的实现库；`@dsh-ai-providers/jina-cohere` 同样提供 Jina 与 Cohere 共用的传输实现。两者都不会作为 DSH 插件加载。
+`@dsh-ai-providers/core` 提供插件开发所需的接口，运行时包会自动引入它。另有三个实现库只作为依赖安装。`@dsh-ai-providers/openai-compatible` 供 OpenAI 与 LocalAI 使用，`@dsh-ai-providers/jina-cohere` 供 Jina 与 Cohere 使用，`@dsh-ai-providers/systemone` 供 TypeSafe 与 LocalAI 的决策服务使用。这些库都不会添加 DSH 插件条目。
 
 ## 环境要求
 
-- DeepSeek Harness 0.2.x
+- 软件包 `engines.dsh` 范围所接受的 DSH 版本（目前为 `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`）
 - Node.js 22 或更高版本
 - 如需图形化配置，应使用带 Web 界面的 DSH 配置档案
 

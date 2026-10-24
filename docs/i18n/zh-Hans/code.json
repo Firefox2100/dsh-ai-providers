@@ -372,6 +372,8 @@
   "homepage.capability.stt.description": {"message": "提供文件转写与可选的实时转写服务。"},
   "homepage.capability.image.name": {"message": "图像生成"},
   "homepage.capability.image.description": {"message": "返回生成的二进制对象，并支持可选参考图。"},
+  "homepage.capability.decision.name": {"message": "决策"},
+  "homepage.capability.decision.description": {"message": "通过 ctx.decisions 以概率给出带类型的答案。"},
   "homepage.capability.docsAria": {"message": "{name} 文档"},
   "homepage.meta.title": {"message": "面向 DSH 插件的稳定 AI 能力契约"},
   "homepage.meta.description": {"message": "为 DeepSeek Harness 插件开发者提供与厂商无关的语言模型、检索、语音与图像服务。"}

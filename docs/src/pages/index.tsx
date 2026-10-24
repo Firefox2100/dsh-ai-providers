@@ -12,6 +12,7 @@ const capabilities = [
   ['tts', 'Text-to-speech', 'Streaming audio through ctx.textToSpeech.'],
   ['stt', 'Speech-to-text', 'File and optional live transcription services.'],
   ['image', 'Image generation', 'Generated blobs and optional reference images.'],
+  ['decision', 'Decisions', 'Typed answers as probabilities through ctx.decisions.'],
 ] as const;
 
 function capabilityText(key: string, field: 'name' | 'description', message: string): string {
@@ -20,11 +21,13 @@ function capabilityText(key: string, field: 'name' | 'description', message: str
 
 const providers = [
   ['OpenAI-compatible', 'LLM · embed · TTS · STT · image'],
-  ['LocalAI', 'LLM · embed · rerank · TTS · STT · image'],
+  ['LocalAI', 'LLM · embed · rerank · decide · TTS · STT · image'],
   ['Anthropic', 'LLM'],
   ['Ollama', 'LLM · embed'],
   ['Cohere', 'LLM · embed · rerank'],
+  ['DashScope', 'LLM · embed · rerank · TTS · STT · image'],
   ['Jina', 'rerank · embed'],
+  ['TypeSafe', 'decide'],
 ] as const;
 
 function Arrow(): ReactNode {
@@ -43,7 +46,7 @@ function Backplane(): ReactNode {
         <code>await ctx.embeddings.embed(texts)</code>
       </div>
       <div className={styles.providerRail}>
-        <span>OpenAI</span><span>LocalAI</span><span>Anthropic</span><span>Ollama</span><span>Cohere</span><span>Jina</span>
+        <span>OpenAI</span><span>LocalAI</span><span>Anthropic</span><span>Ollama</span><span>Cohere</span><span>DashScope</span><span>Jina</span>
       </div>
       <div className={styles.bus}><span>@dsh-ai-providers/core</span><b><Translate id="homepage.backplane.contract">Stable consumer contract</Translate></b></div>
       <div className={styles.portGrid}>
@@ -106,7 +109,7 @@ function Registry(): ReactNode {
       </div>
       <div className={styles.registry}>
         {capabilities.map(([key, name, description]) => {
-          const slug = key === 'embed' ? 'embeddings' : key === 'rerank' ? 'reranking' : key === 'llm' ? 'language-models' : key === 'tts' ? 'text-to-speech' : key === 'stt' ? 'speech-to-text' : 'image-generation';
+          const slug = key === 'embed' ? 'embeddings' : key === 'rerank' ? 'reranking' : key === 'llm' ? 'language-models' : key === 'tts' ? 'text-to-speech' : key === 'stt' ? 'speech-to-text' : key === 'decision' ? 'decisions' : 'image-generation';
           const localizedName = capabilityText(key, 'name', name);
           return <div className={styles.registryRow} key={key}><code>{key}</code><b>{localizedName}</b><span>{capabilityText(key, 'description', description)}</span><Link to={`/docs/services/${slug}`} aria-label={translate({id: 'homepage.capability.docsAria', message: '{name} documentation'}, {name: localizedName})}><Arrow /></Link></div>;
         })}

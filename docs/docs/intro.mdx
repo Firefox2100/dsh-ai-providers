@@ -8,6 +8,7 @@ DSH AI Providers gives [DeepSeek Harness](https://github.com/DeepSeek-AI/DeepSee
 The current services are:
 
 - embeddings and reranking;
+- typed, probability-backed decisions;
 - text-to-speech and speech-to-text;
 - image generation;
 - language-model routes.
@@ -25,28 +26,52 @@ Provider-specific controls stay with their provider package. The shared contract
 | `@dsh-ai-providers/core` | Provider-neutral contracts, errors, and shared types |
 | `@dsh-ai-providers/openai-compatible` | Shared OpenAI-compatible wire transports; not a plugin |
 | `@dsh-ai-providers/jina-cohere` | Shared Jina- and Cohere-style rerank and embedding transports; not a plugin |
+| `@dsh-ai-providers/systemone` | Shared System One decision transport; not a plugin |
 | `@dsh-ai-providers/runtime` | Provider registry, selected services, settings UI, API routes, and concurrency control |
 | `@dsh-ai-providers/openai` | OpenAI-compatible embeddings, LLM, TTS, STT, and image generation |
-| `@dsh-ai-providers/localai` | LocalAI embeddings, reranking, LLM, TTS, STT, and image generation |
+| `@dsh-ai-providers/localai` | LocalAI embeddings, reranking, decisions, LLM, TTS, STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Anthropic-native language models |
 | `@dsh-ai-providers/ollama` | Ollama-native language models and embeddings |
 | `@dsh-ai-providers/cohere` | Cohere-native language models, embeddings, and reranking |
+| `@dsh-ai-providers/dashscope` | DashScope-native (Qwen) language models, embeddings, reranking, speech, and images |
 | `@dsh-ai-providers/jina` | Jina reranking and embeddings |
+| `@dsh-ai-providers/typesafe` | TypeSafe's Jev decisions |
 | `@dsh-ai-providers/all` | Metadata-only bundle containing the runtime and all providers maintained by this project |
 
-Start with [Installation](./getting-started/installation), or go directly to [Using services](./consumers/using-services) if you are integrating another plugin.
+## Capability matrix
+
+This table shows what each project-maintained vendor package registers. It describes the package, not every server behind it: an OpenAI-compatible or LocalAI deployment may implement only some of the listed endpoints.
+
+| Provider | LLM | Embeddings | Reranking | Decisions | TTS | STT | Images |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| OpenAI-compatible | Yes | Yes | No | No | Yes | File and live | Yes |
+| LocalAI | Yes | Yes | Yes | Yes | Yes | File and live | Yes |
+| Anthropic | Yes | No | No | No | No | No | No |
+| Ollama | Yes | Yes | No | No | No | No | No |
+| Cohere | Yes | Yes | Yes | No | No | No | No |
+| DashScope | Yes | Yes | Yes | No | Yes | File | Yes |
+| Jina | No | Yes | Yes | No | No | No | No |
+| TypeSafe | No | No | No | Yes | No | No | No |
+
+## Where to go next
+
+- If you are building a plugin that consumes AI services, start with [Using services](./consumers/using-services) and keep the [core contract reference](./reference/core-contracts) nearby.
+- If you are adding a vendor implementation, read [Creating a provider](./providers/creating-provider).
+- If you are configuring a DSH profile, use [Installation](./getting-started/installation), then [Configuration](./getting-started/configuration).
 
 ## Providers maintained by this project
 
 These packages are maintained by Firefox2100 as part of this independent project. They are not official DeepSeek Harness packages and are not maintained or endorsed by the DSH maintainers.
 
-This project currently maintains six vendor packages:
+This project currently maintains eight vendor packages:
 
 - [`@dsh-ai-providers/openai`](./official-providers/openai): OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation;
-- [`@dsh-ai-providers/localai`](./official-providers/localai): dedicated LocalAI language models, embeddings, reranking, speech, and image generation;
+- [`@dsh-ai-providers/localai`](./official-providers/localai): dedicated LocalAI language models, embeddings, reranking, decisions, speech, and image generation;
 - [`@dsh-ai-providers/anthropic`](./official-providers/anthropic): language models through Anthropic's native Messages API;
 - [`@dsh-ai-providers/ollama`](./official-providers/ollama): language models and embeddings through Ollama's native API, with its own request controls, discovery, and model load and unload;
 - [`@dsh-ai-providers/cohere`](./official-providers/cohere): language models, embeddings, and reranking through Cohere's native v2 API;
-- [`@dsh-ai-providers/jina`](./official-providers/jina): Jina reranking and embeddings.
+- [`@dsh-ai-providers/dashscope`](./official-providers/dashscope): language models, embeddings, reranking, speech synthesis and recognition, and image generation through Alibaba Cloud DashScope's native API (Qwen);
+- [`@dsh-ai-providers/jina`](./official-providers/jina): Jina reranking and embeddings;
+- [`@dsh-ai-providers/typesafe`](./official-providers/typesafe): decisions from TypeSafe's hosted Jev model.
 
 Third-party provider plugins can implement the same contracts and appear in the same settings UI.

@@ -1,0 +1,88 @@
+---
+title: DashScope
+sidebar_position: 6
+---
+
+`@dsh-ai-providers/dashscope` 是 Firefox2100 作为本项目一部分维护的阿里云 DashScope（百炼，通义千问 Qwen 系列模型所在平台）原生提供方。它直接使用 DashScope 自己的 API，而不是其 OpenAI 兼容层，因为原生 API 提供的控制项更多，涵盖语言模型、嵌入、重排、语音合成、语音识别和图像生成。它不是 DSH 或阿里云官方软件包。
+
+## 支持能力
+
+| 能力 | 原生端点 |
+| --- | --- |
+| 语言模型 | `POST /services/aigc/text-generation/generation`；能读取图像的模型使用 `.../multimodal-generation/generation`（服务器发送事件） |
+| 模型发现 | `GET /models?capabilities=TG` |
+| 嵌入 | `POST /services/embeddings/text-embedding/text-embedding` |
+| 重排 | `POST /services/rerank/text-rerank/text-rerank` |
+| 语音合成 | Qwen-TTS：`POST /services/aigc/multimodal-generation/generation`；CosyVoice：WebSocket `/api-ws/v1/inference` |
+| 语音识别 | `POST /services/aigc/multimodal-generation/generation`（Qwen-ASR） |
+| 图像生成 | `POST /services/aigc/multimodal-generation/generation`（Qwen-Image、Wan 2.6） |
+
+未提供的部分：实时（流式）语音识别，其 WebSocket 协议无法从文档中确认；只能以异步任务方式运行的图像和视频模型；稀疏嵌入；以及以图像和视频作为嵌入输入或重排文档，因为共享契约只承载稠密向量和文本。
+
+## 配置连接
+
+打开 **设置 > 提供方 > DashScope 连接**。默认连接为：
+
+![DSH 中的 DashScope 连接设置](/img/screenshots/providers/dashscope-settings.png)
+
+| 设置 | 默认值 |
+| --- | --- |
+| 基础 URL | `https://dashscope.aliyuncs.com/api/v1` |
+| 凭据引用 | `DASHSCOPE_API_KEY` |
+| 流静默上限 | 5 分钟 |
+| 嵌入与重排超时 | 1 分钟 |
+
+基础 URL 需包含版本。密钥通过 DSH 的凭据服务保存，不会写入配置文件，并以 `Authorization: Bearer` 发送。密钥属于某个地域，请使用基础 URL 与之匹配的连接，例如国际站使用 `https://dashscope-intl.aliyuncs.com/api/v1`。如果使用多个地域或业务空间，每个添加一个连接。
+
+## 语言模型
+
+创建路由，选择连接，并添加 `qwen-plus` 之类的模型名称。**列出账户可用的模型** 会分页读取 `GET /models`，添加每个文本生成模型及 DashScope 报告的上下文窗口和输出上限，并标出支持图像的模型。
+
+标记为能读取图像（`vision`）的模型会发往多模态端点，其内容是片段列表；其他模型使用文本端点。提供方支持系统提示、文本与图像内容（图像以 data URL 形式发送）、工具声明与结果、流式文本、思考和工具调用，以及包含缓存读取和推理 token 的用量。工具选择会原样传递：`auto`、`none`、`required` 或指定工具。
+
+所有控制项都在请求的 `parameters` 对象中。采样使用通用字段，以及同一对象中 DashScope 自己的字段。缺省表示使用服务器默认值。
+
+| 字段 | 请求参数 | 说明 |
+| --- | --- | --- |
+| `temperature`、`topP`、`topK`、`seed` | `temperature`、`top_p`、`top_k`、`seed` | |
+| `repetitionPenalty`、`presencePenalty` | 同名 | |
+| `maxTokens`、`stop` | `max_tokens`、`stop` | |
+| `minP`、`frequencyPenalty` | 无 | DashScope 没有对应控制项，会被忽略 |
+| `toolChoice` | `tool_choice` | 指定工具会变成 `{ "type": "function", ... }` |
+| `enableThinking`、`thinkingBudget` | `enable_thinking`、`thinking_budget` | 混合模型可逐次开关思考；仅思考模型始终思考 |
+| `reasoningEffort` | `reasoning_effort` | `low`、`medium`、`high`、`max` 或 `xhigh`，适用于支持等级的模型 |
+| `preserveThinking` | `preserve_thinking` | 把之前的推理内容回传给模型 |
+| `enableSearch`、`searchOptions` | `enable_search`、`search_options` | 联网搜索；选项对象原样传递 |
+| `enableCodeInterpreter` | `enable_code_interpreter` | |
+| `parallelToolCalls`、`toolStream` | `parallel_tool_calls`、`tool_stream` | |
+| `responseFormat` | `response_format` | 例如 `{ "type": "json_object" }` |
+| `vlHighResolutionImages`、`minPixels`、`maxPixels`、`totalPixels` | `vl_high_resolution_images`、`min_pixels`、`max_pixels`、`total_pixels` | 视觉模型 |
+| `body` | `parameters` 内部 | API 接受的其他任何字段，例如 `logprobs` 或 `n`，但它们的返回内容不会被读取 |
+
+流式输出始终是增量的消息格式，无法关闭。推理等级是参数片段，例如 `{ "enable_thinking": true, "thinking_budget": 4000 }`，优先于带类型的字段。`translation_options` 之类的专用参数放在 `body` 中；`X-DashScope-DataInspection` 之类的请求头放在路由的请求头中。
+
+## 嵌入与重排
+
+在 **嵌入** 或 **重排序** 标签中选择 DashScope。嵌入默认使用 `text-embedding-v4`，每批 10 条，多数模型都接受这个数量（qwen3.7 接受 20 条，使用它时请调大批大小）。使用方选择的查询或文档会作为 `text_type` 发送。只请求稠密向量。**向量维度** 必须是模型提供的尺寸，例如 `text-embedding-v4` 为 64 到 2048；`instruct` 向会读取指令的模型描述任务。重排默认使用 `qwen3-rerank`，可以接受 `instruct` 来说明怎样算好的匹配；分数应在 0 到 1 之间，其他值会被视为格式错误的响应。文档为文本。
+
+多模态嵌入模型（`qwen3-vl-embedding`、`tongyi-embedding-vision-*`）由另一个端点提供。要使用它们，请把嵌入 API 选为 **多模态嵌入**：每段文本都会作为 `{ "text": ... }` 内容单独嵌入，与该模型处理图像时位于同一向量空间。图像和视频无法通过共享的嵌入接口传入。`qwen3-vl-rerank` 与文本重排使用同一端点，因此可以作为文本文档的重排模型。
+
+每次调用的请求选项：嵌入有 `dimensions`（须在会话的第一次请求前选定）和 `instruct`；重排有 `instruct`。重排请求始终发送 `return_documents: false`，只适用于视频文档的 `fps` 没有提供。
+
+## 语音合成
+
+在 **文本转语音** 标签中选择 DashScope。模型名称决定使用哪种协议。`qwen…-tts…` 模型（默认 `qwen3-tts-flash`，声音 `Cherry`）通过 HTTP 请求，返回 WAV 文件的地址，提供方不带 API 密钥获取该文件并继续流式传出；文本最长 600 个字符，`languageType`（默认 `Auto`）指明语言。`cosyvoice…` 模型（例如 `cosyvoice-v3-flash`，声音 `longanyang`）通过由基础 URL 推导出的 WebSocket（`…/api/v1` 变为 `…/api-ws/v1/inference`）运行任务，并在音频帧生成时即时流式传出，格式为 `mp3`、`wav`、`pcm` 或 `opus`。
+
+每次调用的请求选项：`voice`、`languageType`（Qwen-TTS），以及 CosyVoice 的 `format`、`sampleRate`、`volume`、`rate`、`pitch`、`enableSsml` 和 `instruction`。任务在开始前失败（例如密钥被拒）属于本次调用的错误；在流式传输过程中失败则会使音频流报错。提供方不列出声音，请手动填写声音标识。
+
+## 语音识别
+
+在 **API 语音转文本** 标签中选择 DashScope。完成的录音会以 data URL 形式发送给 `qwen3-asr-flash`，`asr_options` 携带语言（自动检测时省略）和 `enable_itn`。模型接受最长 5 分钟、10 MB 的录音。转写文本会从响应中 DashScope 放置它的位置读取。不提供实时转写。
+
+## 图像生成
+
+在 **图像生成** 标签中选择 DashScope。默认模型为 `qwen-image-2.0-pro`。提示词是一条用户消息，参考图像以 data URL 形式放在它之前；提供参考图像时，模型会进行编辑（最多三张）而不是重新绘制。图像地址 24 小时后失效，因此提供方会将其下载并以图像数据返回。每次调用的请求选项：`size`（`宽*高`）、`negativePrompt`、`promptExtend`、`watermark` 和 `seed`；图像数量为调用的 `count`（Qwen-Image 为 1 到 6）。同步端点支持 Qwen-Image 和 Wan 2.6；只能以异步任务方式运行的模型不在支持范围内。
+
+## 错误与取消
+
+HTTP 和流失败会根据状态码和 DashScope 自己的错误码映射为 DSH 语言模型失败类别：`InvalidApiKey` 为认证失败，`Throttling` 为限流，配额耗尽（`Throttling.AllocationQuota`）或 `Arrearage` 为额度问题，输入过长为上下文溢出，内容审核（`DataInspectionFailed`）及其他错误请求为无效请求，此外还有服务器失败、超时和取消。已经返回 200 的流中出现错误事件时，同样会这样抛出。请求 ID 会随错误保留。

@@ -59,6 +59,8 @@ sidebar_position: 5
 
 在 **嵌入** 或 **重排序** 标签中选择 Cohere。嵌入默认使用 `embed-v4.0`，每批 96 条（Cohere 的上限）；使用方选择的查询或文档会作为 `search_query` 或 `search_document` 发送，未作选择的文本按文档发送。**向量维度** 适用于 embed-v4 及更新版本。重排默认使用 `rerank-v3.5`，可选限制每篇文档读取的 token 数（`max_tokens_per_doc`）。Cohere 的 v2 重排没有 `return_documents`，因此不会发送。
 
+使用方可以通过两个请求选项逐次调整。`maxTokensPerDoc` 覆盖配置的限制（Cohere 自身默认为 4096）。`queuePriority` 作为 Cohere 的 `priority` 发送，数字越小越先处理；它与并发闸门使用的前台/后台优先级无关。较新的重排模型可返回 `relevant_spans`，这里没有提供，因为结果契约中每篇文档只有序号和分数。
+
 ## 错误与取消
 
 HTTP 和流式失败会映射为 DSH 语言模型的失败类别：认证、限流、付费或用量上限、无效请求、上下文溢出（包括 Cohere 的 “too many tokens” 回答）、服务器故障、超时和取消。以 `ERROR` 或 `TIMEOUT` 结束的消息会按对应类别抛出。

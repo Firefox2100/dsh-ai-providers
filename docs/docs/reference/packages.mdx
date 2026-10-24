@@ -5,7 +5,7 @@ sidebar_position: 1
 
 ## `@dsh-ai-providers/core`
 
-Public contracts for embeddings, reranking, speech, images, providers, call options, and normalized errors. Consumer and vendor plugins should import shared types from this package.
+Public contracts for embeddings, reranking, decisions, speech, images, providers, call options, and normalized errors. Consumer and vendor plugins should import shared types from this package.
 
 See [Core contract reference](./core-contracts) for the exported service boundary and lifecycle rules.
 
@@ -25,7 +25,7 @@ See [OpenAI-compatible](../official-providers/openai) for endpoints and configur
 
 ## `@dsh-ai-providers/localai`
 
-A dedicated LocalAI provider for language models, embeddings, reranking, TTS, file and live STT, and image generation. It adds LocalAI defaults, native request fields, and reranking while reusing the shared OpenAI-compatible transports.
+A dedicated LocalAI provider for language models, embeddings, reranking, decisions, TTS, file and live STT, and image generation. It adds LocalAI defaults, native request fields, reranking, and decisions while reusing the shared OpenAI-compatible transports.
 
 See [LocalAI](../official-providers/localai) for configuration and native controls.
 
@@ -38,6 +38,16 @@ See [Jina](../official-providers/jina) for configuration and compatibility detai
 ## `@dsh-ai-providers/jina-cohere`
 
 A library, not a plugin: the `/rerank` transport that Jina, Cohere and compatible servers share, and the embedding transport for the Jina `/embeddings` and Cohere v2 `/embed` APIs. The Jina and Cohere providers both build on it, as the OpenAI and LocalAI providers build on `openai-compatible`, so neither depends on the other.
+
+## `@dsh-ai-providers/typesafe`
+
+The TypeSafe AI provider for Jev, a hosted decision model. It sends typed questions about text to `POST /systemone` and returns their probabilities in one pass. The model can follow the `jev-latest` alias or use a pinned version, and the extended context window is optional. A server that implements the same API can be used through a custom base URL. Connections and credentials are reusable in the same way as OpenAI connections.
+
+See [TypeSafe](../official-providers/typesafe) for configuration and compatibility details.
+
+## `@dsh-ai-providers/systemone`
+
+A library, not a plugin: the `POST /systemone` transport that TypeSafe's Jev, LocalAI, llama.cpp's server and other compatible servers share. The TypeSafe and LocalAI providers both build on it, so neither depends on the other.
 
 ## `@dsh-ai-providers/anthropic`
 
@@ -57,9 +67,15 @@ The native Cohere provider. It supplies language-model routes over `/v2/chat` wi
 
 See [Cohere](../official-providers/cohere) for configuration and native API behavior.
 
+## `@dsh-ai-providers/dashscope`
+
+The native Alibaba Cloud DashScope provider. It supplies language-model routes over the native generation API (text and multimodal endpoints) with streaming text, thinking, tool use, image input, DashScope's own request controls, and model discovery. It also provides embeddings, reranking, speech synthesis (Qwen-TTS over HTTP and CosyVoice over a WebSocket), file speech recognition, and image generation. Like the other vendor plugins, it registers through `@dsh-ai-providers/runtime` and uses the contracts from `core`.
+
+See [DashScope](../official-providers/dashscope) for configuration and native API behavior.
+
 ## `@dsh-ai-providers/all`
 
-The metadata-only DSH bundle. It installs the runtime and all six provider plugins maintained by this project.
+The metadata-only DSH bundle. It installs the runtime and all eight provider plugins maintained by this project.
 
 ## Choosing dependencies
 
@@ -75,6 +91,6 @@ Keep `core` as the public type boundary in consumer code. Runtime internals and 
 
 ## Bundle versus library packages
 
-The runtime and six vendor packages are DSH plugins with bundle metadata. `core`, `openai-compatible` and `jina-cohere` are libraries: they are installed as dependencies and are not rows a user enables in a profile. The `all` package contains bundle metadata rather than an additional runtime implementation, so it does not introduce another service layer.
+The runtime and eight vendor packages are DSH plugins with bundle metadata. `core`, `openai-compatible`, `jina-cohere`, and `systemone` are libraries: they are installed as dependencies and are not rows a user enables in a profile. The `all` package contains bundle metadata rather than an additional runtime implementation, so it does not introduce another service layer.
 
 All public packages in a release use the same version. Keep package versions aligned when declaring several direct dependencies, especially for a provider implementation compiled against the shared contract.

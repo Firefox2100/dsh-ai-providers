@@ -4,9 +4,10 @@
 .muted { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
 .limit { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
 .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.control { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 8px; white-space: nowrap; }
 .input { box-sizing: border-box; height: 32px; min-width: 0; padding: 0 8px; font: inherit; font-size: 13px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-layer-1); border: 0.5px solid var(--dsw-alias-border-l4); border-radius: var(--dsw-radius-md); }
 .input:focus-visible { border-color: var(--dsw-alias-state-business-primary); outline: none; }
-.name { flex: 1 1 220px; max-width: 360px; }
+.name { flex: 1 0 100%; }
 .number { width: 72px; }
 .label { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
 .choices { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--dsw-alias-label-primary); }
@@ -14,11 +15,6 @@
 .live { font-size: 12px; color: var(--dsw-alias-label-secondary); }
 .busy { color: var(--dsw-alias-state-business-primary); }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; font-size: 13px; color: var(--dsw-alias-label-primary); }
-
-@media (max-width: 640px) {
-  .head { align-items: flex-end; }
-  .name { flex-basis: 100%; max-width: none; }
-}
 
 @media (pointer: coarse) {
   .choice { min-height: 44px; }

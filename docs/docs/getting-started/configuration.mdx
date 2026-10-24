@@ -17,7 +17,7 @@ Connections are reusable across capabilities. For example, one LocalAI connectio
 
 ## 2. Configure vendor capabilities
 
-Open the relevant service page—such as **Language models**, **Embedding**, or **Text-to-speech**—then select a provider and connection and configure its model and service-specific options. OpenAI-compatible defaults are provided, but compatible servers often use different model and voice names.
+Open the relevant service page, such as **Language models**, **Embedding**, **Text-to-speech**, or **Decisions**. Select a provider and connection, then configure its model and service-specific options. OpenAI-compatible defaults are provided, but compatible servers often use different model and voice names.
 
 Removing a connection does not delete the referenced credential. This prevents one plugin from deleting a secret that another configuration may still use.
 
@@ -29,7 +29,8 @@ Choose one registered provider for each capability:
 - reranking;
 - text-to-speech;
 - API speech-to-text;
-- image generation.
+- image generation;
+- decisions.
 
 Selections take effect without a profile restart. Selecting **Disabled** removes that capability service from the context. Language models are configured differently: every configured route remains available to DSH at the same time.
 

@@ -1,0 +1,50 @@
+---
+title: TypeSafe
+sidebar_position: 8
+---
+
+`@dsh-ai-providers/typesafe` is the provider for [TypeSafe AI](https://typesafe.ai/)'s Jev, maintained by Firefox2100 as part of this project. It supplies decisions. It is not an official DSH or TypeSafe package.
+
+Jev is a decision model: given text or structured state and typed questions, it answers with probabilities in one pass instead of writing prose. It is a paid hosted service, and the state a consumer asks about is sent to TypeSafe.
+
+## Supported capabilities
+
+| Capability | Endpoint |
+| --- | --- |
+| Decisions | `POST {base URL}/systemone` |
+
+The transport lives in the library package `@dsh-ai-providers/systemone`, which this provider and the [LocalAI](./localai) provider both use; neither depends on the other. A server that copies the System One API also works through this provider with a custom base URL.
+
+## Configure a connection
+
+Create one or more connections with a name, base URL, credential name, and API key in **Settings > Providers > TypeSafe connections**. DSH stores the key in its credential store rather than the profile. The default is:
+
+![TypeSafe connection settings in DSH](/img/screenshots/providers/typesafe-settings.png)
+
+| Setting | Default |
+| --- | --- |
+| Base URL | `https://api.typesafe.ai/v1` |
+| Credential reference | `TYPESAFE_API_KEY` |
+| Model | `jev-latest` |
+| Longer context window | off |
+| Timeout | 30 seconds |
+
+Then open the Decisions capability tab and select **TypeSafe** as the active provider. The credential reference names a DSH-managed secret, not the secret value. The provider appends `/systemone`, so do not include it in the base URL.
+
+## Model and context
+
+`jev-latest` follows TypeSafe's newest release, so answers can change when TypeSafe publishes one. Set a version such as `jev-1.14.0` to pin the model; versioned names are accepted whether or not the model list shows them. The default request allows about 64 thousand tokens of state and questions together, and about 32 thousand for the state with one question. Switching on **Longer context window** sends the header TypeSafe offers for its extended window.
+
+TypeSafe's reference lists a choice of up to 255 options and a score of 2 to 10 levels. Jev reads English best; it accepts other languages, including Chinese, Japanese and Korean, with lower accuracy.
+
+## Requests and answers
+
+A request carries `model`, `state` and the questions. An answer is read by question type: a `noul` as a probability, a `choice` with its probabilities and confidence, and a `score` with the probabilities of its levels and its confidence. The tokens counted are read from `usage.input_tokens`.
+
+Authentication and payment failures (401, 402, 403) and rejected requests (400, 413 and 422, with the first validation message TypeSafe gives) become `rejected`; rate limits (429), server errors and unreachable or slow endpoints become `unavailable`; a malformed request is refused before it is sent as `invalid-input`. An answer the provider cannot read, or one that leaves a question out, fails the call.
+
+## Diagnosing compatibility
+
+Use the connection test in the Decisions tab: it asks two questions that have one right answer and reports the model and the time. If a compatible server rejects the request, check the base URL prefix and the model name, then compare its request shape with the fields above.
+
+See [Decisions](../services/decisions) for consumer usage.

@@ -1,0 +1,69 @@
+---
+title: 决策
+sidebar_position: 7
+---
+
+决策服务针对文本或结构化状态回答带类型的问题，一次性给出概率，不生成说明文字。它适合封闭式的判断：某个陈述是否成立、几个选项中哪个最合适、某件事在量表上处于什么位置。使用方通过 `ctx.decisions` 访问所选服务。
+
+```ts
+const answer = await ctx.decisions.decide(
+  {message: '我被重复扣款了，邮件也没人回复。'},
+  {
+    angry: {type: 'noul', instructions: '客户很生气。'},
+    topic: {
+      type: 'choice',
+      instructions: '这条消息讲的是什么？',
+      criteria: {
+        billing: '被扣款、退款和付款。',
+        shipping: '包裹的投递和它现在在哪里。',
+      },
+    },
+  } as const,
+  {priority: 'foreground', signal},
+)
+
+answer.answers.angry.probability   // 0 到 1
+answer.answers.topic.choice        // 'billing' | 'shipping'
+```
+
+同一次调用中的所有问题共用一个状态。每个答案的类型由对应的问题决定：把问题写成 `as const`，`choice` 就会收窄为你给出的选项键。
+
+## 问题类型
+
+| 类型 | 你提供 | 你得到 |
+| --- | --- | --- |
+| `noul` | `instructions`：一个陈述或一个是非问题 | `probability`：该陈述成立的可能性，0 到 1 |
+| `choice` | `instructions` 和 `criteria`：每个选项的键及其适用情形的描述 | `choice`，即概率最高的选项；每个选项的 `probabilities`；`confidence` |
+| `score` | `instructions` 和 `criteria`：每个等级的含义，从低到高，共 2 到 10 级 | `score`，位置可以落在两个等级之间；按给定顺序排列的各等级 `probabilities`；`confidence` |
+
+状态可以是文本，也可以是提供方原样读取的 JSON。结果还包含做出决策的 `model`，以及提供方给出时统计的输入 `tokens`。
+
+## 如何写问题
+
+决策模型只在你给出的选项之内回答，所以选项承载了问题本身。请按适用情形来描述每个选项，而不只是给它起个名字；状态只保留决策所需的内容：多余的背景会让较小的模型偏离重点。措辞会改变答案，不同模型对措辞的理解也不同。依赖答案之前，请先用自己的样例在所选模型上试一试，并在更换模型或措辞时把这些样例当作回归测试保留下来。
+
+## 根据概率行动
+
+决策服务返回概率，调用方因此可以采纳把握大的答案，把没把握的交给更慢的服务。
+
+```ts
+const {answers} = await ctx.decisions.decide(state, questions)
+if (answers.topic.confidence < 0.8) return askALanguageModel(state)
+return answers.topic.choice
+```
+
+并非每种问题类型和每个模型的概率都同样可信：有些模型即使答错也会报告很高的置信度。请根据自己的样例选择阈值，而不要照搬其他提供方的数值，并预期它会随模型而变。
+
+## 运行时会检查什么
+
+运行时会在请求到达提供方之前拒绝无法回答的请求，错误为 `AiError`，代码是 `invalid-input`：状态为空、没有问题、问题没有说明、选项少于两个或有选项没有描述的 `choice`，以及等级少于 2 或多于 10 的 `score`。模型自身的限制（选项数量、状态长度）由其提供方负责执行。
+
+答案在交出之前也会被检查。有问题未被回答、答案类型不对、选项从未提供过，或概率不在 0 到 1 之间，都说明提供方行为异常，调用会以 `unavailable` 失败，而不是把结果继续传下去。
+
+## 优先级、取消与并发
+
+调用支持共用的 `priority` 和 `signal` 选项。一次决策调用在[并发闸门](../concepts/concurrency)中是独立的能力，因此可以把决策和语言模型分配到不同的限制中，让决策不必排在语言模型任务之后，反之亦然。
+
+## 提供方
+
+[TypeSafe](../official-providers/typesafe) 通过其托管的 Jev 模型提供决策。[LocalAI](../official-providers/localai) 通过安装在其中的决策模型提供决策。两者都通过库 `@dsh-ai-providers/systemone` 使用 System One API；复制了这套 API 的其他服务器，例如加载了决策模型的 llama.cpp `llama-server`，也可以通过自定义基础 URL 使用。

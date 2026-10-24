@@ -13,6 +13,7 @@ The package registers:
 - streamed chat and vision language models;
 - embeddings;
 - reranking;
+- decisions;
 - text-to-speech;
 - file and live speech-to-text;
 - image generation.
@@ -42,6 +43,12 @@ These endpoints require administrative authorization when LocalAI authentication
 ## Reranking
 
 Reranking calls `POST /rerank` relative to the configured `/v1` base URL. Set `rerankModel` to the model name served by LocalAI. `rerankBody` is merged into each request for backend-specific parameters; the query, documents, model, `top_n`, and `return_documents` fields remain controlled by the service call.
+
+## Decisions
+
+Decisions call `POST /systemone` relative to the configured `/v1` base URL, the System One API through which LocalAI serves decision models that return typed answers with probabilities in one pass. Set `decisionModel` to the name of a model declared with `known_usecases: [decisions]` in LocalAI. `decisionBody` is merged into each request for backend-specific fields; the model, state and questions stay controlled by the service call.
+
+Decision models need a LocalAI release and `llama-cpp` backend build that support them. Use the connection test in the Decisions tab to confirm that your installation can serve the model. See [Decisions](../services/decisions) for consumer usage.
 
 ## Speech, embeddings, and images
 

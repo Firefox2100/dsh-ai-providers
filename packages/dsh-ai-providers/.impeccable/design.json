@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T00:00:00.000Z",
+  "generatedAt": "2026-10-24T20:22:41Z",
   "title": "Design System: DSH AI Providers UI",
   "extensions": {
     "colorMeta": {
@@ -8,7 +8,11 @@
       "surface-primary": { "role": "neutral", "displayName": "Primary Surface", "canonical": "var(--dsw-alias-bg-layer-1)" },
       "surface-secondary": { "role": "neutral", "displayName": "Secondary Surface", "canonical": "var(--dsw-alias-bg-layer-2)" },
       "text-primary": { "role": "neutral", "displayName": "Primary Label", "canonical": "var(--dsw-alias-label-primary)" },
+      "text-secondary": { "role": "neutral", "displayName": "Secondary Label", "canonical": "var(--dsw-alias-label-secondary)" },
+      "text-tertiary": { "role": "neutral", "displayName": "Tertiary Label", "canonical": "var(--dsw-alias-label-tertiary)" },
+      "border-subtle": { "role": "neutral", "displayName": "Subtle Divider", "canonical": "var(--dsw-alias-border-l3)" },
       "accent": { "role": "primary", "displayName": "Business Accent", "canonical": "var(--dsw-alias-state-business-primary)" },
+      "success": { "role": "secondary", "displayName": "Success State", "canonical": "var(--dsw-alias-state-success-primary)" },
       "error": { "role": "tertiary", "displayName": "Error State", "canonical": "var(--dsw-alias-state-error-primary)" }
     },
     "typographyMeta": {
@@ -22,11 +26,51 @@
       { "name": "prominent", "value": "var(--dsw-elevation-prominent)", "purpose": "Host dialogs." }
     ],
     "motion": [
-      { "name": "fast", "value": "var(--ds-transition-duration-fast) var(--ds-ease-in-out)", "purpose": "Compact hover and pressed feedback." }
+      { "name": "fast", "value": "var(--ds-transition-duration-fast) var(--ds-ease-in-out)", "purpose": "Compact hover and pressed feedback supplied by DSH primitives." }
     ],
-    "breakpoints": []
+    "breakpoints": [
+      { "name": "model-list-collapse", "value": "760px" },
+      { "name": "route-editor-collapse", "value": "720px" },
+      { "name": "coarse-pointer", "value": "pointer: coarse" }
+    ]
   },
-  "components": [],
+  "components": [
+    {
+      "name": "Settings card",
+      "kind": "card",
+      "description": "Flat, host-themed container for one connection, route, model, or concurrency limit.",
+      "html": "<section class=\"ds-settings-card\"><strong>Provider route</strong><span>Configuration and status</span></section>",
+      "css": ".ds-settings-card { display: grid; gap: 12px; min-width: 0; padding: 16px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-settings-card-fill); border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); font-family: var(--dsw-font-family); font-size: 13px; } .ds-settings-card span { color: var(--dsw-alias-label-secondary); font-size: 12px; }"
+    },
+    {
+      "name": "Settings field",
+      "kind": "input",
+      "description": "Compact field for provider names, URLs, model identifiers, and numeric controls.",
+      "html": "<label class=\"ds-field\"><span>Base URL</span><input value=\"https://api.example.com/v1\"></label>",
+      "css": ".ds-field { display: grid; gap: 5px; color: var(--dsw-alias-label-primary); font-family: var(--dsw-font-family); font-size: 13px; } .ds-field input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 32px; padding: 4px 8px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-layer-1); border: 0.5px solid var(--dsw-alias-border-l4); border-radius: var(--dsw-radius-md); font: inherit; } .ds-field input:focus-visible { border-color: var(--dsw-alias-state-business-primary); outline: none; } .ds-field input:disabled { opacity: 0.5; }"
+    },
+    {
+      "name": "Capability choice",
+      "kind": "custom",
+      "description": "A labeled native choice used for provider selection and concurrency membership.",
+      "html": "<label class=\"ds-choice\"><input type=\"checkbox\" checked> Embedding</label>",
+      "css": ".ds-choice { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; color: var(--dsw-alias-label-primary); font-family: var(--dsw-font-family); font-size: 13px; overflow-wrap: anywhere; } .ds-choice:focus-within { color: var(--dsw-alias-state-business-primary); } @media (pointer: coarse) { .ds-choice { min-height: 44px; } }"
+    },
+    {
+      "name": "Explicit status",
+      "kind": "custom",
+      "description": "Textual status that remains understandable without colour.",
+      "html": "<span class=\"ds-status ds-status-success\">Connection ready</span>",
+      "css": ".ds-status { color: var(--dsw-alias-label-secondary); font-family: var(--dsw-font-family); font-size: 12px; line-height: 18px; } .ds-status-success { color: var(--dsw-alias-state-success-primary); } .ds-status-error { color: var(--dsw-alias-state-error-primary); }"
+    },
+    {
+      "name": "Advanced controls",
+      "kind": "custom",
+      "description": "Native disclosure for sampling, request, and provider-specific options.",
+      "html": "<details class=\"ds-disclosure\"><summary>Advanced controls</summary><p>Provider-specific request fields</p></details>",
+      "css": ".ds-disclosure { color: var(--dsw-alias-label-primary); font-family: var(--dsw-font-family); font-size: 13px; } .ds-disclosure summary { cursor: pointer; } .ds-disclosure summary:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color); outline-offset: 2px; border-radius: var(--dsw-radius-xs); } .ds-disclosure p { color: var(--dsw-alias-label-secondary); font-size: 12px; }"
+    }
+  ],
   "narrative": {
     "northStar": "A Native DSH Work Surface",
     "overview": "Provider configuration is an Operate-mode interface embedded in DeepSeek Harness. DSH supplies the visual authority; provider identity comes from configuration structure and technical copy rather than a parallel theme.",
@@ -34,22 +78,26 @@
       "Quiet, compact, task-first DSH settings surfaces.",
       "Host-owned light and dark themes through semantic aliases.",
       "Shared controls for actions, values, credentials, and persistence.",
-      "Provider-specific controls inside a consistent capability structure."
+      "Provider-specific controls inside a consistent capability structure.",
+      "Responsive layouts that preserve label-control relationships."
     ],
     "rules": [
       { "name": "Semantic Alias", "body": "Feature UI uses --dsw-alias-* variables rather than literal theme colors.", "section": "colors" },
       { "name": "One Interface Voice", "body": "The embedded UI uses DSH typography and density, not the documentation site's marketing language.", "section": "typography" },
-      { "name": "One Edge", "body": "A surface has either a neutral border or a DSH elevation shadow, never both.", "section": "elevation" }
+      { "name": "One Edge", "body": "A surface has either a neutral border or a DSH elevation shadow, never both.", "section": "elevation" },
+      { "name": "Bound Controls", "body": "Labels and their inputs wrap as a unit; actions wrap without separating a control from its meaning.", "section": "layout" }
     ],
     "dos": [
       "Use DSH primitives and semantic tokens before creating a local control.",
-      "Verify light, dark, keyboard, narrow layouts, and long bilingual labels.",
+      "Verify light, dark, keyboard, narrow layouts, long values, and bilingual labels.",
+      "Keep read-only, loading, empty, saved, and failure states explicit.",
       "Let provider-specific information architecture carry product identity."
     ],
     "donts": [
       "Do not import documentation-site geometry or palette into settings.",
       "Do not add literal UI colors or plugin-level light/dark selectors.",
-      "Do not leave native buttons unstyled where the shared Button fits."
+      "Do not leave native buttons unstyled where the shared Button fits.",
+      "Do not separate a compact field from its label when a row wraps."
     ]
   }
 }

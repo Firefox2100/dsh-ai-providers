@@ -1,0 +1,69 @@
+---
+title: Decisions
+sidebar_position: 7
+---
+
+A decision service answers typed questions about text or structured state with probabilities, in a single pass, without writing prose. It is meant for closed choices: whether a statement holds, which of a few options fits, where something falls on a scale. Consumers access the selected service as `ctx.decisions`.
+
+```ts
+const answer = await ctx.decisions.decide(
+  {message: 'I was charged twice and nobody answers my emails.'},
+  {
+    angry: {type: 'noul', instructions: 'The customer is angry.'},
+    topic: {
+      type: 'choice',
+      instructions: 'What is the message about?',
+      criteria: {
+        billing: 'Being charged, refunds and payments.',
+        shipping: 'Delivery of a parcel and where it is.',
+      },
+    },
+  } as const,
+  {priority: 'foreground', signal},
+)
+
+answer.answers.angry.probability   // 0 to 1
+answer.answers.topic.choice        // 'billing' | 'shipping'
+```
+
+All the questions of one call share one state. Each answer is typed by its question: passing the questions `as const` narrows `choice` to the option keys you offered.
+
+## Question types
+
+| Type | You provide | You get |
+| --- | --- | --- |
+| `noul` | `instructions`: a statement or a yes/no question | `probability`: how likely the statement holds, from 0 to 1 |
+| `choice` | `instructions` and `criteria`: each option's key with a description of when it applies | `choice`, the option with the highest probability; `probabilities` for every option; `confidence` |
+| `score` | `instructions` and `criteria`: what each level means, lowest first, from 2 to 10 levels | `score`, a position that can fall between two levels; `probabilities` for each level, in the order given; `confidence` |
+
+The state is text, or JSON that the provider reads as it is. The result also carries the `model` that decided and, when the provider says, the input `tokens` it counted.
+
+## Writing the questions
+
+Decision models answer within the options you give, so the options carry the question. Describe each option by when it applies, not only by name, and keep the state to what the decision needs: extra background can pull a small model off the point. Wording changes answers, and models differ in how they read it. Try your own examples against the model you select before relying on its answers, and keep those examples as a regression test when you change model or wording.
+
+## Acting on probabilities
+
+A decision service returns probabilities so that a caller can act on a confident answer and hand an unsure one to something slower.
+
+```ts
+const {answers} = await ctx.decisions.decide(state, questions)
+if (answers.topic.confidence < 0.8) return askALanguageModel(state)
+return answers.topic.choice
+```
+
+Probabilities are not equally trustworthy for every question type and model: some models report a high confidence on a wrong answer. Choose a threshold from your own examples rather than from another provider's numbers, and expect it to change with the model.
+
+## What the runtime checks
+
+The runtime refuses a request that cannot be answered before it reaches a provider, with an `AiError` of code `invalid-input`: an empty state, no questions, a question without instructions, a choice with fewer than two options or an option without a description, or a score with fewer than 2 or more than 10 levels. A model's own limits (how many options, how long a state) are its provider's to enforce.
+
+It also checks every answer before handing it on. A question left unanswered, an answer of another type, an option that was never offered, or a probability outside 0 to 1 is a provider that misbehaves, and the call fails with `unavailable` instead of passing the result on.
+
+## Priority, cancellation and concurrency
+
+Calls accept the shared `priority` and `signal` options. A decision call is its own capability in the [concurrency gate](../concepts/concurrency), so a limit can keep decisions from waiting behind language-model work, or the other way round, by assigning them to different limits.
+
+## Providers
+
+[TypeSafe](../official-providers/typesafe) supplies decisions from its hosted Jev model. [LocalAI](../official-providers/localai) supplies them from decision models installed in it. Both speak the System One API through the library `@dsh-ai-providers/systemone`, which also works with other servers that copy it, such as the `llama-server` of llama.cpp started with a decision model, through a custom base URL.

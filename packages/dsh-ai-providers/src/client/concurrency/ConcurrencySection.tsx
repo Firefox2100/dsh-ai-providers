@@ -27,19 +27,23 @@ export function ConcurrencySection(props: ConcurrencySectionProps) {
             return (
               <section key={index} className={css.limit} data-testid={`ai-limit-${rule.id}`}>
                 <div className={css.head}>
-                  <input className={`${css.input} ${css.name}`} value={rule.id} aria-label={t('name')} placeholder={t('name')} onChange={(event) => { props.updateLimit(index, { id: event.target.value }) }} />
-                  <span className={css.label}>{t('max')}</span>
-                  <input className={`${css.input} ${css.number}`} type="number" min={1} step={1} value={rule.max} aria-label={t('max')} onChange={(event) => { props.updateLimit(index, { max: Math.max(1, Math.round(Number(event.target.value) || 1)) }) }} />
-                  <span className={css.label}>{t('reserve')}</span>
-                  <input className={`${css.input} ${css.number}`} type="number" min={0} max={rule.max - 1} step={1} value={rule.reserve ?? 0} aria-label={t('reserve')} onChange={(event) => { props.updateLimit(index, { reserve: Math.max(0, Math.min(rule.max - 1, Math.round(Number(event.target.value) || 0))) }) }} />
-                  <Button variant="outline" size="sm" onClick={() => { props.removeLimit(index) }}>{t('remove')}</Button>
+                  <input className={`${css.input} ${css.name}`} value={rule.id} disabled={!state.writable} aria-label={t('name')} placeholder={t('name')} onChange={(event) => { props.updateLimit(index, { id: event.target.value }) }} />
+                  <label className={css.control}>
+                    <span className={css.label}>{t('max')}</span>
+                    <input className={`${css.input} ${css.number}`} type="number" min={1} step={1} value={rule.max} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { max: Math.max(1, Math.round(Number(event.target.value) || 1)) }) }} />
+                  </label>
+                  <label className={css.control}>
+                    <span className={css.label}>{t('reserve')}</span>
+                    <input className={`${css.input} ${css.number}`} type="number" min={0} max={rule.max - 1} step={1} value={rule.reserve ?? 0} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { reserve: Math.max(0, Math.min(rule.max - 1, Math.round(Number(event.target.value) || 0))) }) }} />
+                  </label>
+                  <Button variant="outline" size="sm" disabled={!state.writable} onClick={() => { props.removeLimit(index) }}>{t('remove')}</Button>
                 </div>
                 <span className={css.label}>{t('routes')}</span>
                 <div className={css.choices}>
                   {state.routes.length === 0 && <span className={css.muted}>{t('noRoutes')}</span>}
                   {state.routes.map(route => (
                     <label key={route.id} className={css.choice}>
-                      <input type="checkbox" checked={rule.routes.includes(route.id)} onChange={(event) => { props.updateLimit(index, { routes: toggle(rule.routes, route.id, event.target.checked) }) }} />
+                      <input type="checkbox" checked={rule.routes.includes(route.id)} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { routes: toggle(rule.routes, route.id, event.target.checked) }) }} />
                       {route.name}
                     </label>
                   ))}
@@ -48,7 +52,7 @@ export function ConcurrencySection(props: ConcurrencySectionProps) {
                 <div className={css.choices}>
                   {state.capabilities.map(capability => (
                     <label key={capability} className={css.choice}>
-                      <input type="checkbox" checked={rule.capabilities.includes(capability)} onChange={(event) => { props.updateLimit(index, { capabilities: toggle(rule.capabilities, capability, event.target.checked) }) }} />
+                      <input type="checkbox" checked={rule.capabilities.includes(capability)} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { capabilities: toggle(rule.capabilities, capability, event.target.checked) }) }} />
                       {t(`capability.${capability}` as ConcurrencyLocaleKey)}
                     </label>
                   ))}
@@ -62,11 +66,11 @@ export function ConcurrencySection(props: ConcurrencySectionProps) {
             )
           })}
           <div className={css.row}>
-            <Button variant="outline" size="sm" onClick={props.addLimit}>{t('add')}</Button>
+            <Button variant="outline" size="sm" disabled={!state.writable} onClick={props.addLimit}>{t('add')}</Button>
           </div>
           <label className={css.row}>
             {t('maxWait')}
-            <input className={`${css.input} ${css.number}`} type="number" min={0} step={1} value={state.maxWait.text} aria-label={t('maxWait')} onChange={(event) => { props.edit('maxWaitSeconds', event.target.value) }} />
+            <input className={`${css.input} ${css.number}`} type="number" min={0} step={1} value={state.maxWait.text} disabled={!state.writable} onChange={(event) => { props.edit('maxWaitSeconds', event.target.value) }} />
           </label>
           <p className={css.muted}>{t('maxWaitHelp')}</p>
         </div>

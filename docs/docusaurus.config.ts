@@ -58,7 +58,7 @@ const config: Config = {
   themeConfig: {
     image: 'img/social-card.png',
     metadata: [
-      {name: 'keywords', content: 'DeepSeek Harness, DSH, AI providers, TypeScript, LLM, embeddings, reranking, text to speech, speech to text, image generation'},
+      {name: 'keywords', content: 'DeepSeek Harness, DSH, AI providers, TypeScript, LLM, embeddings, reranking, decision models, text to speech, speech to text, image generation'},
       {name: 'robots', content: 'index, follow, max-image-preview:large'},
     ],
     colorMode: {respectPrefersColorScheme: true},
