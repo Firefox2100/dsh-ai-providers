@@ -42,6 +42,7 @@ consumer plugin
       +-- Anthropic
       +-- Ollama
       +-- Cohere
+      +-- DashScope
       +-- Jina
 ```
 
@@ -69,6 +70,7 @@ Consumer plugins depend on the contracts, not a particular vendor package. The r
 | `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
 | `@dsh-ai-providers/ollama` | Language models and embeddings through Ollama's native API |
 | `@dsh-ai-providers/cohere` | Language models, embeddings, and reranking through Cohere's native API |
+| `@dsh-ai-providers/dashscope` | Language models, embeddings, reranking, speech, and images through Alibaba Cloud DashScope's native API (Qwen) |
 | `@dsh-ai-providers/jina` | Reranking and embeddings through Jina's API |
 | `@dsh-ai-providers/jina-cohere` | Reusable Jina- and Cohere-style rerank and embedding transports; not a plugin |
 | `@dsh-ai-providers/all` | Metadata-only DSH bundle containing the runtime and every provider maintained by this project |
@@ -80,6 +82,7 @@ See the individual provider guides for configuration and supported features:
 - [Anthropic](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/anthropic)
 - [Ollama](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/ollama)
 - [Cohere](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/cohere)
+- [DashScope](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/dashscope)
 - [Jina](https://firefox2100.github.io/dsh-ai-providers/docs/official-providers/jina)
 
 ## Installation

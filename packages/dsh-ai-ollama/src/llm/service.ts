@@ -1,6 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AiError, configuredLlmModel, llmTransportFailure, LlmRequestError, LlmService, ndjsonLines, type LlmCall, type LlmEndpointDraft, type LlmModelControl, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
+import type { StreamChunk } from '@deepseek-ai/dsh-llm'
+import { AiError, configuredLlmRoute, LlmRequestError, LlmService, ndjsonLines, streamLlmHttp, type LlmCall, type LlmEndpointDraft, type LlmModelControl, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
 import type { Config, OllamaLlmRouteConfig } from '../config.ts'
 import { connectionHeaders, validateConnection, type OllamaConnection } from '../connection.ts'
 import { PROVIDER_ID } from '../ids.ts'
@@ -29,17 +29,6 @@ function addressOf(baseUrl: string | undefined): string | undefined {
   return trimmed === undefined || trimmed === '' ? undefined : trimmed
 }
 
-function routeSpec(route: OllamaLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec {
-  return {
-    id: route.id,
-    name: route.name,
-    models: route.models.map(configuredLlmModel),
-    ...route.sampling === undefined ? {} : { sampling: route.sampling },
-    ...baseUrl === undefined ? {} : { baseUrl },
-    ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
-  }
-}
-
 /** Language models from Ollama's native `POST /api/chat`. */
 export class OllamaLlmService extends LlmService {
   readonly provider = PROVIDER_ID
@@ -61,7 +50,7 @@ export class OllamaLlmService extends LlmService {
 
   routes(): readonly LlmRouteSpec[] {
     const connections = this.deps.config.connections.get()
-    return this.deps.config.llmRoutes.get().map(route => routeSpec(route, addressOf(connections.find(item => item.id === route.connection)?.baseUrl)))
+    return this.deps.config.llmRoutes.get().map(route => configuredLlmRoute(route, addressOf(connections.find(item => item.id === route.connection)?.baseUrl)))
   }
 
   private configOf(id: string): { route: OllamaLlmRouteConfig; connection: OllamaConnection } {
@@ -86,39 +75,27 @@ export class OllamaLlmService extends LlmService {
 
   private async * generate(call: LlmCall): AsyncGenerator<StreamChunk> {
     const { route, connection } = this.configOf(call.options.provider)
-    const controller = new AbortController()
-    const signal = call.options.signal ? AbortSignal.any([call.options.signal, controller.signal]) : controller.signal
-    const idle = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())
-    let timedOut = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const pulse = (): void => {
-      clearTimeout(timer)
-      timer = setTimeout(() => { timedOut = true; controller.abort() }, idle)
-    }
-    pulse()
-    try {
-      let response: Response
-      try {
+    yield* streamLlmHttp({
+      signal: call.options.signal,
+      idleMs: this.deps.config.llmIdleTimeoutMs.get(),
+      url: connection.apiUrl,
+      request: async (signal) => {
         const body = await wireBody(call, async (ref) => {
           const stored = await this.deps.images?.()?.readImage(ref as never, signal)
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return { data: stored.data }
         })
-        response = await this.send(`${connection.apiUrl}/chat`, {
+        return this.send(`${connection.apiUrl}/chat`, {
           method: 'POST',
           signal,
           redirect: 'error',
           headers: { ...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'content-type': 'application/json', accept: 'application/x-ndjson' },
           body: JSON.stringify(body),
         })
-      } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.apiUrl) }
-      if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
-      if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
-      try { yield * translate(ndjsonLines(response.body, pulse, signal)) } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.apiUrl) }
-    } finally {
-      clearTimeout(timer)
-      controller.abort()
-    }
+      },
+      responseError: async response => httpError(response, await response.json().catch(() => undefined)),
+      translate: (body, pulse, signal) => translate(ndjsonLines(body, pulse, signal)),
+    })
   }
 
 }

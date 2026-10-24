@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, cosineSimilarity, llmTransportFailure, ndjsonLines, requestJson, sseData, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import type { StreamChunk } from '@deepseek-ai/dsh-llm'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, configuredLlmRoute, cosineSimilarity, llmTransportFailure, ndjsonLines, requestJson, sseData, streamLlmHttp, localized, parseProviderSlotId, providerSlotId, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -77,6 +78,13 @@ describe('shared language-model configuration', () => {
     })
   })
 
+  it('converts the shared configured route shape', () => {
+    expect(configuredLlmRoute({ id: 'route', name: 'Route', models: [{ id: 'm', name: 'Model' }], sampling: { temperature: 0.2 }, retry: { mode: 'always' } }, 'https://example.test')).toEqual({
+      id: 'route', name: 'Route', models: [{ id: 'm', name: 'Model', inputs: ['text'] }], sampling: { temperature: 0.2 }, retry: { mode: 'always' }, baseUrl: 'https://example.test',
+    })
+    expect(configuredLlmRoute({ id: 'plain', name: 'Plain', models: [] })).toEqual({ id: 'plain', name: 'Plain', models: [] })
+  })
+
   it('classifies shared streaming transport failures', () => {
     const existing = new LlmRequestError('SERVER', 'failed')
     expect(llmTransportFailure(existing, undefined, false, 1000, 'http://x')).toBe(existing)
@@ -85,6 +93,28 @@ describe('shared language-model configuration', () => {
     expect(llmTransportFailure(new Error('x'), controller.signal, false, 1000, 'http://x')).toMatchObject({ failure: 'ABORTED' })
     expect(llmTransportFailure(new Error('x'), undefined, true, 1500, 'http://x')).toMatchObject({ failure: 'TIMEOUT', message: expect.stringContaining('2 seconds') })
     expect(llmTransportFailure(new Error('x'), undefined, false, 1000, 'http://x')).toMatchObject({ failure: 'TRANSPORT' })
+  })
+
+  it('runs a streaming HTTP response and maps each failure boundary', async () => {
+    const body = new Uint8Array([1])
+    const translated = async function* (): AsyncGenerator<StreamChunk> { yield { type: 'finish', reason: { kind: 'stop' } } }
+    const collect = async (request: () => Promise<Response>, translate = translated) => {
+      const chunks: StreamChunk[] = []
+      for await (const chunk of streamLlmHttp({
+        idleMs: 1000,
+        url: 'https://example.test',
+        request,
+        responseError: async response => new LlmRequestError('SERVER', `status ${response.status}`),
+        translate: () => translate(),
+      })) chunks.push(chunk)
+      return chunks
+    }
+    expect(await collect(async () => new Response(body))).toEqual([{ type: 'finish', reason: { kind: 'stop' } }])
+    await expect(collect(async () => new Response('', { status: 500 }))).rejects.toMatchObject({ failure: 'SERVER' })
+    await expect(collect(async () => new Response(null))).rejects.toMatchObject({ failure: 'EMPTY_RESPONSE' })
+    await expect(collect(async () => { throw new Error('offline') })).rejects.toMatchObject({ failure: 'TRANSPORT' })
+    const broken = async function* (): AsyncGenerator<StreamChunk> { throw new Error('dropped') }
+    await expect(collect(async () => new Response(body), broken)).rejects.toMatchObject({ failure: 'TRANSPORT' })
   })
 })
 

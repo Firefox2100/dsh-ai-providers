@@ -83,6 +83,24 @@ export interface LlmRouteSpec {
   retry?: RetryPolicyConfig
 }
 
+/** Converts the route shape shared by provider configuration schemas into the runtime contract. */
+export function configuredLlmRoute(route: {
+  id: string
+  name: string
+  models: readonly Parameters<typeof configuredLlmModel>[0][]
+  sampling?: LlmSampling | undefined
+  retry?: object | undefined
+}, baseUrl?: string): LlmRouteSpec {
+  return {
+    id: route.id,
+    name: route.name,
+    models: route.models.map(configuredLlmModel),
+    ...route.sampling === undefined ? {} : { sampling: route.sampling },
+    ...baseUrl === undefined ? {} : { baseUrl },
+    ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
+  }
+}
+
 /** An endpoint a surface is still editing: nothing stored yet, the key used for this one question only. */
 export interface LlmEndpointDraft {
   baseUrl: string
@@ -107,6 +125,41 @@ export function llmTransportFailure(error: unknown, signal: AbortSignal | undefi
   if (signal?.aborted === true) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, { cause: error })
   if (timedOut) return new LlmRequestError('TIMEOUT', `${url} was silent for ${Math.round(idleMs / 1000)} seconds`, {}, { cause: error })
   return new LlmRequestError('TRANSPORT', `${url} could not be reached or the connection dropped`, {}, { cause: error })
+}
+
+export interface StreamingLlmHttpOptions {
+  signal?: AbortSignal | undefined
+  idleMs: number
+  url: string
+  request(signal: AbortSignal): Promise<Response>
+  responseError(response: Response): Promise<LlmRequestError>
+  translate(body: ReadableStream<Uint8Array>, pulse: () => void, signal: AbortSignal): AsyncIterable<StreamChunk>
+}
+
+/** Runs the timeout, cancellation and response lifecycle shared by streaming HTTP language-model transports. */
+export async function* streamLlmHttp(options: StreamingLlmHttpOptions): AsyncGenerator<StreamChunk> {
+  const controller = new AbortController()
+  const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal
+  const idle = Math.max(1, options.idleMs)
+  let timedOut = false
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const pulse = (): void => {
+    clearTimeout(timer)
+    timer = setTimeout(() => { timedOut = true; controller.abort() }, idle)
+  }
+  pulse()
+  try {
+    let response: Response
+    try { response = await options.request(signal) }
+    catch (error) { throw llmTransportFailure(error, options.signal, timedOut, idle, options.url) }
+    if (!response.ok) throw await options.responseError(response)
+    if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
+    try { yield* options.translate(response.body, pulse, signal) }
+    catch (error) { throw llmTransportFailure(error, options.signal, timedOut, idle, options.url) }
+  } finally {
+    clearTimeout(timer)
+    controller.abort()
+  }
 }
 
 /** One operation a provider offers for the resident process behind a language model. */

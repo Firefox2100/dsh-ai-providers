@@ -1,6 +1,6 @@
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AiError, configuredLlmModel, llmTransportFailure, LlmRequestError, LlmService, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
+import type { StreamChunk } from '@deepseek-ai/dsh-llm'
+import { AiError, configuredLlmRoute, LlmRequestError, LlmService, sseData, streamLlmHttp, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec } from '@dsh-ai-providers/core'
 import type { CohereLlmRouteConfig, Config } from '../config.ts'
 import { connectionHeaders, validateConnection, type CohereConnection } from '../connection.ts'
 import { PROVIDER_ID } from '../ids.ts'
@@ -22,17 +22,6 @@ export interface CohereLlmDeps {
   fetch?: typeof fetch
 }
 
-function routeSpec(route: CohereLlmRouteConfig, baseUrl: string | undefined): LlmRouteSpec {
-  return {
-    id: route.id,
-    name: route.name,
-    models: route.models.map(configuredLlmModel),
-    ...route.sampling === undefined ? {} : { sampling: route.sampling },
-    ...baseUrl === undefined ? {} : { baseUrl },
-    ...route.retry === undefined ? {} : { retry: route.retry as RetryPolicyConfig },
-  }
-}
-
 /** Language models from Cohere's native `POST /v2/chat`. */
 export class CohereLlmService extends LlmService {
   readonly provider = PROVIDER_ID
@@ -48,7 +37,7 @@ export class CohereLlmService extends LlmService {
     return this.deps.config.llmRoutes.get().map((route) => {
       let baseUrl = connections.find(item => item.id === route.connection)?.baseUrl.trim()
       while (baseUrl?.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
-      return routeSpec(route, baseUrl === undefined || baseUrl === '' ? undefined : baseUrl)
+      return configuredLlmRoute(route, baseUrl === undefined || baseUrl === '' ? undefined : baseUrl)
     })
   }
 
@@ -74,39 +63,27 @@ export class CohereLlmService extends LlmService {
 
   private async * generate(call: LlmCall): AsyncGenerator<StreamChunk> {
     const { route, connection } = this.configOf(call.options.provider)
-    const controller = new AbortController()
-    const signal = call.options.signal ? AbortSignal.any([call.options.signal, controller.signal]) : controller.signal
-    const idle = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())
-    let timedOut = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const pulse = (): void => {
-      clearTimeout(timer)
-      timer = setTimeout(() => { timedOut = true; controller.abort() }, idle)
-    }
-    pulse()
-    try {
-      let response: Response
-      try {
+    yield* streamLlmHttp({
+      signal: call.options.signal,
+      idleMs: this.deps.config.llmIdleTimeoutMs.get(),
+      url: connection.baseUrl,
+      request: async (signal) => {
         const body = await wireBody(call, async (ref) => {
           const stored = await this.deps.images?.()?.readImage(ref as never, signal)
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return { data: stored.data, mediaType: stored.ref.mediaType }
         })
-        response = await this.send(`${connection.baseUrl}/chat`, {
+        return this.send(`${connection.baseUrl}/chat`, {
           method: 'POST',
           signal,
           redirect: 'error',
           headers: { ...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'content-type': 'application/json', accept: 'text/event-stream' },
           body: JSON.stringify(body),
         })
-      } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.baseUrl) }
-      if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
-      if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
-      try { yield * translate(sseData(response.body, pulse, signal)) } catch (error) { throw llmTransportFailure(error, call.options.signal, timedOut, idle, connection.baseUrl) }
-    } finally {
-      clearTimeout(timer)
-      controller.abort()
-    }
+      },
+      responseError: async response => httpError(response, await response.json().catch(() => undefined)),
+      translate: (body, pulse, signal) => translate(sseData(body, pulse, signal)),
+    })
   }
 
 }
