@@ -21,13 +21,14 @@ export async function connectionHeaders(connection: OpenAiConnection, credential
   return key === undefined ? {} : { authorization: `Bearer ${key.value}` }
 }
 
-export type OpenAiCapability = Extract<Capability, 'embedding' | 'tts' | 'stt' | 'image'>
+export type OpenAiCapability = Extract<Capability, 'embedding' | 'tts' | 'stt' | 'image' | 'decision'>
 
 const selectedId = (config: Config, capability: OpenAiCapability): string => ({
   embedding: config.embeddingConnection,
   tts: config.ttsConnection,
   stt: config.sttConnection,
   image: config.imageConnection,
+  decision: config.decisionConnection,
 })[capability].get().trim()
 
 export function resolveConnection(config: Config, capability: OpenAiCapability): OpenAiConnection {

@@ -4,12 +4,12 @@ import type {} from '@dsh-ai-providers/core'
 import type {} from '@deepseek-ai/dsh-credentials'
 import type { RequestOption } from '@dsh-ai-providers/core'
 import { Config } from './config.ts'
-import { OpenAiEmbeddingService, OpenAiImageGenerationService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, type ImageReader } from '@dsh-ai-providers/openai-compatible'
+import { OpenAiDecisionService, OpenAiEmbeddingService, OpenAiImageGenerationService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, type ImageReader } from '@dsh-ai-providers/openai-compatible'
 import { ENTRY_ID, PROVIDER_ID } from './ids.ts'
 import { resolveConnection } from './connection.ts'
 
 export { Config } from './config.ts'
-export { OpenAiEmbeddingService, OpenAiImageGenerationService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, type OpenAiEmbedOptions, type OpenAiImageFormat, type OpenAiImageOptions, type OpenAiLiveSttOptions, type OpenAiSpeechFormat, type OpenAiTtsOptions } from '@dsh-ai-providers/openai-compatible'
+export { OpenAiDecisionService, OpenAiEmbeddingService, OpenAiImageGenerationService, OpenAiLlmService, OpenAiSttService, OpenAiTtsService, type OpenAiEmbedOptions, type OpenAiImageFormat, type OpenAiImageOptions, type OpenAiLiveSttOptions, type OpenAiSpeechFormat, type OpenAiTtsOptions } from '@dsh-ai-providers/openai-compatible'
 export { connectionHeaders, resolveConnection, validateConnection, type OpenAiConnection } from './connection.ts'
 export { wireBody, wireMessages, translate } from '@dsh-ai-providers/openai-compatible'
 export { ENTRY_ID, PROVIDER_ID } from './ids.ts'
@@ -72,6 +72,7 @@ export function apply(ctx: Context, config: Config): void {
       embedding: () => new OpenAiEmbeddingService({ config, connection: () => resolveConnection(config, 'embedding'), credentials: () => ctx.get('credentials') }),
       tts: () => new OpenAiTtsService({ config, connection: () => resolveConnection(config, 'tts'), credentials: () => ctx.get('credentials') }),
       stt: () => new OpenAiSttService({ config, connection: () => resolveConnection(config, 'stt'), credentials: () => ctx.get('credentials') }),
+      decision: () => new OpenAiDecisionService({ config, connection: () => resolveConnection(config, 'decision'), credentials: () => ctx.get('credentials') }),
       image: () => new OpenAiImageGenerationService({ config, connection: () => resolveConnection(config, 'image'), credentials: () => ctx.get('credentials') }),
     },
     llm: () => new OpenAiLlmService({ config, credentials: () => ctx.get('credentials'), images: () => (ctx as unknown as { get(name: 'attachments'): ImageReader | undefined }).get('attachments') }),

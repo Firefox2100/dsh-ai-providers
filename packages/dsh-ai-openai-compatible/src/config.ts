@@ -84,6 +84,7 @@ export interface Config {
   ttsConnection: Volatile<string>
   sttConnection: Volatile<string>
   imageConnection: Volatile<string>
+  decisionConnection: Volatile<string>
   /** The embedding model, as the API names it. */
   embeddingModel: Volatile<string>
   /** Vectors of this many dimensions, for models that can shorten theirs; 0 leaves it to the model. */
@@ -100,6 +101,8 @@ export interface Config {
   sttModel: Volatile<string>
   /** Model used by Realtime live transcription sessions. */
   sttRealtimeModel: Volatile<string>
+  /** The model behind `POST /decisions`, as the API names it. */
+  decisionModel: Volatile<string>
   imageModel: Volatile<string>
   imageSize: Volatile<string>
   imageQuality: Volatile<string>
@@ -169,6 +172,7 @@ export const Config = z.object({
   ttsConnection: z.string().default('openai').volatile(),
   sttConnection: z.string().default('openai').volatile(),
   imageConnection: z.string().default('openai').volatile(),
+  decisionConnection: z.string().default('openai').volatile(),
   embeddingModel: z.string().default('text-embedding-3-small').volatile(),
   embeddingDimensions: z.natural().default(0).volatile(),
   ttsModel: z.string().default('gpt-4o-mini-tts').volatile(),
@@ -177,6 +181,7 @@ export const Config = z.object({
   ttsSpeed: z.number().default(1).volatile(),
   sttModel: z.string().default('whisper-1').volatile(),
   sttRealtimeModel: z.string().default('gpt-4o-mini-transcribe').volatile(),
+  decisionModel: z.string().default('gpt-6-luna').volatile(),
   imageModel: z.string().default('gpt-image-1').volatile(),
   imageSize: z.string().default('1024x1024').volatile(),
   imageQuality: z.string().default('auto').volatile(),

@@ -36,11 +36,11 @@ describe('the provider', () => {
     const parse = plugin.Config as unknown as (value: unknown) => Record<string, { get(): unknown }>
     expect(Object.fromEntries(Object.entries(parse({})).map(([key, field]) => [key, field.get()]))).toEqual({
       connections: [{ id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', apiKeyRef: 'OPENAI_API_KEY' }],
-      embeddingConnection: 'openai', ttsConnection: 'openai', sttConnection: 'openai', imageConnection: 'openai',
+      embeddingConnection: 'openai', ttsConnection: 'openai', sttConnection: 'openai', imageConnection: 'openai', decisionConnection: 'openai',
       embeddingModel: 'text-embedding-3-small', embeddingDimensions: 0,
       ttsModel: 'gpt-4o-mini-tts', ttsVoice: 'alloy', ttsResponseFormat: 'mp3', ttsSpeed: 1, batchSize: 64, timeoutMs: 60_000,
       sttModel: 'whisper-1', sttRealtimeModel: 'gpt-4o-mini-transcribe',
-      imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,
+      decisionModel: 'gpt-6-luna', imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,
       llmRoutes: [], llmIdleTimeoutMs: 300_000,
     })
   })

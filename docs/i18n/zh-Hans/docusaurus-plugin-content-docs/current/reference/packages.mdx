@@ -11,7 +11,7 @@ sidebar_position: 1
 
 ## `@dsh-ai-providers/openai-compatible`
 
-提供 OpenAI 兼容协议的传输、请求序列化、流解析、连接校验及服务实现。它没有 DSH 插件入口；OpenAI 与 LocalAI 插件通过组合使用它，彼此不产生依赖。
+提供 OpenAI 兼容协议的传输（包括 OpenAI Decisions）、请求序列化、流解析、连接校验及服务实现。它没有 DSH 插件入口；OpenAI 与 LocalAI 插件按需组合这些传输，彼此不产生依赖。
 
 ## `@dsh-ai-providers/runtime`
 
@@ -19,7 +19,7 @@ sidebar_position: 1
 
 ## `@dsh-ai-providers/openai`
 
-提供 OpenAI 兼容的嵌入、语言模型对话与流、TTS、文件与实时 STT，以及图像生成。兼容服务器可能只实现其中一部分；应只启用并选择服务器实际提供的能力。
+提供 OpenAI 兼容的嵌入、语言模型对话与流、决策、TTS、文件与实时 STT，以及图像生成。兼容服务器可能只实现其中一部分；尤其是 Decisions API 目前是 OpenAI 的公开测试端点，不能假定兼容服务器也提供它。应只启用并选择服务器实际提供的能力。
 
 端点和配置请参阅 [OpenAI 兼容](../official-providers/openai)。
 

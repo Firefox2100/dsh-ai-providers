@@ -65,7 +65,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 | `@dsh-ai-providers/core` | 与供应商无关的服务契约、错误类型和公共类型 |
 | `@dsh-ai-providers/openai-compatible` | 可复用的 OpenAI 兼容传输实现；它不是插件 |
 | `@dsh-ai-providers/runtime` | 供应商注册、服务选择、并发控制、API 路由和设置界面 |
-| `@dsh-ai-providers/openai` | OpenAI 兼容的语言模型、嵌入、TTS、文件及实时 STT 和图像生成 |
+| `@dsh-ai-providers/openai` | OpenAI 兼容的语言模型、嵌入、决策、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/localai` | LocalAI 的语言模型、嵌入、重排序、决策、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/anthropic` | 通过 Anthropic Messages API 提供语言模型 |
 | `@dsh-ai-providers/ollama` | 通过 Ollama 原生 API 提供语言模型和嵌入 |

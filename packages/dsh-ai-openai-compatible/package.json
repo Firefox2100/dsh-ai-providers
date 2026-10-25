@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/openai-compatible",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Reusable OpenAI-compatible protocol transports for DSH AI providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -26,20 +26,20 @@
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
-    "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || 0.2.1-rc.2",
-    "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2",
     "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.5.1"
+    "@dsh-ai-providers/core": "workspace:0.5.2"
   },
   "dependencies": {
     "ws": "^8.22.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.5",
-    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "^3.18.5",
-    "@dsh-ai-providers/core": "workspace:0.5.1",
+    "@dsh-ai-providers/core": "workspace:0.5.2",
     "@types/node": "^22.20.0",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",

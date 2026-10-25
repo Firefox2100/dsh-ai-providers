@@ -85,4 +85,9 @@ for (const [folder, name, id] of standaloneBundles) {
   }
 }
 
+const workspaceFile = await readFile(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
+if (!workspaceFile.includes(`  '@deepseek-ai/dsh': ${DSH_DEVELOPMENT}\n`)) throw new Error(`pnpm-workspace.yaml must override @deepseek-ai/dsh to ${DSH_DEVELOPMENT} (run pnpm sync:dsh)`)
+const resolvedDsh = new Set([...(await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8')).matchAll(/^  '@deepseek-ai\/dsh[a-z-]*@([^':(]+)/gm)].map(match => match[1]))
+if (resolvedDsh.size !== 1 || !resolvedDsh.has(DSH_DEVELOPMENT)) throw new Error(`pnpm-lock.yaml must resolve every DSH package to ${DSH_DEVELOPMENT}, found ${[...resolvedDsh].join(', ')}: reinstall without the lockfile`)
+
 console.log(`Release metadata and build outputs are valid for ${releasePackages.length} packages at ${version}.`)

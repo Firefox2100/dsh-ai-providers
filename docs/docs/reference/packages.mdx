@@ -11,7 +11,7 @@ See [Core contract reference](./core-contracts) for the exported service boundar
 
 ## `@dsh-ai-providers/openai-compatible`
 
-Protocol-level OpenAI-compatible transports, request serialization, stream parsing, connection validation, and service implementations. It has no DSH plugin entry point. The OpenAI and LocalAI plugins compose it without depending on each other.
+Protocol-level OpenAI-compatible transports, including OpenAI Decisions, request serialization, stream parsing, connection validation, and service implementations. It has no DSH plugin entry point. The OpenAI and LocalAI plugins compose the transports they need without depending on each other.
 
 ## `@dsh-ai-providers/runtime`
 
@@ -19,7 +19,7 @@ The runtime coordination plugin provides the provider registry, selected capabil
 
 ## `@dsh-ai-providers/openai`
 
-An OpenAI-compatible provider for embeddings, language-model chat and streaming, TTS, file and live STT, and image generation. Compatible servers may implement only a subset. Enable and select only the capabilities exposed by the server.
+An OpenAI-compatible provider for embeddings, language-model chat and streaming, decisions, TTS, file and live STT, and image generation. Compatible servers may implement only a subset. In particular, the Decisions API is an OpenAI public-beta endpoint and should not be assumed to exist on a compatible server. Enable and select only the capabilities exposed by the server.
 
 See [OpenAI-compatible](../official-providers/openai) for endpoints and configuration.
 

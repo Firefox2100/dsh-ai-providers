@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/runtime",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "DSH plugin that selects and exposes embedding, reranking, decision, speech, and image providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -22,7 +22,7 @@
       "platform": "web"
     }
   },
-  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2"},
+  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-providers"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/intro",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
@@ -44,24 +44,24 @@
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2",
-    "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2",
     "@deepseek-ai/schemastery": "^3.18.4"
   },
   "dependencies": {
-    "@dsh-ai-providers/core": "workspace:0.5.1"
+    "@dsh-ai-providers/core": "workspace:0.5.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.5",
     "@deepseek-ai/cordis-plugin-loader": "^1.0.6",
-    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-store": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-host-webserver": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-store": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-host-webserver": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "^3.18.5",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
@@ -70,6 +70,6 @@
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8",
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2"
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3"
   }
 }

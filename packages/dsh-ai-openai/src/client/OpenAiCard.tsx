@@ -16,7 +16,7 @@ export function OpenAiCard(props: OpenAiCardProps) {
   const state = props.useOpenAiCard(snapshot => snapshot)
   const disabled = !state.writable
   const common = { overriddenLabel: t('overridden'), resetLabel: t('reset'), invalidLabel: t('invalidNumber'), disabled }
-  const connection = state[`${props.capability}Connection` as 'embeddingConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection']
+  const connection = state[`${props.capability}Connection` as 'embeddingConnection' | 'ttsConnection' | 'sttConnection' | 'imageConnection' | 'decisionConnection']
   return (
     <div data-testid="ai-openai" className={css.section}>
       <h3 className={css.providerTitle}>{t('title')}</h3>
@@ -45,6 +45,9 @@ export function OpenAiCard(props: OpenAiCardProps) {
           <SettingsValueField id="ai-openai-stt-model" label={t('sttModel')} hint={t('sttModelHint')} {...common} {...state.sttModel} onEdit={(text) => { props.edit('sttModel', text) }} onReset={() => { props.resetField('sttModel') }} />
           <SettingsValueField id="ai-openai-stt-realtime-model" label={t('sttRealtimeModel')} hint={t('sttRealtimeModelHint')} {...common} {...state.sttRealtimeModel} onEdit={(text) => { props.edit('sttRealtimeModel', text) }} onReset={() => { props.resetField('sttRealtimeModel') }} />
         </>}
+        {props.capability === 'decision' && (
+          <SettingsValueField id="ai-openai-decision-model" label={t('decisionModel')} hint={t('decisionModelHint')} {...common} {...state.decisionModel} onEdit={(text) => { props.edit('decisionModel', text) }} onReset={() => { props.resetField('decisionModel') }} />
+        )}
         {props.capability === 'image' && <>
           <SettingsValueField id="ai-openai-image-model" label={t('imageModel')} hint={t('imageModelHint')} {...common} {...state.imageModel} onEdit={(text) => { props.edit('imageModel', text) }} onReset={() => { props.resetField('imageModel') }} />
           <SettingsValueField id="ai-openai-image-size" label={t('imageSize')} hint={t('imageSizeHint')} {...common} {...state.imageSize} onEdit={(text) => { props.edit('imageSize', text) }} onReset={() => { props.resetField('imageSize') }} />

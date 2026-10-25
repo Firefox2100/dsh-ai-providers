@@ -66,4 +66,4 @@ return answers.topic.choice
 
 ## 提供方
 
-[TypeSafe](../official-providers/typesafe) 通过其托管的 Jev 模型提供决策。[LocalAI](../official-providers/localai) 通过安装在其中的决策模型提供决策。两者都通过库 `@dsh-ai-providers/systemone` 使用 System One API；复制了这套 API 的其他服务器，例如加载了决策模型的 llama.cpp `llama-server`，也可以通过自定义基础 URL 使用。
+[TypeSafe](../official-providers/typesafe) 通过其托管的 Jev 模型提供决策。[LocalAI](../official-providers/localai) 通过安装在其中的决策模型提供决策。[OpenAI](../official-providers/openai) 通过其自有的 Decisions API（`POST /decisions`，模型 `gpt-6-luna`）提供决策；它的三种问题类型相同，但请求格式不同，因此在 `@dsh-ai-providers/openai-compatible` 中是单独的传输层。TypeSafe 与 LocalAI 都通过库 `@dsh-ai-providers/systemone` 使用 System One API；复制了这套 API 的其他服务器，例如加载了决策模型的 llama.cpp `llama-server`，也可以通过自定义基础 URL 使用。

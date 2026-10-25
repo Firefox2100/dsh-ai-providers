@@ -26,7 +26,7 @@ dsh plugin --profile <profile> add @dsh-ai-providers/localai
 
 Every vendor package depends on the runtime package so its module is installed, but DSH activates bundle layers explicitly: installing a vendor does not implicitly enable the runtime bundle. Each vendor bundle contributes only its own row, so any number of providers can be combined without loading the runtime twice.
 
-`@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. Three implementation libraries are installed only as dependencies. `@dsh-ai-providers/openai-compatible` serves OpenAI and LocalAI, `@dsh-ai-providers/jina-cohere` serves Jina and Cohere, and `@dsh-ai-providers/systemone` serves TypeSafe and LocalAI decisions. None of these libraries adds a DSH plugin row.
+`@dsh-ai-providers/core` contains the contracts used by plugin authors and is pulled in by the runtime packages. Three implementation libraries are installed only as dependencies. `@dsh-ai-providers/openai-compatible` serves OpenAI and LocalAI and includes OpenAI's Decisions transport, `@dsh-ai-providers/jina-cohere` serves Jina and Cohere, and `@dsh-ai-providers/systemone` serves TypeSafe and LocalAI decisions. None of these libraries adds a DSH plugin row.
 
 ## Requirements
 

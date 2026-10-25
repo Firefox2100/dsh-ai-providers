@@ -51,7 +51,7 @@ export function apply(ctx: Context): void {
   )
 
   // The entry only exists while the provider's plugin is loaded and serves its form.
-  for (const capability of ['embedding', 'tts', 'stt', 'image'] as const) {
+  for (const capability of ['embedding', 'tts', 'stt', 'image', 'decision'] as const) {
     ctx.effect(
       () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject(providerSlotName(capability), () =>
         ctx.slots.register({

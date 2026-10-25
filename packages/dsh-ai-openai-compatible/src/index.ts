@@ -4,6 +4,8 @@ export { connectionHeaders, resolveConnection, validateConnection } from './conn
 export type { OpenAiCapability, OpenAiConnection } from './connection.ts'
 export { OpenAiEmbeddingService } from './embedding.ts'
 export type { OpenAiEmbeddingDeps, OpenAiEmbedOptions } from './embedding.ts'
+export { OpenAiDecisionService } from './decision.ts'
+export type { OpenAiDecisionDeps, OpenAiDecisionSettings } from './decision.ts'
 export { OpenAiTtsService } from './tts.ts'
 export type { OpenAiSpeechFormat, OpenAiTtsDeps, OpenAiTtsOptions } from './tts.ts'
 export { OpenAiSttService } from './stt.ts'

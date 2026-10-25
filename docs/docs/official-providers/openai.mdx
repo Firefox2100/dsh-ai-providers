@@ -15,6 +15,9 @@ sidebar_position: 1
 | File transcription | `POST /audio/transcriptions` |
 | Live transcription | `/realtime?intent=transcription` WebSocket |
 | Image generation | `POST /images/generations` and `/images/edits` |
+| Decisions | `POST /decisions` |
+
+OpenAI Decisions is currently a public-beta API, and `gpt-6-luna` is its only supported model. OpenAI-compatible servers do not necessarily implement this endpoint.
 
 ## Connections
 
@@ -35,6 +38,7 @@ Base URLs must include the API prefix expected before the endpoint paths. For ex
 | File STT model | `whisper-1` |
 | Realtime STT model | `gpt-4o-mini-transcribe` |
 | Image model / size / quality / format | `gpt-image-1` / `1024x1024` / `auto` / `png` |
+| Decision model | `gpt-6-luna` |
 | Request timeout | 60 seconds |
 | Embedding batch size | 64 texts |
 | LLM idle timeout | 5 minutes |

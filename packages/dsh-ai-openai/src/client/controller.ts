@@ -19,6 +19,8 @@ export interface OpenAiSettings {
   ttsConnection?: string
   sttConnection?: string
   imageConnection?: string
+  decisionConnection?: string
+  decisionModel?: string
   embeddingModel?: string
   embeddingDimensions?: number
   ttsModel?: string
@@ -58,6 +60,8 @@ export interface OpenAiCardState extends SettingsFormShell {
   imageQuality: SettingsFieldState
   imageOutputFormat: SettingsFieldState
   imageOutputCompression: SettingsFieldState
+  decisionConnection: SettingsFieldState
+  decisionModel: SettingsFieldState
   llmRoutes: readonly OpenAiLlmRouteConfig[]
   llmIdleTimeoutMs: SettingsFieldState
   batchSize: SettingsFieldState
@@ -104,7 +108,7 @@ export class OpenAiCardController {
       scope,
       [
         connectionListField, routeListField, settingsNumberField('llmIdleTimeoutMs'),
-        settingsTextField('embeddingConnection'), settingsTextField('ttsConnection'), settingsTextField('sttConnection'), settingsTextField('imageConnection'),
+        settingsTextField('embeddingConnection'), settingsTextField('ttsConnection'), settingsTextField('sttConnection'), settingsTextField('imageConnection'), settingsTextField('decisionConnection'), settingsTextField('decisionModel'),
         settingsTextField('embeddingModel'),
         settingsNumberField('embeddingDimensions'), settingsTextField('ttsModel'), settingsTextField('ttsVoice'),
         settingsTextField('ttsResponseFormat'), settingsNumberField('ttsSpeed'), settingsNumberField('batchSize'), settingsNumberField('timeoutMs'),
@@ -129,6 +133,8 @@ export class OpenAiCardController {
       ttsConnection: this.form.field('ttsConnection'),
       sttConnection: this.form.field('sttConnection'),
       imageConnection: this.form.field('imageConnection'),
+      decisionConnection: this.form.field('decisionConnection'),
+      decisionModel: this.form.field('decisionModel'),
       embeddingModel: this.form.field('embeddingModel'),
       embeddingDimensions: this.form.field('embeddingDimensions'),
       ttsModel: this.form.field('ttsModel'),
@@ -200,7 +206,7 @@ export class OpenAiCardController {
       updateConnection: (id, field, value) => { this.setConnections(this.connections().map(connection => connection.id === id ? { ...connection, [field]: value } : connection)) },
       removeConnection: id => {
         this.setConnections(this.connections().filter(connection => connection.id !== id))
-        for (const capability of ['embedding', 'tts', 'stt', 'image'] as const) {
+        for (const capability of ['embedding', 'tts', 'stt', 'image', 'decision'] as const) {
           const field = `${capability}Connection`
           if (this.form.field(field).text === id) this.form.actions().edit(field, '')
         }

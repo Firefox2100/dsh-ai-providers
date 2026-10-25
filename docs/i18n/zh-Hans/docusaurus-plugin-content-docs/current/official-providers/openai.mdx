@@ -15,6 +15,9 @@ sidebar_position: 1
 | 文件转录 | `POST /audio/transcriptions` |
 | 实时转录 | `/realtime?intent=transcription` WebSocket |
 | 图像生成 | `POST /images/generations` 和 `/images/edits` |
+| 决策 | `POST /decisions` |
+
+OpenAI Decisions 目前处于公开测试阶段，唯一支持的模型是 `gpt-6-luna`。OpenAI 兼容服务器不一定实现此端点。
 
 ## 连接
 
@@ -35,6 +38,7 @@ sidebar_position: 1
 | 文件 STT 模型 | `whisper-1` |
 | 实时 STT 模型 | `gpt-4o-mini-transcribe` |
 | 图像模型 / 尺寸 / 质量 / 格式 | `gpt-image-1` / `1024x1024` / `auto` / `png` |
+| 决策模型 | `gpt-6-luna` |
 | 请求超时 | 60 秒 |
 | 嵌入批大小 | 64 条文本 |
 | LLM 空闲超时 | 5 分钟 |

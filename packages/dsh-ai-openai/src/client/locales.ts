@@ -8,6 +8,7 @@ export type OpenAiLocaleKey =
   | 'embeddingModel' | 'embeddingModelHint' | 'embeddingDimensions' | 'embeddingDimensionsHint' | 'batchSize' | 'batchSizeHint' | 'timeoutMs' | 'timeoutMsHint'
   | 'ttsModel' | 'ttsModelHint' | 'ttsVoice' | 'ttsVoiceHint' | 'ttsResponseFormat' | 'ttsResponseFormatHint' | 'ttsSpeed' | 'ttsSpeedHint'
   | 'sttModel' | 'sttModelHint' | 'sttRealtimeModel' | 'sttRealtimeModelHint'
+  | 'decisionModel' | 'decisionModelHint'
   | 'imageModel' | 'imageModelHint' | 'imageSize' | 'imageSizeHint' | 'imageQuality' | 'imageQualityHint' | 'imageOutputFormat' | 'imageOutputFormatHint' | 'imageOutputCompression' | 'imageOutputCompressionHint'
   | 'llmTitle' | 'llmDescription' | 'routesEmpty' | 'routeAdd' | 'routeNew' | 'routeRemove' | 'routeName' | 'routeId' | 'routeIdHint' | 'reasoningTags' | 'reasoningTagsTags' | 'reasoningTagsImplicit' | 'reasoningTagsNone' | 'reasoningTagsHint' | 'maxCompletionTokens' | 'replayReasoning' | 'routeHeaders' | 'routeRetry' | 'routeRetryHint' | 'modelSystemInHistory' | 'routeHeadersHint' | 'routeSampling' | 'models' | 'modelAdd' | 'modelRemove' | 'modelId' | 'modelIdHint' | 'modelName' | 'contextWindow' | 'modelMaxTokens' | 'modelVision' | 'reasoningLevels' | 'reasoningLevelsHint' | 'levelId' | 'levelName' | 'levelBody' | 'levelAdd' | 'levelExample' | 'levelDefault' | 'modelSampling' | 'remove' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'samplingTemperature' | 'samplingTopP' | 'samplingTopK' | 'samplingMinP' | 'samplingFrequencyPenalty' | 'samplingPresencePenalty' | 'samplingRepetitionPenalty' | 'samplingSeed' | 'samplingMaxTokens' | 'samplingToolChoice' | 'samplingDefault' | 'samplingStop' | 'samplingStopHint' | 'samplingBody' | 'samplingBodyHint' | 'invalidJson' | 'llmIdleTimeoutMs' | 'llmIdleTimeoutMsHint'
   | 'overridden' | 'reset' | 'invalidNumber'
@@ -53,6 +54,7 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     sttModelHint: 'The model for completed audio files, for example whisper-1 or gpt-4o-mini-transcribe.',
     sttRealtimeModel: 'Live transcription model',
     sttRealtimeModelHint: 'The model used by Realtime transcription sessions.',
+    decisionModel: 'Decision model', decisionModelHint: "The model behind the Decisions API, such as gpt-6-luna. The key and endpoint come from the connection above.",
     imageModel: 'Image model', imageModelHint: 'The image generation model, for example gpt-image-1 or a LocalAI diffusion model.',
     imageSize: 'Default image size', imageSizeHint: 'A provider-supported size such as 1024x1024.',
     imageQuality: 'Default image quality', imageQualityHint: 'A provider-supported quality such as auto, low, medium or high.',
@@ -175,6 +177,7 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     sttModelHint: '用于完整音频文件的模型，例如 whisper-1 或 gpt-4o-mini-transcribe。',
     sttRealtimeModel: '实时转录模型',
     sttRealtimeModelHint: '实时转录会话使用的模型。',
+    decisionModel: '决策模型', decisionModelHint: '决策 API 使用的模型，例如 gpt-6-luna。密钥与端点来自上方的连接。',
     imageModel: '图像模型', imageModelHint: '图像生成模型，例如 gpt-image-1 或 LocalAI 扩散模型。',
     imageSize: '默认图像尺寸', imageSizeHint: '提供方支持的尺寸，例如 1024x1024。',
     imageQuality: '默认图像质量', imageQualityHint: '提供方支持的质量，例如 auto、low、medium 或 high。',

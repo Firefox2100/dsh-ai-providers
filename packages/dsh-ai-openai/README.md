@@ -1,6 +1,6 @@
 # @dsh-ai-providers/openai
 
-OpenAI-compatible language model, embedding, text-to-speech, file and live speech-to-text, and image generation services for DeepSeek Harness.
+OpenAI-compatible language model, embedding, decision, text-to-speech, file and live speech-to-text, and image generation services for DeepSeek Harness.
 
 The plugin plugs these capabilities into the shared runtime, so users configure an OpenAI-compatible endpoint and DSH-managed credential once and consumer plugins can reuse them. It provides model discovery, streaming tool-capable chat, and per-capability configuration. It uses [`@dsh-ai-providers/openai-compatible`](https://www.npmjs.com/package/@dsh-ai-providers/openai-compatible) for the shared protocol implementation.
 

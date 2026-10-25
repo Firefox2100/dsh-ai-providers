@@ -67,7 +67,7 @@ Consumer plugins depend on the contracts, not a particular vendor package. The r
 | `@dsh-ai-providers/core` | Provider-neutral service contracts, errors, and shared types |
 | `@dsh-ai-providers/openai-compatible` | Reusable OpenAI-compatible wire transports; not a plugin |
 | `@dsh-ai-providers/runtime` | Provider registry, service selection, concurrency control, API routes, and settings UI |
-| `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, TTS, file and live STT, and image generation |
+| `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, decisions, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, decisions, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
 | `@dsh-ai-providers/ollama` | Language models and embeddings through Ollama's native API |

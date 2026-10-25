@@ -2,7 +2,7 @@
 
 Reusable OpenAI-compatible wire transports for provider authors. This is a protocol library, not a DSH plugin.
 
-It implements streaming chat completions, embeddings, text-to-speech, file and live speech-to-text, image generation, request serialization, SSE handling, and common error translation. The project-maintained OpenAI and LocalAI packages share it without depending on each other. Other provider plugins can reuse it while supplying their own identity, defaults, UI, credentials, and vendor-specific behavior.
+It implements streaming chat completions, embeddings, OpenAI Decisions, text-to-speech, file and live speech-to-text, image generation, request serialization, SSE handling, and common error translation. The project-maintained OpenAI and LocalAI packages share it without depending on each other. Other provider plugins can reuse the transports their endpoint supports while supplying their own identity, defaults, UI, credentials, and vendor-specific behavior.
 
 ## Install
 
