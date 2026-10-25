@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/all",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Complete Firefox2100-maintained AI provider bundle for DeepSeek Harness.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -16,14 +16,14 @@
   "files": ["cordis.patch.yml", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@dsh-ai-providers/runtime": "workspace:0.5.2",
-    "@dsh-ai-providers/openai": "workspace:0.5.2",
-    "@dsh-ai-providers/anthropic": "workspace:0.5.2",
-    "@dsh-ai-providers/jina": "workspace:0.5.2",
-    "@dsh-ai-providers/localai": "workspace:0.5.2",
-    "@dsh-ai-providers/ollama": "workspace:0.5.2",
-    "@dsh-ai-providers/cohere": "workspace:0.5.2",
-    "@dsh-ai-providers/dashscope": "workspace:0.5.2",
-    "@dsh-ai-providers/typesafe": "workspace:0.5.2"
+    "@dsh-ai-providers/runtime": "workspace:0.5.3",
+    "@dsh-ai-providers/openai": "workspace:0.5.3",
+    "@dsh-ai-providers/anthropic": "workspace:0.5.3",
+    "@dsh-ai-providers/jina": "workspace:0.5.3",
+    "@dsh-ai-providers/localai": "workspace:0.5.3",
+    "@dsh-ai-providers/ollama": "workspace:0.5.3",
+    "@dsh-ai-providers/cohere": "workspace:0.5.3",
+    "@dsh-ai-providers/dashscope": "workspace:0.5.3",
+    "@dsh-ai-providers/typesafe": "workspace:0.5.3"
   }
 }

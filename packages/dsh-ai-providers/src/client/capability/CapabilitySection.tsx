@@ -54,10 +54,10 @@ function Section(props: CapabilitySectionProps & { capability: Capability }) {
       <div className={css.status}>
         <div className={css.row}>
           <span>{t('status')}</span>
-          <span className={state.available ? css.ok : undefined} data-testid={`ai-${capability}-status`}>{state.available ? t('statusAvailable') : t('statusUnavailable')}</span>
+          <span className={state.serviceAvailable ? css.ok : undefined} data-testid={`ai-${capability}-status`}>{state.serviceAvailable ? t('statusAvailable') : t('statusUnavailable')}</span>
         </div>
         <div className={css.row}>
-          <Button variant="outline" size="sm" disabled={testing || !state.available} onClick={props.runProbe}>{testing ? t('testing') : t('test')}</Button>
+          <Button variant="outline" size="sm" disabled={testing || !state.serviceAvailable} onClick={props.runProbe}>{testing ? t('testing') : t('test')}</Button>
           {result !== undefined && (
             <span className={result.ok ? css.ok : css.error} role="status" data-testid={`ai-${capability}-probe`}>
               {result.ok

@@ -83,11 +83,28 @@ describe('client controllers', () => {
     await controller.refresh()
 
     expect(controller.inject().hooks.capability.getSnapshot()).toMatchObject({
-      status: 'ready', available: true, providers: [{ id: 'test', label: 'Test', loaded: true }],
+      status: 'ready', available: true, serviceAvailable: true, providers: [{ id: 'test', label: 'Test', loaded: true }],
     })
     effects.forEach(dispose => { dispose() })
     expect(disposeSlot).toHaveBeenCalledOnce()
     expect(disposeLocale).toHaveBeenCalledOnce()
+    controller.dispose()
+  })
+
+  it('keeps its form usable while the service is down, or no provider could ever be chosen', async () => {
+    const ctx = {
+      slots: { entriesOfSlot: () => [{ options: { id: 'embedding:test', order: 1, label: 'Test' } }], subscribe: () => () => {} },
+      locale: { subscribe: () => () => {} },
+      effect: () => {},
+    } as unknown as Context
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      capabilities: [{ capability: 'embedding', providers: [{ id: 'test' }], available: false }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } })))
+
+    const controller = new CapabilityController(ctx, scope({ embedding: '' }), 'embedding')
+    await controller.refresh()
+
+    expect(controller.inject().hooks.capability.getSnapshot()).toMatchObject({ available: true, serviceAvailable: false })
     controller.dispose()
   })
 

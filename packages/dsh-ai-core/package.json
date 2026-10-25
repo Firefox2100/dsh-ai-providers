@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/core",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Shared contracts for language, embedding, reranking, decision, speech, and image providers for DSH.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",

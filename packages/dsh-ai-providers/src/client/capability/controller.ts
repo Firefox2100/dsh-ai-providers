@@ -27,7 +27,7 @@ export interface CapabilityState extends SettingsFormShell {
   selected: SettingsFieldState
   providers: readonly ProviderEntry[]
   /** Whether the service is on the host's context right now. */
-  available: boolean
+  serviceAvailable: boolean
   status: 'loading' | 'ready' | 'failed'
   error?: string
   probe: { status: 'idle' | 'running' | 'done'; result?: ProbeResult }
@@ -48,7 +48,7 @@ export class CapabilityController {
   private readonly abort = new AbortController()
   private entries: { id: string; label: string }[] = []
   private loaded = new Set<string>()
-  private available = false
+  private serviceAvailable = false
   private status: CapabilityState['status'] = 'loading'
   private error: string | undefined
   private probe: CapabilityState['probe'] = { status: 'idle' }
@@ -70,7 +70,7 @@ export class CapabilityController {
       ...this.form.shell(),
       selected: this.form.field(this.capability),
       providers: this.entries.map(entry => ({ ...entry, loaded: this.loaded.has(entry.id) })),
-      available: this.available,
+      serviceAvailable: this.serviceAvailable,
       status: this.status,
       ...(this.error === undefined ? {} : { error: this.error }),
       probe: this.probe,
@@ -101,7 +101,7 @@ export class CapabilityController {
       const payload = await response.json() as CapabilitiesPayload
       const state = payload.capabilities.find(entry => entry.capability === this.capability)
       this.loaded = new Set((state?.providers ?? []).map(provider => provider.id))
-      this.available = state?.available ?? false
+      this.serviceAvailable = state?.available ?? false
       this.status = 'ready'
       this.error = undefined
     } catch (error) {
