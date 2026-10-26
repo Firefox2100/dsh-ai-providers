@@ -189,20 +189,28 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
   }
 }
 
+/** Room enough for a reasoning model to think and still answer; a local model that thinks at length would otherwise spend a small limit before the first word. */
+const PROBE_MAX_TOKENS = 1024
+
 /** Ask a model a short question through DSH's own model service, as a chat would, and report what it answered and how fast. */
 export async function probeLlm(llm: Context['llm'] | undefined, route: string, model: string): Promise<LlmProbeResult> {
   if (llm === undefined) return { ok: false, code: 'not-configured', message: 'this profile has no model service' }
   const started = performance.now()
   let text = ''
+  let reasoned = false
   let outputTokens: number | undefined
   try {
-    for await (const chunk of llm.stream({ provider: route, model, messages: [{ role: 'user', content: [{ type: 'text', text: 'Reply with the single word: ready' }] }], maxTokens: 64, signal: AbortSignal.timeout(120_000) })) {
+    for await (const chunk of llm.stream({ provider: route, model, messages: [{ role: 'user', content: [{ type: 'text', text: 'Reply with the single word: ready' }] }], maxTokens: PROBE_MAX_TOKENS, signal: AbortSignal.timeout(120_000) })) {
       if (chunk.type === 'text-delta') text += chunk.text
+      else if (chunk.type === 'reasoning-delta') reasoned = true
       else if (chunk.type === 'usage') outputTokens = chunk.usage.outputTokens
       else if (chunk.type === 'finish' && (chunk.reason.kind === 'error' || chunk.reason.kind === 'aborted')) return { ok: false, code: chunk.reason.failure.code, message: chunk.reason.failure.message }
     }
   } catch (error) {
     return { ok: false, code: error instanceof AiError ? error.code : 'internal', message: error instanceof Error ? error.message : String(error) }
+  }
+  if (text.trim() === '') {
+    return { ok: false, code: 'empty', message: reasoned ? `the model reasoned but wrote no answer within ${PROBE_MAX_TOKENS} tokens; raise the route's output limit, or lower its reasoning level` : 'the model answered with no text' }
   }
   return { ok: true, route, model, milliseconds: Math.round(performance.now() - started), ...outputTokens === undefined ? {} : { outputTokens }, text: text.trim() }
 }

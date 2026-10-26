@@ -59,6 +59,21 @@ describe('OpenAI decisions', () => {
     expect(sent[0]!.body['input']).toBe('{"a":1}')
   })
 
+  it('reads the answer a live LocalAI gave: probabilities as lists of objects, matched by value', async () => {
+    const { decisions } = service({
+      model: 'kev-9b', usage: { input_tokens: 109, output_tokens: 0, total_tokens: 109 },
+      answers: [
+        { type: 'predicate', name: 'refund', probability: 0.963 },
+        { type: 'choice', name: 'team', choice: 'billing', confidence: 0.68, probabilities: [{ value: 'tech', probability: 0.16 }, { value: 'billing', probability: 0.84 }] },
+        { type: 'score', name: 'anger', score: 1.396, confidence: 0.094, probabilities: [{ value: 0, label: 'calm', probability: 0.09 }, { value: 1, label: 'annoyed', probability: 0.42 }, { value: 2, label: 'angry', probability: 0.49 }] },
+      ],
+    })
+    const result = await decisions.decide('charged twice', questions)
+    expect(result.tokens).toBe(109)
+    expect(result.answers.team).toEqual({ type: 'choice', choice: 'billing', confidence: 0.68, probabilities: { billing: 0.84, tech: 0.16 } })
+    expect(result.answers.anger).toEqual({ type: 'score', score: 1.396, confidence: 0.094, probabilities: [0.09, 0.42, 0.49] })
+  })
+
   it('reads probabilities given as a list in the order asked', async () => {
     const { decisions } = service({ answers: [{ type: 'choice', name: 'team', choice: 'tech', probabilities: [0.3, 0.7] }] })
     const result = await decisions.decide('x', { team: questions.team })

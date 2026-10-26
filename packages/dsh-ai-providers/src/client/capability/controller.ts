@@ -52,8 +52,11 @@ export class CapabilityController {
   private status: CapabilityState['status'] = 'loading'
   private error: string | undefined
   private probe: CapabilityState['probe'] = { status: 'idle' }
+  private probeVersion = 0
+  private unsubscribe = () => {}
+  private timers: ReturnType<typeof setTimeout>[] = []
 
-  constructor(private readonly ctx: Context, scope: SettingsFormScope<CapabilitySettings>, private readonly capability: Capability) {
+  constructor(private readonly ctx: Context, private readonly scope: SettingsFormScope<CapabilitySettings>, private readonly capability: Capability) {
     this.form = new SettingsFormModel(scope, [settingsTextField(capability)])
     this.store = this.form.bind(() => this.projection())
     this.syncEntries()
@@ -63,7 +66,20 @@ export class CapabilityController {
     }, 'dsh-ai-providers: provider list')
   }
 
-  start(): void { void this.refresh() }
+  start(): void {
+    this.unsubscribe = this.scope.subscribe(() => { this.refreshSoon() })
+    void this.refresh()
+  }
+
+  /**
+   * A saved selection remounts the host's services a moment later, so the state read before it is stale: read again at once
+   * and once more after the remount, or the page stays "unavailable" (and the test disabled) until it is reloaded.
+   */
+  private refreshSoon(): void {
+    this.clearProbe()
+    for (const timer of this.timers) clearTimeout(timer)
+    this.timers = [300, 2000].map(delay => setTimeout(() => { void this.refresh() }, delay))
+  }
 
   private projection(): CapabilityState {
     return {
@@ -79,6 +95,14 @@ export class CapabilityController {
 
   private publish(): void {
     this.store.set(this.projection())
+  }
+
+  private clearProbe(): void {
+    this.probeVersion += 1
+    if (this.probe.status !== 'idle') {
+      this.probe = { status: 'idle' }
+      this.publish()
+    }
   }
 
   /** The providers whose vendor plugins have put their configuration in the tab. */
@@ -114,29 +138,40 @@ export class CapabilityController {
 
   /** Ask the host to try the selected provider with a small job of its kind, and show what came of it. */
   async runProbe(): Promise<void> {
+    const version = ++this.probeVersion
     this.probe = { status: 'running' }
     this.publish()
     try {
       const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.probe}?capability=${this.capability}`, { method: 'POST', credentials: 'same-origin', signal: this.abort.signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
-      this.probe = { status: 'done', result: await response.json() as ProbeResult }
+      const result = await response.json() as ProbeResult
+      if (version !== this.probeVersion) return
+      this.probe = { status: 'done', result }
     } catch (error) {
       if (this.abort.signal.aborted) return
+      if (version !== this.probeVersion) return
       this.probe = { status: 'done', result: { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) } }
     }
     await this.refresh()
   }
 
   inject(): CapabilityFace {
+    const actions = this.form.actions()
     return {
       hooks: { capability: this.store },
-      ...this.form.actions(),
+      ...actions,
+      edit: (field, value) => { this.clearProbe(); actions.edit(field, value) },
+      resetField: field => { this.clearProbe(); actions.resetField(field) },
+      save: () => { this.clearProbe(); actions.save() },
+      discard: () => { this.clearProbe(); actions.discard() },
       runProbe: () => { void this.runProbe() },
     }
   }
 
   dispose(): void {
     this.abort.abort()
+    this.unsubscribe()
+    for (const timer of this.timers) clearTimeout(timer)
     this.form.dispose()
   }
 }

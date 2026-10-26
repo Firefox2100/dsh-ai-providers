@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/localai",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "First-class LocalAI provider for DSH language, embedding, reranking, decision, speech, and image services.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -16,7 +16,7 @@
   "scripts": { "build": "tsdown", "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json", "test": "vitest run --passWithNoTests" },
   "files": ["lib/*.js", "lib/*.js.map", "cordis.patch.yml", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
-  "peerDependencies": { "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2", "@deepseek-ai/schemastery": "^3.18.4", "@dsh-ai-providers/core": "workspace:0.5.3" },
-  "dependencies": { "@dsh-ai-providers/openai-compatible": "workspace:0.5.3", "@dsh-ai-providers/runtime": "workspace:0.5.3", "@dsh-ai-providers/systemone": "workspace:0.5.3" },
-  "devDependencies": { "@deepseek-ai/cordis": "^4.0.5", "@deepseek-ai/dsh-client-locale": "0.2.1-rc.3", "@deepseek-ai/dsh-client-store": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3", "@deepseek-ai/dsh-credentials": "0.2.1-rc.3", "@deepseek-ai/schemastery": "^3.18.5", "@types/node": "^22.20.0", "@types/react": "~18.3.31", "@dsh-ai-providers/core": "workspace:0.5.3", "@dsh-ai-providers/openai-compatible": "workspace:0.5.3", "@dsh-ai-providers/systemone": "workspace:0.5.3", "lightningcss": "^1.33.0", "react": "^18.3.1", "tsdown": "^0.22.2", "typescript": "^6.0.3", "vitest": "^4.1.8" }
+  "peerDependencies": { "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2", "@deepseek-ai/schemastery": "^3.18.4", "@dsh-ai-providers/core": "workspace:0.5.4" },
+  "dependencies": { "@dsh-ai-providers/openai-compatible": "workspace:0.5.4", "@dsh-ai-providers/runtime": "workspace:0.5.4", "@dsh-ai-providers/systemone": "workspace:0.5.4" },
+  "devDependencies": { "@deepseek-ai/cordis": "^4.0.5", "@deepseek-ai/dsh-client-locale": "0.2.1-rc.3", "@deepseek-ai/dsh-client-store": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.3", "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3", "@deepseek-ai/dsh-credentials": "0.2.1-rc.3", "@deepseek-ai/schemastery": "^3.18.5", "@types/node": "^22.20.0", "@types/react": "~18.3.31", "@dsh-ai-providers/core": "workspace:0.5.4", "@dsh-ai-providers/openai-compatible": "workspace:0.5.4", "@dsh-ai-providers/systemone": "workspace:0.5.4", "lightningcss": "^1.33.0", "react": "^18.3.1", "tsdown": "^0.22.2", "typescript": "^6.0.3", "vitest": "^4.1.8" }
 }

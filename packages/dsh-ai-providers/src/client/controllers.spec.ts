@@ -108,6 +108,29 @@ describe('client controllers', () => {
     controller.dispose()
   })
 
+  it('reads the host again after a saved selection, so a stale "unavailable" does not wait for a reload', async () => {
+    vi.useFakeTimers()
+    let notify = () => {}
+    let available = false
+    const form = { ...scope({ embedding: 'test' }), subscribe: (listener: () => void) => { notify = listener; return () => {} } }
+    const ctx = {
+      slots: { entriesOfSlot: () => [], subscribe: () => () => {} }, locale: { subscribe: () => () => {} }, effect: () => {},
+    } as unknown as Context
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      capabilities: [{ capability: 'embedding', providers: [{ id: 'test' }], available }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } })))
+
+    const controller = new CapabilityController(ctx, form, 'embedding')
+    controller.start()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(controller.inject().hooks.capability.getSnapshot()).toMatchObject({ serviceAvailable: false })
+    available = true
+    notify()
+    await vi.advanceTimersByTimeAsync(2500)
+    expect(controller.inject().hooks.capability.getSnapshot()).toMatchObject({ serviceAvailable: true })
+    controller.dispose()
+  })
+
   it('starts periodic concurrency reads and exposes the returned status', async () => {
     vi.useFakeTimers()
     const disposers: Array<() => void> = []

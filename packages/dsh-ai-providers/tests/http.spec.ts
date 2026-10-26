@@ -3,7 +3,7 @@ import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Context } from '@deepseek-ai/cordis'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApiHandler, probeDecision, probeEmbedding, probeRerank } from '../src/host/http.ts'
+import { createApiHandler, probeDecision, probeLlm, probeEmbedding, probeRerank } from '../src/host/http.ts'
 import { AiProviders } from '../src/host/registry.ts'
 import { AiServices } from '../src/host/services.ts'
 import { FakeDecision, FakeEmbedding, FakeRerank, providerOf } from './support.ts'
@@ -144,5 +144,16 @@ describe('testing the decision provider', () => {
     expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('decided oddly') })
     decider.failWith = Object.assign(new Error('no key'), { name: 'AiError' })
     expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'internal' })
+  })
+})
+
+describe('the language model probe', () => {
+  const llm = (chunks: unknown[]) => ({ stream: async function * () { for (const chunk of chunks) yield chunk } }) as never
+
+  it('reports the answer, and says so when a reasoning model spent its output without writing one', async () => {
+    const answered = await probeLlm(llm([{ type: 'text-delta', index: 0, text: ' ready ' }, { type: 'usage', usage: { outputTokens: 3 } }]), 'route', 'model')
+    expect(answered).toMatchObject({ ok: true, text: 'ready', outputTokens: 3 })
+    const reasoned = await probeLlm(llm([{ type: 'reasoning-delta', index: 0, text: 'I need to say ready' }, { type: 'finish', reason: { kind: 'max-tokens' } }]), 'route', 'model')
+    expect(reasoned).toMatchObject({ ok: false, code: 'empty', message: expect.stringContaining('reasoned') as string })
   })
 })

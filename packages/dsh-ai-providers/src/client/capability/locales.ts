@@ -6,7 +6,7 @@ export type CapabilityLocaleKey =
   | 'nav' | 'title' | 'description'
   | 'provider' | 'providerNone' | 'providerNotLoaded' | 'noProviders' | 'chooseProvider'
   | 'status' | 'statusAvailable' | 'statusUnavailable'
-  | 'test' | 'testing' | 'testOk' | 'testFailed'
+  | 'test' | 'testing' | 'testSaveFirst' | 'testOk' | 'testFailed'
   | 'loadFailed' | 'overridden' | 'reset' | 'invalid'
   | 'readOnly' | 'unavailable' | 'save' | 'saving' | 'saveFailed'
 
@@ -25,6 +25,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     statusUnavailable: 'Not available: no provider is selected, or the selected one is not loaded.',
     test: 'Test the connection',
     testing: 'Testing…',
+    testSaveFirst: 'Save the provider selection before testing it.',
     testOk: 'Works: {model}, {dimensions} dimensions, {milliseconds} ms.',
     testFailed: 'Does not work ({code}): {message}',
     loadFailed: 'Could not read the state of the service: {message}',
@@ -51,6 +52,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
     statusUnavailable: '不可用：尚未选择提供方，或所选提供方未加载。',
     test: '测试连接',
     testing: '正在测试…',
+    testSaveFirst: '请先保存提供方选择，再进行测试。',
     testOk: '可用：{model}，{dimensions} 维，{milliseconds} 毫秒。',
     testFailed: '不可用（{code}）：{message}',
     loadFailed: '无法读取服务状态：{message}',

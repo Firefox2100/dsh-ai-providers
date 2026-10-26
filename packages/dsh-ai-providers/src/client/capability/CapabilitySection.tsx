@@ -27,6 +27,7 @@ function Section(props: CapabilitySectionProps & { capability: Capability }) {
   const chosen = state.providers.find(provider => provider.id === selected)
   const testing = state.probe.status === 'running'
   const result = state.probe.result
+  const canTest = !testing && !state.dirty && !state.saving && selected !== '' && chosen?.loaded === true
 
   return (
     <div className={css.section} data-testid={`ai-${capability}`}>
@@ -57,7 +58,7 @@ function Section(props: CapabilitySectionProps & { capability: Capability }) {
           <span className={state.serviceAvailable ? css.ok : undefined} data-testid={`ai-${capability}-status`}>{state.serviceAvailable ? t('statusAvailable') : t('statusUnavailable')}</span>
         </div>
         <div className={css.row}>
-          <Button variant="outline" size="sm" disabled={testing || !state.serviceAvailable} onClick={props.runProbe}>{testing ? t('testing') : t('test')}</Button>
+          <Button variant="outline" size="sm" disabled={!canTest} onClick={props.runProbe}>{testing ? t('testing') : t('test')}</Button>
           {result !== undefined && (
             <span className={result.ok ? css.ok : css.error} role="status" data-testid={`ai-${capability}-probe`}>
               {result.ok
@@ -66,6 +67,7 @@ function Section(props: CapabilitySectionProps & { capability: Capability }) {
             </span>
           )}
         </div>
+        {state.dirty && <p className={css.muted}>{t('testSaveFirst')}</p>}
         {state.status === 'failed' && <p className={css.error} role="alert">{t('loadFailed', { message: state.error ?? '' })}</p>}
       </div>
 
