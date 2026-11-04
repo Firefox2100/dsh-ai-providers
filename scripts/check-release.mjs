@@ -57,11 +57,14 @@ for (const { folder, name } of releasePackages) {
 await access(resolve(root, 'LICENSE'))
 
 for (const folder of ['dsh-ai-all', 'dsh-ai-providers', 'dsh-ai-openai', 'dsh-ai-anthropic', 'dsh-ai-jina', 'dsh-ai-localai', 'dsh-ai-ollama', 'dsh-ai-cohere', 'dsh-ai-dashscope', 'dsh-ai-typesafe']) {
+  const directory = resolve(root, 'packages', folder)
   const manifest = JSON.parse(await readFile(resolve(root, 'packages', folder, 'package.json'), 'utf8'))
   if (manifest.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error(`${manifest.name}: missing DSH bundle declaration`)
   if (manifest.engines?.dsh !== DSH_ENGINES) throw new Error(`${manifest.name}: engines.dsh must be ${DSH_ENGINES}`)
   if (!manifest.files.includes('cordis.patch.yml')) throw new Error(`${manifest.name}: cordis.patch.yml must be published`)
-  await access(resolve(root, 'packages', folder, 'cordis.patch.yml'))
+  if (manifest.icon !== './icon.svg' || !manifest.files.includes('icon.svg')) throw new Error(`${manifest.name}: icon.svg must be declared and published`)
+  await access(resolve(directory, 'cordis.patch.yml'))
+  await access(resolve(directory, 'icon.svg'))
 }
 
 const standaloneBundles = [
