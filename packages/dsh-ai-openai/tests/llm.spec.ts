@@ -159,9 +159,9 @@ describe('the service', () => {
   })
 
   it('tells DSH the endpoint of a route, its retry policy and whether a model reads a changed system prompt in place', () => {
-    const route = { id: 'r', name: 'R', connection: 'c', models: [{ id: 'm', name: 'M', systemInHistory: true }, { id: 'n', name: 'N' }], retry: { mode: 'normal', maxRetries: 1 } }
+    const route = { id: 'r', name: 'R', connection: 'c', models: [{ id: 'm', name: 'M', systemInHistory: true, badge: { text: 'Fast', tone: 'success' } }, { id: 'n', name: 'N', badge: { text: ' ', tone: 'neutral' } }, { id: 'u', name: 'U', badge: { tone: 'info' } as never }], retry: { mode: 'normal', maxRetries: 1 } }
     const service = new OpenAiLlmService({ config: { llmRoutes: { get: () => [route] }, connections: { get: () => [{ id: 'c', name: 'C', baseUrl: ' http://llm.test/v1// ', apiKeyRef: '' }] } } as never, credentials: () => undefined })
-    expect(service.routes()).toEqual([{ id: 'r', name: 'R', baseUrl: 'http://llm.test/v1', retry: { mode: 'normal', maxRetries: 1 }, models: [{ id: 'm', name: 'M', inputs: ['text'], systemPromptUpdate: 'in-history' }, { id: 'n', name: 'N', inputs: ['text'] }] }])
+    expect(service.routes()).toEqual([{ id: 'r', name: 'R', baseUrl: 'http://llm.test/v1', retry: { mode: 'normal', maxRetries: 1 }, models: [{ id: 'm', name: 'M', inputs: ['text'], systemPromptUpdate: 'in-history', badge: { text: 'Fast', tone: 'success' } }, { id: 'n', name: 'N', inputs: ['text'] }, { id: 'u', name: 'U', inputs: ['text'] }] }])
   })
 
   it('accepts a route that sets no retry policy, and one that sets some', () => {

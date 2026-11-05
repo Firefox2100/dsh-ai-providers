@@ -50,7 +50,7 @@ describe('Anthropic service',()=>{
   it('uses native headers and endpoint and discovers models',async()=>{
     const seen:{url:string;init:RequestInit}[]=[]
     const frames=[{type:'content_block_start',index:0,content_block:{type:'text',text:''}},{type:'content_block_delta',index:0,delta:{type:'text_delta',text:'Hi'}},{type:'content_block_stop',index:0},{type:'message_delta',delta:{stop_reason:'end_turn'},usage:{output_tokens:1}},{type:'message_stop'}]
-    const service=new AnthropicLlmService({config:{connections:{get:()=>[{id:'c',name:'C',baseUrl:'https://api.anthropic.com/v1/',apiKeyRef:'KEY'}]},llmRoutes:{get:()=>[{id:'claude',name:'Claude',connection:'c',models:[{id:'claude-test',name:'Claude'}]}]},anthropicVersion:{get:()=> '2023-06-01'},llmIdleTimeoutMs:{get:()=>5000}} as never,credentials:()=>({resolve:()=>Promise.resolve({value:'secret',source:'file'})}) as never,fetch:(async(url:string,init:RequestInit={})=>{seen.push({url,init});if(url.includes('/models'))return Response.json({data:[{id:'claude-a',display_name:'Claude A'}]});return new Response(frames.map(x=>`data: ${JSON.stringify(x)}\n\n`).join(''))}) as never})
+    const service=new AnthropicLlmService({config:{connections:{get:()=>[{id:'c',name:'C',baseUrl:'https://api.anthropic.com/v1/',apiKeyRef:'KEY'}]},llmRoutes:{get:()=>[{id:'claude',name:'Claude',connection:'c',models:[{id:'claude-test',name:'Claude',badge:{text:'Fast',tone:'success'}},{id:'blank',name:'Blank',badge:{text:'  ',tone:'neutral'}},{id:'unset',name:'Unset',badge:{tone:'info'} as never}]}]},anthropicVersion:{get:()=> '2023-06-01'},llmIdleTimeoutMs:{get:()=>5000}} as never,credentials:()=>({resolve:()=>Promise.resolve({value:'secret',source:'file'})}) as never,fetch:(async(url:string,init:RequestInit={})=>{seen.push({url,init});if(url.includes('/models'))return Response.json({data:[{id:'claude-a',display_name:'Claude A'}]});return new Response(frames.map(x=>`data: ${JSON.stringify(x)}\n\n`).join(''))}) as never})
     expect((await collect(service.stream(call()))).at(-1)).toEqual({type:'finish',reason:{kind:'stop'}})
     expect(seen[0]?.url).toBe('https://api.anthropic.com/v1/messages')
     expect(seen[0]?.init.headers).toMatchObject({'x-api-key':'secret','anthropic-version':'2023-06-01'})
@@ -60,7 +60,9 @@ describe('Anthropic service',()=>{
     expect(seen.at(-1)?.init.headers).toEqual({'x-api-key':'draft-key','anthropic-version':'2023-06-01'})
     expect(await service.interrogate({baseUrl:'https://draft.test/without-key'})).toEqual([{id:'claude-a',name:'Claude A',inputs:['text','image']}])
     expect(seen.at(-1)?.init.headers).toEqual({'anthropic-version':'2023-06-01'})
-    expect(service.routes()[0]).toMatchObject({id:'claude',baseUrl:'https://api.anthropic.com/v1'})
+    expect(service.routes()[0]).toMatchObject({id:'claude',baseUrl:'https://api.anthropic.com/v1',models:[{badge:{text:'Fast',tone:'success'}},{},{}]})
+    expect(service.routes()[0]!.models[1]).not.toHaveProperty('badge')
+    expect(service.routes()[0]!.models[2]).not.toHaveProperty('badge')
   })
 })
 
