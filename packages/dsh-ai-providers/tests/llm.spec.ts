@@ -53,13 +53,21 @@ describe('the language model routes', () => {
   })
 
   it('are told what a policy decides, in the order the policies were added, until it is removed', async () => {
-    const remove = registry.policy(({ options }) => (options.purpose === 'compaction' ? { temperature: 0.2, toolChoice: 'required' } : undefined))
+    const remove = registry.policy(({ options }) => (String(options.purpose) === 'policy-test' ? { temperature: 0.2, toolChoice: 'required' } : undefined))
     registry.policy(({ route }) => ({ body: { route } }))
-    await run(request({ purpose: 'compaction' }))
+    await run(request({ purpose: 'policy-test' as never }))
     expect(fake.calls[0]!.sampling).toMatchObject({ temperature: 0.2, toolChoice: 'required', body: { route: 'local' } })
     remove()
-    await run(request({ purpose: 'compaction' }))
+    await run(request({ purpose: 'policy-test' as never }))
     expect(fake.calls[1]!.sampling).toEqual({ temperature: 0.5, topP: 0.9, body: { route: 'local' } })
+  })
+
+  it('offer a model\'s badge to DSH without putting it in the facts a request resolves', async () => {
+    fake.routeList = [{ ...fake.routeList[0]!, models: [{ ...fake.routeList[0]!.models[0]!, badge: { text: 'local', tone: 'info' } }, { id: 'plain', name: 'Plain' }] }]
+    const listed = await routes.routes.listModels('local')
+    expect((listed.find(model => model.id === 'big') as { badge?: unknown } | undefined)?.badge).toEqual({ text: 'local', tone: 'info' })
+    expect(listed.find(model => model.id === 'plain')).not.toHaveProperty('badge')
+    expect(await runtime.resolveModelInfo('local', 'big')).not.toHaveProperty('badge')
   })
 
   it('turn a failure of the service into the error DSH retries and compacts by', async () => {
@@ -85,6 +93,19 @@ describe('the language model routes', () => {
 })
 
 describe('what the routes tell DSH besides their models', () => {
+  it('is a notice that a route\'s models changed, sent when an edit changes what a selector shows and not for the first reading or an unrelated edit', () => {
+    const changed: string[] = []
+    ctx.on('llm/models-updated', (provider) => { changed.push(provider) })
+    routes.sync()
+    expect(changed).toEqual([])
+    fake.routeList = [{ ...fake.routeList[0]!, sampling: { temperature: 0.1 } }]
+    routes.sync()
+    expect(changed).toEqual([])
+    fake.routeList = [{ ...fake.routeList[0]!, models: [...fake.routeList[0]!.models, { id: 'small', name: 'Small' }] }]
+    routes.sync()
+    expect(changed).toEqual(['local'])
+  })
+
   it('is the retry policy of a route, DSH\'s own defaults when it has none, and a refusal to serve the route when the policy is wrong', () => {
     expect(runtime.providerRetryPolicy('local')).toMatchObject({ mode: 'normal', maxRetries: 5 })
     fake.routeList = [{ ...fake.routeList[0]!, retry: { mode: 'normal', maxRetries: 2, backoff: { initialDelayMs: 100 } } }]

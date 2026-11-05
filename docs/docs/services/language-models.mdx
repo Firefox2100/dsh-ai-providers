@@ -20,6 +20,7 @@ Each model can declare:
 - image input support;
 - named reasoning levels, listed from the least to the greatest effort, and a default level (DSH takes the first one for light work such as session titles);
 - whether its chat template reads a changed system prompt anywhere in the conversation (`systemInHistory`); leave it off for templates that insist the system message comes first;
+- a short selector label (`badge`: text and a `neutral`, `info`, `success` or `warning` tone) that DSH 0.2.2 and later shows beside the model's name; saved label and model-list edits refresh open selectors, while earlier DSH releases ignore the label;
 - sampling overrides.
 
 Route-level sampling applies to every model unless overridden at model or request level. Supported controls include temperature, top-p, top-k, min-p, frequency and presence penalties, repetition penalty, seed, stop strings, output limit, tool choice, and additional JSON body fields. A provider can add its own controls to the same object, such as Ollama's `numCtx`, `keepAlive` and `think`; see [Vendor controls](../providers/creating-provider#vendor-controls-in-sampling).
@@ -54,6 +55,8 @@ Beyond its models, each route reports the following to DSH. Nothing here needs e
 ## Policies
 
 A plugin that knows the purpose of a request can register an `LlmPolicy` through `ctx.aiProviders.policy()`. Policies can adjust sampling and concurrency priority without binding the caller to the OpenAI provider.
+
+The purpose string comes from DSH. On DSH 0.2.2, a plugin that creates its own auxiliary request declares that value through DSH's `LlmRequestPurposeMap`; provider policies can then recognize it without this project maintaining a fixed list.
 
 ## Optional model administration
 

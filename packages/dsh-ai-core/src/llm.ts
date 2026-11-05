@@ -31,6 +31,12 @@ export interface LlmReasoningLevel {
   body: Readonly<Record<string, unknown>>
 }
 
+/** A short label a model selector shows beside the model's name. */
+export interface LlmModelBadgeSpec {
+  text: string
+  tone: 'neutral' | 'info' | 'success' | 'warning'
+}
+
 /** One model of a route, as its owner describes it. */
 export interface LlmModelSpec {
   id: string
@@ -47,6 +53,8 @@ export interface LlmModelSpec {
   /** The model reads the latest system message at any position of the conversation as the whole system prompt; absent means only a leading one is read. */
   systemPromptUpdate?: 'in-history'
   sampling?: LlmSampling
+  /** Shown by selectors that support labels (DSH 0.2.2 and later); other releases ignore it. */
+  badge?: LlmModelBadgeSpec
 }
 
 /** Converts the model shape shared by provider configuration schemas into the runtime contract. */
@@ -59,6 +67,7 @@ export function configuredLlmModel(model: {
   reasoningLevels?: readonly LlmReasoningLevel[] | undefined
   defaultReasoning?: string | undefined
   sampling?: LlmSampling | undefined
+  badge?: LlmModelBadgeSpec | undefined
 }): LlmModelSpec {
   return {
     id: model.id,
@@ -68,6 +77,7 @@ export function configuredLlmModel(model: {
     ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens },
     ...model.reasoningLevels === undefined || model.reasoningLevels.length === 0 ? {} : { reasoning: { levels: model.reasoningLevels, ...model.defaultReasoning === undefined ? {} : { default: model.defaultReasoning } } },
     ...model.sampling === undefined ? {} : { sampling: model.sampling },
+    ...model.badge === undefined || (model.badge.text ?? '').trim() === '' ? {} : { badge: model.badge },
   }
 }
 

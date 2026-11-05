@@ -30,7 +30,9 @@ Do not import runtime internals or a vendor package merely to call a selected ca
 
 Language models use DSH's existing `ctx.llm` service. Provider packages contribute routes through the runtime adapter instead of exposing another selected context service.
 
-Besides `stream()`, an `LlmService` can list the models of a configured route with `discover(route)` and of an endpoint that is not configured yet with `interrogate(draft)`; the runtime offers both to DSH as model discovery, and reports each route's `baseUrl` and `retry` policy as well.
+Besides `stream()`, an `LlmService` can list a configured route with `discover(route)` and inspect an endpoint that is not configured yet with `interrogate(draft)`. The runtime exposes both through DSH model discovery and reports each route's `baseUrl` and `retry` policy. On DSH 0.2.2 and later it also forwards model badges and emits `llm/models-updated` when a saved edit changes catalog display data. Older supported releases ignore badges and the refresh notice.
+
+`LlmPolicy` receives DSH's request `purpose` unchanged. DSH 0.2.2 lets the plugin that owns an auxiliary request declare its purpose through `LlmRequestPurposeMap`; this project does not keep a competing purpose list.
 
 `ctx.aiModels` is separate from inference. It resolves optional administrative operations for a route: model status, load, and unload. Use `operations(route)` for feature detection. A provider advertises these operations through `LlmService.modelControl`; providers without an administrative API leave that property undefined.
 

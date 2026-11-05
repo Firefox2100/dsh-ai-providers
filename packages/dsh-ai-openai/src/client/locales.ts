@@ -10,7 +10,7 @@ export type OpenAiLocaleKey =
   | 'sttModel' | 'sttModelHint' | 'sttRealtimeModel' | 'sttRealtimeModelHint'
   | 'decisionModel' | 'decisionModelHint'
   | 'imageModel' | 'imageModelHint' | 'imageSize' | 'imageSizeHint' | 'imageQuality' | 'imageQualityHint' | 'imageOutputFormat' | 'imageOutputFormatHint' | 'imageOutputCompression' | 'imageOutputCompressionHint'
-  | 'llmTitle' | 'llmDescription' | 'routesEmpty' | 'routeAdd' | 'routeNew' | 'routeRemove' | 'routeName' | 'routeId' | 'routeIdHint' | 'reasoningTags' | 'reasoningTagsTags' | 'reasoningTagsImplicit' | 'reasoningTagsNone' | 'reasoningTagsHint' | 'maxCompletionTokens' | 'replayReasoning' | 'routeHeaders' | 'routeRetry' | 'routeRetryHint' | 'modelSystemInHistory' | 'routeHeadersHint' | 'routeSampling' | 'models' | 'modelAdd' | 'modelRemove' | 'modelId' | 'modelIdHint' | 'modelName' | 'contextWindow' | 'modelMaxTokens' | 'modelVision' | 'reasoningLevels' | 'reasoningLevelsHint' | 'levelId' | 'levelName' | 'levelBody' | 'levelAdd' | 'levelExample' | 'levelDefault' | 'modelSampling' | 'remove' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'samplingTemperature' | 'samplingTopP' | 'samplingTopK' | 'samplingMinP' | 'samplingFrequencyPenalty' | 'samplingPresencePenalty' | 'samplingRepetitionPenalty' | 'samplingSeed' | 'samplingMaxTokens' | 'samplingToolChoice' | 'samplingDefault' | 'samplingStop' | 'samplingStopHint' | 'samplingBody' | 'samplingBodyHint' | 'invalidJson' | 'llmIdleTimeoutMs' | 'llmIdleTimeoutMsHint'
+  | 'llmTitle' | 'llmDescription' | 'routesEmpty' | 'routeAdd' | 'routeNew' | 'routeRemove' | 'routeName' | 'routeId' | 'routeIdHint' | 'reasoningTags' | 'reasoningTagsTags' | 'reasoningTagsImplicit' | 'reasoningTagsNone' | 'reasoningTagsHint' | 'maxCompletionTokens' | 'replayReasoning' | 'routeHeaders' | 'routeRetry' | 'routeRetryHint' | 'modelSystemInHistory' | 'routeHeadersHint' | 'routeSampling' | 'models' | 'modelAdd' | 'modelRemove' | 'modelId' | 'modelIdHint' | 'modelName' | 'contextWindow' | 'modelMaxTokens' | 'modelVision' | 'modelBadge' | 'modelBadgeHint' | 'badgeNone' | 'badgeNeutral' | 'badgeInfo' | 'badgeSuccess' | 'badgeWarning' | 'reasoningLevels' | 'reasoningLevelsHint' | 'levelId' | 'levelName' | 'levelBody' | 'levelAdd' | 'levelExample' | 'levelDefault' | 'modelSampling' | 'remove' | 'discover' | 'discovering' | 'discoverHint' | 'discoverNone' | 'discoverHave' | 'discoverFailed' | 'samplingTemperature' | 'samplingTopP' | 'samplingTopK' | 'samplingMinP' | 'samplingFrequencyPenalty' | 'samplingPresencePenalty' | 'samplingRepetitionPenalty' | 'samplingSeed' | 'samplingMaxTokens' | 'samplingToolChoice' | 'samplingDefault' | 'samplingStop' | 'samplingStopHint' | 'samplingBody' | 'samplingBodyHint' | 'invalidJson' | 'llmIdleTimeoutMs' | 'llmIdleTimeoutMsHint'
   | 'overridden' | 'reset' | 'invalidNumber'
   | 'readOnly' | 'unavailable' | 'save' | 'saving' | 'saveFailed'
 
@@ -94,6 +94,13 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     contextWindow: "Context window (tokens)",
     modelMaxTokens: "Output limit (tokens)",
     modelVision: "Reads images",
+    modelBadge: "Selector label",
+    modelBadgeHint: "A short label shown beside the model in DSH's model selector (DSH 0.2.2 and later; empty shows none).",
+    badgeNone: "None",
+    badgeNeutral: "Neutral",
+    badgeInfo: "Highlight",
+    badgeSuccess: "Benefit",
+    badgeWarning: "Caution",
     modelSystemInHistory: "Reads a changed system prompt anywhere in the conversation",
     reasoningLevels: "Thinking levels",
     reasoningLevelsHint: "Each level is the request fields that select it on this server, for example {\"reasoning_effort\": \"none\"}.",
@@ -217,6 +224,13 @@ export const dictionaries: Dictionaries<OpenAiLocaleKey> = {
     contextWindow: "上下文窗口（token）",
     modelMaxTokens: "输出上限（token）",
     modelVision: "能读图像",
+    modelBadge: "选择器标签",
+    modelBadgeHint: "显示在 DSH 模型选择器中该模型旁的简短标签（DSH 0.2.2 及以后；留空则不显示）。",
+    badgeNone: "无",
+    badgeNeutral: "中性",
+    badgeInfo: "强调",
+    badgeSuccess: "优点",
+    badgeWarning: "注意",
     modelSystemInHistory: "能把对话中任意位置改变的系统提示当作完整的系统提示",
     reasoningLevels: "思考档位",
     reasoningLevelsHint: "每个档位是在此服务上选中它的请求字段，例如 {\"reasoning_effort\": \"none\"}。",

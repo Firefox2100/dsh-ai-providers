@@ -72,10 +72,11 @@ describe('bounded JSON requests', () => {
 describe('shared language-model configuration', () => {
   it('keeps optional model capabilities only when configured', () => {
     expect(configuredLlmModel({ id: 'plain', name: 'Plain' })).toEqual({ id: 'plain', name: 'Plain', inputs: ['text'] })
-    expect(configuredLlmModel({ id: 'rich', name: 'Rich', vision: true, contextWindow: 8192, maxTokens: 512, reasoningLevels: [{ id: 'on', name: 'On', body: { think: true } }], defaultReasoning: 'on', sampling: { temperature: 0.2 } })).toEqual({
+    expect(configuredLlmModel({ id: 'rich', name: 'Rich', vision: true, contextWindow: 8192, maxTokens: 512, reasoningLevels: [{ id: 'on', name: 'On', body: { think: true } }], defaultReasoning: 'on', sampling: { temperature: 0.2 }, badge: { text: 'Fast', tone: 'success' } })).toEqual({
       id: 'rich', name: 'Rich', inputs: ['text', 'image'], contextWindow: 8192, maxTokens: 512,
-      reasoning: { levels: [{ id: 'on', name: 'On', body: { think: true } }], default: 'on' }, sampling: { temperature: 0.2 },
+      reasoning: { levels: [{ id: 'on', name: 'On', body: { think: true } }], default: 'on' }, sampling: { temperature: 0.2 }, badge: { text: 'Fast', tone: 'success' },
     })
+    expect(configuredLlmModel({ id: 'empty', name: 'Empty', badge: { text: '  ', tone: 'neutral' } })).not.toHaveProperty('badge')
   })
 
   it('converts the shared configured route shape', () => {

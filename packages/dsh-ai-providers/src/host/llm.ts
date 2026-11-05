@@ -5,6 +5,13 @@ import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
 
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    /** DSH 0.2.2 selectors observe this; older supported releases safely ignore it. */
+    'llm/models-updated'(provider: string): void
+  }
+}
+
 export interface RouteOwner {
   provider: AiProvider
   service: LlmService
@@ -66,6 +73,7 @@ export class AiLlmAdapter extends LlmAdapter {
       provider, id: model.id, name: model.name,
       ...model.description === undefined ? {} : { description: model.description },
       inputModalities: model.inputs ?? ['text'],
+      ...model.badge === undefined ? {} : { badge: { text: model.badge.text, tone: model.badge.tone } },
     })))
   }
 
@@ -151,6 +159,8 @@ export class LlmRoutes {
   private directoryProblem = ''
   /** What DSH captured of each registered route that a later edit can change, to register the route again when it differs. */
   private readonly captured = new Map<string, string>()
+  /** The models each route advertised when selectors last read them, to tell them when an edit changed the list. */
+  private readonly advertised = new Map<string, string>()
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate) {
     this.adapter = new AiLlmAdapter(registry, gate)
@@ -174,6 +184,7 @@ export class LlmRoutes {
       dispose()
       this.handles.delete(id)
       this.captured.delete(id)
+      this.advertised.delete(id)
     }
     for (const id of [...this.problems.keys()]) if (!wanted.has(id)) this.problems.delete(id)
     const llm = this.ctx.get('llm')
@@ -187,6 +198,7 @@ export class LlmRoutes {
         else if (this.captured.get(id) !== retry) held.replace([id])
         this.captured.set(id, retry)
         this.problems.delete(id)
+        this.announceModels(route)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         if (this.problems.get(id) !== message) this.onProblem(`language model route "${id}" is not served: ${message}`)
@@ -195,6 +207,14 @@ export class LlmRoutes {
     }
     this.publishDirectory(llm, owners)
     this.offerDiscovery(llm)
+  }
+
+  /** Tells DSH's selectors to read a route's models again when an edit changed what they would show; the first reading needs no telling. */
+  private announceModels(route: RouteOwner['route']): void {
+    const facts = JSON.stringify(route.models.map(model => [model.id, model.name, model.description ?? null, model.inputs ?? null, model.badge ?? null]))
+    const before = this.advertised.get(route.id)
+    this.advertised.set(route.id, facts)
+    if (before !== undefined && before !== facts) this.ctx.emit('llm/models-updated', route.id)
   }
 
   /** Declares the routes to DSH's configuration surfaces: every route is one the configuration declared, at the endpoint of its connection. */
@@ -259,6 +279,7 @@ export class LlmRoutes {
     for (const dispose of this.handles.values()) dispose()
     this.handles.clear()
     this.captured.clear()
+    this.advertised.clear()
     for (const withdraw of this.discoveries.values()) withdraw()
     this.discoveries.clear()
     this.directory?.()

@@ -7,7 +7,7 @@ export interface AnthropicSamplingConfig {
 }
 export interface AnthropicReasoningLevelConfig {id: string; name: string; body: Readonly<Record<string, unknown>>}
 export interface AnthropicLlmModelConfig {
-  id: string; name: string; contextWindow?: number; maxTokens?: number; vision?: boolean; reasoningLevels?: readonly AnthropicReasoningLevelConfig[]; defaultReasoning?: string; sampling?: AnthropicSamplingConfig
+  id: string; name: string; contextWindow?: number; maxTokens?: number; vision?: boolean; reasoningLevels?: readonly AnthropicReasoningLevelConfig[]; defaultReasoning?: string; sampling?: AnthropicSamplingConfig; badge?: {text: string; tone: 'neutral' | 'info' | 'success' | 'warning'}
 }
 export interface AnthropicRetryConfig {
   mode: 'normal' | 'always'; maxRetries?: number; retryableCodes?: readonly string[]; backoff?: {initialDelayMs?: number; maxDelayMs?: number; jitterRatio?: number}
@@ -25,7 +25,7 @@ export const Config = z.object({
   connections: z.array(z.object({id: z.string().required(), name: z.string().required(), baseUrl: z.string().required(), apiKeyRef: z.string().default('')})).default([{id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', apiKeyRef: 'ANTHROPIC_API_KEY'}]).volatile(),
   llmRoutes: z.array(z.object({
     id: z.string().required(), name: z.string().required(), connection: z.string().required(),
-    models: z.array(z.object({id: z.string().required(), name: z.string().required(), contextWindow: z.natural(), maxTokens: z.natural(), vision: z.boolean(), reasoningLevels: z.array(z.object({id: z.string().required(), name: z.string().required(), body: z.dict(z.any()).default({})})), defaultReasoning: z.string(), sampling: sampling()})).default([]),
+    models: z.array(z.object({id: z.string().required(), name: z.string().required(), contextWindow: z.natural(), maxTokens: z.natural(), vision: z.boolean(), reasoningLevels: z.array(z.object({id: z.string().required(), name: z.string().required(), body: z.dict(z.any()).default({})})), defaultReasoning: z.string(), sampling: sampling(), badge: z.object({text: z.string().default(''), tone: z.union(['neutral', 'info', 'success', 'warning'] as const).default('neutral')})})).default([]),
     sampling: sampling(), headers: z.dict(z.string()),
     // Left free-form: the schema would fill in empty lists and zeros, which DSH's own policy check then reads as a policy.
     retry: z.any(),

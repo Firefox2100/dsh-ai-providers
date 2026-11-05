@@ -46,6 +46,8 @@ export interface OpenAiLlmModelConfig {
   /** The model's chat template reads a system message anywhere in the conversation as the whole system prompt, so DSH may change it without rewriting the start. */
   readonly systemInHistory?: boolean | undefined
   readonly sampling?: OpenAiSamplingConfig | undefined
+  /** A label a model selector shows beside the name (DSH 0.2.2 and later); empty text shows none. */
+  readonly badge?: { readonly text: string; readonly tone: 'neutral' | 'info' | 'success' | 'warning' } | undefined
 }
 
 /** A named way to reach language models: the route a chat selects with `route/model`. */
@@ -150,6 +152,7 @@ function routeSchema() {
       defaultReasoning: z.string(),
       systemInHistory: z.boolean(),
       sampling: samplingSchema(),
+      badge: z.object({ text: z.string().default(''), tone: z.union(['neutral', 'info', 'success', 'warning'] as const).default('neutral') }),
     })).default([]),
     sampling: samplingSchema(),
     // Left free-form: the schema would fill in empty lists and zeros, which DSH's own policy check then reads as a policy.

@@ -60,6 +60,19 @@ function ModelCard(props: { model: ModelDraft; disabled: boolean; t: T; onChange
         <NumberField label={t('contextWindow')} value={model.contextWindow} disabled={disabled} invalid={t('invalidNumber')} integer min={1} onChange={(value) => { props.onChange((draft) => { setField(draft, 'contextWindow', value) }) }} />
         <NumberField label={t('modelMaxTokens')} value={model.maxTokens} disabled={disabled} invalid={t('invalidNumber')} integer min={1} onChange={(value) => { props.onChange((draft) => { setField(draft, 'maxTokens', value) }) }} />
       </div>
+      <div className={css.grid}>
+        <TextField label={t('modelBadge')} value={model.badge?.text ?? ''} disabled={disabled} hint={t('modelBadgeHint')} onChange={(value) => { props.onChange((draft) => { setField(draft, 'badge', value === '' ? undefined : { text: value, tone: draft.badge?.tone ?? 'neutral' }) }) }} />
+        <label className={css.field}>
+          <span>{t('modelBadge')}</span>
+          <select value={model.badge?.tone ?? ''} disabled={disabled || model.badge === undefined} onChange={(event) => { props.onChange((draft) => { if (draft.badge !== undefined) draft.badge = { text: draft.badge.text, tone: event.target.value as 'neutral' | 'info' | 'success' | 'warning' } }) }}>
+            <option value="" disabled>{t('badgeNone')}</option>
+            <option value="neutral">{t('badgeNeutral')}</option>
+            <option value="info">{t('badgeInfo')}</option>
+            <option value="success">{t('badgeSuccess')}</option>
+            <option value="warning">{t('badgeWarning')}</option>
+          </select>
+        </label>
+      </div>
       <label className={css.check}>
         <input type="checkbox" checked={model.vision === true} disabled={disabled} onChange={(event) => { props.onChange((draft) => { setField(draft, 'vision', event.target.checked ? true : undefined) }) }} />
         {t('modelVision')}

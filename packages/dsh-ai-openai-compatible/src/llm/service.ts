@@ -35,6 +35,7 @@ function modelSpec(model: OpenAiLlmModelConfig): LlmModelSpec {
     },
     ...model.systemInHistory === true ? { systemPromptUpdate: 'in-history' as const } : {},
     ...model.sampling === undefined ? {} : { sampling: sampling(model.sampling)! },
+    ...model.badge === undefined || (model.badge.text ?? '').trim() === '' ? {} : { badge: model.badge },
   }
 }
 

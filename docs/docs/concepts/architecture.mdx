@@ -44,7 +44,9 @@ Credentials remain in DSH's credential service. Profile configuration stores ref
 
 ## Language-model routes
 
-Language models are registered as DSH model routes rather than as a single selected service. This lets multiple configured routes coexist. Vendor-level request options can be described to the UI with localized labels and defaults.
+Language models are registered through DSH's `ctx.llm` service rather than as a single selected capability. Multiple configured routes can coexist. The runtime also uses DSH's model discovery, retry policy, model badge, and model-catalog refresh contracts instead of maintaining a second model directory.
+
+Vendor request options remain project metadata because DSH has no provider-neutral contract for embeddings, reranking, speech, image generation, or decisions. The same applies to live transcription, which has different lifecycle requirements from DSH's completed-recording speech interface.
 
 ## Error model
 

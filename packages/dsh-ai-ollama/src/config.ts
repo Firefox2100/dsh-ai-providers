@@ -51,6 +51,8 @@ export interface OllamaLlmModelConfig {
   contextWindow?: number | undefined
   maxTokens?: number | undefined
   vision?: boolean | undefined
+  /** A label a model selector shows beside the name (DSH 0.2.2 and later); empty text shows none. */
+  badge?: { text: string; tone: 'neutral' | 'info' | 'success' | 'warning' } | undefined
   reasoningLevels?: readonly OllamaReasoningLevelConfig[] | undefined
   defaultReasoning?: string | undefined
   sampling?: OllamaSampling | undefined
@@ -154,6 +156,7 @@ export const Config = z.object({
       contextWindow: z.natural(),
       maxTokens: z.natural(),
       vision: z.boolean(),
+      badge: z.object({ text: z.string().default(''), tone: z.union(['neutral', 'info', 'success', 'warning'] as const).default('neutral') }),
       reasoningLevels: z.array(z.object({ id: z.string().required(), name: z.string().required(), body: z.dict(z.any()).default({}) })),
       defaultReasoning: z.string(),
       sampling: samplingSchema(),
