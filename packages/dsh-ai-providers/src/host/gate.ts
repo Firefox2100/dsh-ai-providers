@@ -57,6 +57,9 @@ interface Options {
 
 const matches = (rule: GateRule, request: GateRequest): boolean => (request.capability === 'llm' ? request.route !== undefined && rule.routes.includes(request.route) : rule.capabilities.includes(request.capability))
 
+/** A gate timer never decides when the process exits. */
+const unref = (timer: ReturnType<typeof setTimeout>): void => { (timer as unknown as { unref?: () => void }).unref?.() }
+
 /**
  * Lets a shared resource serve only as many calls at once as it is configured for, and serves the rest in order: a call a person waits for
  * before one that can wait, then by arrival. A call that needs several resources starts when all have room (it never holds one while waiting
@@ -67,6 +70,7 @@ export class RequestGate {
   private readonly waiting: Waiter[] = []
   private readonly holding = new Set<Held>()
   private readonly now: () => number
+  private disposed = false
 
   constructor(private readonly options: Options) {
     this.now = options.now ?? Date.now
@@ -79,7 +83,7 @@ export class RequestGate {
    */
   acquire(request: GateRequest): Promise<() => void> {
     const groups = this.options.rules().filter(rule => matches(rule, request)).map(rule => rule.id)
-    if (request.signal?.aborted === true) return Promise.reject(new AiError('cancelled', 'cancelled'))
+    if (this.disposed || request.signal?.aborted === true) return Promise.reject(new AiError('cancelled', 'cancelled'))
     if (groups.length === 0) return Promise.resolve(() => undefined)
     return new Promise<() => void>((resolve, reject) => {
       let timer: ReturnType<typeof setTimeout> | undefined
@@ -109,7 +113,10 @@ export class RequestGate {
           // A call that is cancelled has no more use for its places, whether or not its owner remembers to say so.
           request.signal?.addEventListener('abort', release, { once: true })
           const longest = this.options.maxHoldMs?.() ?? 0
-          if (longest > 0) watchdog = setTimeout(() => { this.options.onForced?.(request, longest); release() }, longest)
+          if (longest > 0) {
+            watchdog = setTimeout(() => { this.options.onForced?.(request, longest); release() }, longest)
+            unref(watchdog)
+          }
           resolve(release)
         },
         fail: (error) => { settle(); reject(error) },
@@ -117,7 +124,10 @@ export class RequestGate {
       const onAbort = (): void => { this.remove(waiter); waiter.fail(new AiError('cancelled', 'cancelled')); this.pump() }
       request.signal?.addEventListener('abort', onAbort, { once: true })
       const limit = this.options.maxWaitMs()
-      if (limit > 0) timer = setTimeout(() => { this.remove(waiter); waiter.fail(new AiError('unavailable', `waited ${Math.round(limit / 1000)} s in the queue for ${groups.join(', ')} and gave up`)); this.pump() }, limit)
+      if (limit > 0) {
+        timer = setTimeout(() => { this.remove(waiter); waiter.fail(new AiError('unavailable', `waited ${Math.round(limit / 1000)} s in the queue for ${groups.join(', ')} and gave up`)); this.pump() }, limit)
+        unref(timer)
+      }
       this.waiting.push(waiter)
       this.waiting.sort((a, b) => a.rank - b.rank || a.since - b.since)
       this.pump()
@@ -167,5 +177,15 @@ export class RequestGate {
   private remove(waiter: Waiter): void {
     const at = this.waiting.indexOf(waiter)
     if (at >= 0) this.waiting.splice(at, 1)
+  }
+
+  /**
+   * Lets the plugin go: queued calls fail as cancelled instead of waiting for a pump that will never come, and no
+   * watchdog keeps the process alive. Calls already running are not interrupted; their places are released with them.
+   */
+  dispose(): void {
+    this.disposed = true
+    for (const waiter of [...this.waiting]) { this.remove(waiter); waiter.fail(new AiError('cancelled', 'cancelled')) }
+    for (const held of [...this.holding]) held.release()
   }
 }

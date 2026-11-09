@@ -26,10 +26,16 @@ export class AiServices {
   readonly stt: ConfiguredStt
   readonly image: ConfiguredImageGeneration
   readonly decision: ConfiguredDecision
+  /** What each capability's availability was at the last sync, so a change is the only thing that notifies dependents. */
+  private readonly on: Partial<Record<Capability, boolean>> = {}
+  private streamingOn = false
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config, gate?: RequestGate, trace?: Tracer) {
-    for (const capability of CAPABILITIES) ctx.provide(SERVICE_NAMES[capability])
-    ctx.provide('streamingSpeechToText')
+    // Declared once for this plugin's lifetime, with the availability predicate Cordis needs: a dependent that injects a
+    // capability only runs while a selected provider actually offers it. The value stays undefined while it does not, so
+    // `ctx.get(name)` keeps its documented meaning for callers that look a service up directly.
+    for (const capability of CAPABILITIES) ctx.reflect.provide(SERVICE_NAMES[capability], undefined, () => this.offered(capability))
+    ctx.reflect.provide('streamingSpeechToText', undefined, () => this.streaming() !== undefined)
     this.embedding = new ConfiguredEmbedding({
       selected: () => config.embedding.get(),
       registry,
@@ -54,19 +60,37 @@ export class AiServices {
 
   /** Whether the service of a capability is on the context now. */
   available(capability: Capability): boolean {
-    return this.ctx.get(SERVICE_NAMES[capability]) !== undefined
+    return this.offered(capability)
+  }
+
+  /** Whether a selected provider offers the capability and is loaded. */
+  private offered(capability: Capability): boolean {
+    const selected = this.selected(capability)
+    return selected !== '' && this.registry.get(selected)?.capabilities[capability] !== undefined
+  }
+
+  /** The speech service when the selected provider can stream; `undefined` otherwise. */
+  private streaming(): unknown {
+    const stt = this.registry.get(this.selected('stt'))?.capabilities.stt?.()
+    return stt !== undefined && typeof Reflect.get(stt, 'startStreaming') === 'function' ? this.stt : undefined
   }
 
   private sync(): void {
+    const changed: string[] = []
     for (const capability of CAPABILITIES) {
-      const selected = this.selected(capability)
       const name = SERVICE_NAMES[capability]
-      const offered = selected !== '' && this.registry.get(selected)?.capabilities[capability] !== undefined
+      const offered = this.offered(capability)
       const present = this.ctx.get(name) !== undefined
-      if (offered && !present) this.ctx.set(name, this[capability])
-      else if (!offered && present) this.ctx.set(name, undefined as never)
+      if (offered && !present) this.ctx.reflect.set(name, this[capability])
+      else if (!offered && present) this.ctx.reflect.set(name, undefined)
+      if (offered !== this.on[capability]) { this.on[capability] = offered; changed.push(name) }
     }
-    const stt = this.registry.get(this.selected('stt'))?.capabilities.stt?.()
-    this.ctx.set('streamingSpeechToText', stt !== undefined && typeof Reflect.get(stt, 'startStreaming') === 'function' ? this.stt : undefined as never)
+    const streaming = this.streaming() !== undefined
+    const streamingPresent = this.ctx.get('streamingSpeechToText') !== undefined
+    if (streaming && !streamingPresent) this.ctx.reflect.set('streamingSpeechToText', this.stt)
+    else if (!streaming && streamingPresent) this.ctx.reflect.set('streamingSpeechToText', undefined)
+    if (streaming !== this.streamingOn) { this.streamingOn = streaming; changed.push('streamingSpeechToText') }
+    // The predicate only matters when a dependent re-evaluates; tell it which names moved.
+    if (changed.length > 0) this.ctx.reflect.notify(changed)
   }
 }

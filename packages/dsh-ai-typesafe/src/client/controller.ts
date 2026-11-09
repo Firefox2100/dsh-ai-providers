@@ -119,7 +119,7 @@ export class TypeSafeCardController {
     const ref = this.connections().find(connection => connection.id === id)?.apiKeyRef.trim()
     if (ref === undefined || ref === '' || value.trim() === '') return false
     const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.credentials}`, {
-      method: 'PUT',
+      method: 'POST',
       credentials: 'same-origin',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ ref, value }),

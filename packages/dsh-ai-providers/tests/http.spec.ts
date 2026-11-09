@@ -1,9 +1,7 @@
 import { LlmRoutes } from '../src/host/llm.ts'
-import { Readable } from 'node:stream'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Context } from '@deepseek-ai/cordis'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApiHandler, probeDecision, probeLlm, probeEmbedding, probeRerank } from '../src/host/http.ts'
+import { createApiHandler, probeDecision, probeLlm, probeEmbedding, probeRerank, type ApiReply, type ApiRequest } from '../src/host/http.ts'
 import { AiProviders } from '../src/host/registry.ts'
 import { AiServices } from '../src/host/services.ts'
 import { FakeDecision, FakeEmbedding, FakeRerank, providerOf } from './support.ts'
@@ -16,7 +14,6 @@ let ranker: FakeRerank
 let decider: FakeDecision
 let reranking: string
 let selected: string
-let rejection: 401 | 403 | undefined
 let stored: Map<string, string>
 let handler: ReturnType<typeof createApiHandler>
 
@@ -36,36 +33,38 @@ beforeEach(() => {
   registry.register(providerOf('ranks', undefined, ranker))
   registry.register(providerOf('decides', undefined, undefined, undefined, undefined, decider))
   registry.register(providerOf('plain', undefined))
-  rejection = undefined
   stored = new Map()
   const credentials = {
     describe: (ref: string) => Promise.resolve({ configured: stored.has(ref), writable: ref !== 'LOCKED', ...(stored.has(ref) ? { source: 'file' } : {}) }),
     set: (ref: string, value: string) => (ref === 'LOCKED' ? Promise.reject(new Error('shadowed by the environment')) : Promise.resolve(void stored.set(ref, value))),
     unset: (ref: string) => Promise.resolve(void stored.delete(ref)),
   }
-  handler = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, connection: { requestRejection: () => rejection }, credentials: () => credentials as never })
+  handler = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, credentials: () => credentials as never })
 })
 
 async function call(method: string, path: string, body?: unknown, type = 'application/json'): Promise<{ status: number; body: unknown; headers: Record<string, string> }> {
-  const req = Object.assign(Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))]), { method, url: `/ai-api${path}`, headers: { 'content-type': type } }) as unknown as IncomingMessage
+  const chunks = body === undefined ? [] : [new TextEncoder().encode(JSON.stringify(body))]
+  const req: ApiRequest = {
+    method,
+    url: `/ai-api${path}`,
+    headers: { 'content-type': type },
+    async *[Symbol.asyncIterator]() { for (const chunk of chunks) yield chunk },
+  }
   const headers: Record<string, string> = {}
   let status = 0
   let text = ''
-  const res = {
+  const res: ApiReply = {
     statusCode: 200, headersSent: false,
     setHeader: (name: string, value: string) => { headers[name.toLowerCase()] = String(value) },
-    end: (chunk?: string) => { status = (res as { statusCode: number }).statusCode; text = chunk ?? '' },
+    end: (chunk?: string) => { status = res.statusCode; text = chunk ?? '' },
     destroy: () => undefined,
-  } as unknown as ServerResponse
+  }
   await handler(req, res)
   return { status, body: text === '' ? undefined : JSON.parse(text), headers }
 }
 
 describe('the API', () => {
-  it('is for those the connection lets in', async () => {
-    rejection = 401
-    expect((await call('GET', '/capabilities')).status).toBe(401)
-    rejection = undefined
+  it('answers only the routes and methods it serves', async () => {
     expect((await call('GET', '/nothing')).status).toBe(404)
     const wrong = await call('DELETE', '/capabilities')
     expect([wrong.status, wrong.headers['allow']]).toEqual([405, 'GET'])
@@ -89,20 +88,20 @@ describe('the API', () => {
 
   it('says whether a credential is configured, never its value, and stores and removes one', async () => {
     expect((await call('GET', '/credentials?ref=OPENAI_API_KEY')).body).toEqual({ ref: 'OPENAI_API_KEY', configured: false, writable: true })
-    const set = await call('PUT', '/credentials', { ref: 'OPENAI_API_KEY', value: 'sk-secret' })
+    const set = await call('POST', '/credentials', { ref: 'OPENAI_API_KEY', value: 'sk-secret' })
     expect(set.body).toEqual({ ref: 'OPENAI_API_KEY', configured: true, writable: true, source: 'file' })
     expect(JSON.stringify(set.body)).not.toContain('sk-secret')
     expect(stored.get('OPENAI_API_KEY')).toBe('sk-secret')
-    expect(((await call('PUT', '/credentials', { ref: 'OPENAI_API_KEY', value: '' })).body as { configured: boolean }).configured).toBe(false)
+    expect(((await call('POST', '/credentials', { ref: 'OPENAI_API_KEY', value: '' })).body as { configured: boolean }).configured).toBe(false)
   })
 
   it('refuses a credential that is not a reference, a value that is not text, one the store cannot take, and a profile without the service', async () => {
     expect((await call('GET', '/credentials?ref=not%20valid')).status).toBe(400)
     expect((await call('GET', '/credentials')).status).toBe(400)
-    expect((await call('PUT', '/credentials', { ref: 'OK_KEY', value: 5 })).status).toBe(400)
-    expect((await call('PUT', '/credentials', { ref: 'LOCKED', value: 'x' })).status).toBe(409)
-    expect((await call('PUT', '/credentials', {}, 'text/plain')).status).toBe(415)
-    const none = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, connection: { requestRejection: () => undefined }, credentials: () => undefined })
+    expect((await call('POST', '/credentials', { ref: 'OK_KEY', value: 5 })).status).toBe(400)
+    expect((await call('POST', '/credentials', { ref: 'LOCKED', value: 'x' })).status).toBe(409)
+    expect((await call('POST', '/credentials', {}, 'text/plain')).status).toBe(415)
+    const none = createApiHandler({ registry, services, llm: new LlmRoutes(ctx, registry, () => undefined), models: () => undefined, credentials: () => undefined })
     handler = none
     expect((await call('GET', '/credentials?ref=OK_KEY')).status).toBe(503)
   })

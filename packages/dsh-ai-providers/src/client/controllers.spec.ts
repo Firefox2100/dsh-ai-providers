@@ -187,7 +187,7 @@ describe('client controllers', () => {
     let stored = false
     vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, method: init?.method ?? 'GET', ...typeof init?.body === 'string' ? { body: init.body } : {} })
-      if (init?.method === 'PUT') stored = true
+      if (init?.method === 'POST') stored = true
       return new Response(JSON.stringify({ ref: 'X', configured: stored, writable: true, ...stored ? { source: 'file' } : {} }), { status: 200 })
     }))
     const controller = new ObservabilityController(scope({ traceEnabled: true, traceSink: 'both', langfusePublicKeyRef: 'MY_PUBLIC' }))
@@ -197,14 +197,14 @@ describe('client controllers', () => {
     expect(calls[0]!.url).toContain('ref=MY_PUBLIC')
     expect(calls[1]!.url).toContain('ref=AI_PROVIDERS_LANGFUSE_SECRET_KEY')
     expect(await controller.inject().storeKey('publicKey', 'pk-lf-123')).toBe(true)
-    expect(calls.find(call => call.method === 'PUT')).toMatchObject({ body: JSON.stringify({ ref: 'MY_PUBLIC', value: 'pk-lf-123' }) })
+    expect(calls.find(call => call.method === 'POST')).toMatchObject({ body: JSON.stringify({ ref: 'MY_PUBLIC', value: 'pk-lf-123' }) })
     expect(controller.inject().hooks.observability.getSnapshot().keys.publicKey).toMatchObject({ configured: true, source: 'file' })
     expect(JSON.stringify(controller.inject().hooks.observability.getSnapshot())).not.toContain('pk-lf-123')
     controller.dispose()
   })
 
   it('reports a rejected credential write so the form can keep the entered key', async () => {
-    vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => init?.method === 'PUT'
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => init?.method === 'POST'
       ? new Response(JSON.stringify({ error: 'credential store is read only' }), { status: 403 })
       : new Response(JSON.stringify({ configured: false, writable: true }), { status: 200 })))
     const controller = new ObservabilityController(scope({}))

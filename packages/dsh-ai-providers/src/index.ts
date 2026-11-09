@@ -7,6 +7,7 @@ import { AiProviders } from './host/registry.ts'
 import { AiServices } from './host/services.ts'
 import { LlmRoutes } from './host/llm.ts'
 import { RequestGate } from './host/gate.ts'
+import { asHarnessError } from './host/harness-error.ts'
 import { createTracer } from './host/trace/setup.ts'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-llm'
@@ -35,6 +36,7 @@ export function apply(ctx: Context, config: Config): void {
   const registry = new AiProviders(ctx)
   const gate = new RequestGate({ rules: () => config.limits.get(), maxWaitMs: () => config.maxWaitSeconds.get() * 1000, maxHoldMs: () => config.maxHoldSeconds.get() * 1000, onForced: (request, ms) => { ctx.logger.warn(`a ${request.capability} call${request.route === undefined ? '' : ` on ${request.route}`} held its place for ${Math.round(ms / 1000)} s and was let go of`) } })
   registry.gate = gate
+  ctx.effect(() => () => { gate.dispose() }, 'dsh-ai-providers: request gate')
   ctx.on('loader/volatile-update', () => { gate.pump() })
   const tracer = createTracer(ctx, config, (message) => { ctx.logger.warn(message) })
   const services = new AiServices(ctx, registry, config, gate, tracer)
@@ -70,7 +72,10 @@ function registerDshSpeechProvider(ctx: Context, services: AiServices, registry:
         // The registry reads `info` again when the provider is removed, by which time the service may have no provider behind it.
         const stt = services.stt
         const info = { ...stt.info }
-        remove = speech.register({ info, transcribe: (input, signal) => stt.transcribe(input, signal) })
+        remove = speech.register({ info, transcribe: async (input, signal) => {
+          // DSH Voice Input catches harness errors; a capability refusal crosses that seam as one.
+          try { return await stt.transcribe(input, signal) } catch (error) { throw asHarnessError(error) }
+        } })
         selected = next
       })
     }

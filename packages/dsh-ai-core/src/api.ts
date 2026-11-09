@@ -3,11 +3,21 @@ import type { RequestOption } from './options.ts'
 import type { AiErrorCode } from './errors.ts'
 
 /**
- * The browser API of the main plugin, which the UI of the main plugin and of every vendor plugin
- * uses. Paths are relative to the prefix, and the browser calls them with relative URLs so that a
- * mounted deployment works.
+ * The browser API of the main plugin, which the UI of the main plugin and of every vendor plugin uses.
+ *
+ * DSH's Connection service owns the shared `/api` channel: it applies the Host/Origin fence, admits only an
+ * authenticated owner Peer, and enforces the body cap. This plugin registers its routes below that channel rather than
+ * mounting a transport of its own, so the plugin inherits those rules and the deployment's transport (HTTP today, a
+ * worker or another carrier tomorrow) without re-implementing them.
  */
-export const AI_API_PREFIX = 'ai-api'
+/** The channel DSH's Connection service mounts on the web server. */
+export const AI_API_CHANNEL = '/api'
+
+/** The path below {@link AI_API_CHANNEL} this plugin owns. */
+export const AI_API_PATH = 'ai-api'
+
+/** What the browser prepends to a route: absolute, so a mounted deployment resolves it against the origin. */
+export const AI_API_PREFIX = `${AI_API_CHANNEL}/${AI_API_PATH}`
 
 /** One provider as the settings UI shows it. */
 export interface ProviderSummary {
@@ -47,7 +57,7 @@ export interface CredentialStatus {
 /** `GET /ai-api/credentials?ref=NAME` */
 export type CredentialsPayload = CredentialStatus
 
-/** `PUT /ai-api/credentials` with `{ ref, value }`; an empty value removes the stored one. */
+/** `POST /ai-api/credentials` with `{ ref, value }`; an empty value removes the stored one. `POST` because DSH's shared channel carries GET, HEAD and POST only. */
 export interface CredentialWrite {
   ref: string
   value: string

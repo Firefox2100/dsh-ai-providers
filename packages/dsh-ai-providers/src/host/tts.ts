@@ -28,10 +28,11 @@ export class ConfiguredTts extends TtsService {
     let answer: TtsResult
     const { signal: _signal, ...settings } = options
     try { answer = await observeCall(this.source.trace, { capability: 'tts', provider: service.provider, model: service.model, input: { text, options: settings } }, () => service.synthesize(text, options), found => ({ output: { mediaType: found.mediaType } })) } catch (error) { release(); throw error }
+    // A provider that answers with nothing usable must not hold its place until the watchdog lets it go.
+    if (!(answer.audio instanceof ReadableStream)) { release(); throw new AiError('unavailable', `${service.provider} returned no audio stream`) }
+    if (answer.mediaType.trim() === '') { release(); throw new AiError('unavailable', `${service.provider} returned no audio media type`) }
     // The synthesis goes on while the audio is read, so the resource is held until the body ends or is dropped.
     answer = { ...answer, audio: releasing(answer.audio, release) }
-    if (!(answer.audio instanceof ReadableStream)) throw new AiError('unavailable', `${service.provider} returned no audio stream`)
-    if (answer.mediaType.trim() === '') throw new AiError('unavailable', `${service.provider} returned no audio media type`)
     return answer
   }
 

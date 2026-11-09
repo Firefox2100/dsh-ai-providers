@@ -73,6 +73,7 @@ export class CohereLlmService extends LlmService {
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return { data: stored.data, mediaType: stored.ref.mediaType }
         })
+        call.wire?.(body)
         return this.send(`${connection.baseUrl}/chat`, {
           method: 'POST',
           signal,

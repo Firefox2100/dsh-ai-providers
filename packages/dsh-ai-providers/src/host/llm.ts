@@ -1,5 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { LlmAdapter, LlmError, ProviderRequestId, attributionHeaders, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
+import { asLlmError } from './harness-error.ts'
 import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, GenerateOptions, LlmConfigurableProvider, LlmDiscoveredModel, LlmModelDiscoveryRequest, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, PreparedAdapterCall, ResolvedRetryPolicy, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from '@dsh-ai-providers/core'
 import type { AiProviders } from './registry.ts'
@@ -79,9 +80,10 @@ export class AiLlmAdapter extends LlmAdapter {
     })))
   }
 
-  override resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
+  override async resolveModel(provider: string, model: string, signal?: AbortSignal): Promise<LlmResolvedModelInfo> {
+    throwIfAborted(signal)
     const { route } = this.ownerOf(provider)
-    return Promise.resolve(resolved(provider, route.models.find(candidate => candidate.id === model), model))
+    return resolved(provider, route.models.find(candidate => candidate.id === model), model)
   }
 
   /** The retry policy DSH captures when the route is registered; absent means DSH's defaults. */
@@ -91,12 +93,15 @@ export class AiLlmAdapter extends LlmAdapter {
   }
 
   /** The model facts and the request that follows come from one reading of the routes, so an edit between the two cannot mix them. */
-  override prepareCall(provider: string, model: string): Promise<PreparedAdapterCall> {
+  override async prepareCall(provider: string, model: string, signal?: AbortSignal): Promise<PreparedAdapterCall> {
+    throwIfAborted(signal)
     const owner = this.ownerOf(provider)
-    return Promise.resolve({
+    // `owner` is the generation: the route as it was read here, and the adapter instance that served it. The dispatch
+    // below uses this captured owner rather than looking the provider up again, which is what DSH's contract asks for.
+    return {
       model: resolved(provider, owner.route.models.find(candidate => candidate.id === model), model),
       stream: options => this.streamFrom(owner, options),
-    })
+    }
   }
 
   override stream(options: GenerateOptions): AsyncGenerator<StreamChunk> {
@@ -123,9 +128,14 @@ export class AiLlmAdapter extends LlmAdapter {
           ...requestId === undefined ? {} : { requestId: ProviderRequestId(requestId) },
         })
       }
-      throw error
+      throw asLlmError(error)
     }
   }
+}
+
+/** DSH cancels model lookups through a signal; a lookup that is already cancelled must not go on to describe a model. */
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted === true) throw new LlmError('the call was cancelled', 'ABORTED')
 }
 
 function resolved(provider: string, model: LlmModelSpec | undefined, id: string): LlmResolvedModelInfo {

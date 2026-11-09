@@ -66,6 +66,7 @@ export class ConcurrencyController {
   private live: Record<string, ConcurrencyStatus> = {}
   private routes: { id: string; name: string }[] = []
   private timer: ReturnType<typeof setInterval> | undefined
+  private nextLimit = 1
 
   constructor(scope: SettingsFormScope<ConcurrencySettings>) {
     this.form = new SettingsFormModel(scope, [limitsField, settingsNumberField('maxWaitSeconds')])
@@ -101,11 +102,21 @@ export class ConcurrencyController {
     } catch { /* the next refresh tries again */ }
   }
 
+  /**
+   * An id no current rule uses. Ids are the host's admission key, so two rules sharing one silently collapse into a
+   * single policy; a removed rule's id must not be handed out again while its row can still be keyed by it.
+   */
+  private nextLimitId(): string {
+    const taken = new Set(this.limits().map(rule => rule.id))
+    while (taken.has(`limit-${this.nextLimit}`)) this.nextLimit++
+    return `limit-${this.nextLimit++}`
+  }
+
   inject(): ConcurrencyFace {
     return {
       hooks: { concurrency: this.store },
       ...this.form.actions(),
-      addLimit: () => { this.set([...this.limits(), { id: `limit-${this.limits().length + 1}`, max: 1, routes: [], capabilities: [] }]) },
+      addLimit: () => { this.set([...this.limits(), { id: this.nextLimitId(), max: 1, routes: [], capabilities: [] }]) },
       updateLimit: (index, change) => { this.set(this.limits().map((rule, at) => (at === index ? { ...rule, ...change } : rule))) },
       removeLimit: (index) => { this.set(this.limits().filter((_rule, at) => at !== index)) },
     }

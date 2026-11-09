@@ -1,16 +1,31 @@
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Context } from '@deepseek-ai/cordis'
 import { credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
-// Type-only: declares `ctx.webServer` and `ctx.credentials`.
+// Type-only: declares `ctx.credentials`, and `ctx.connection` with the shared `/api` channel.
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import { AI_API_PREFIX, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type ConcurrencyPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from '@dsh-ai-providers/core'
+import type {} from '@deepseek-ai/dsh-client-connection'
+import { AI_API_CHANNEL, AI_API_PATH, AI_API_ROUTES, AiError, CAPABILITIES, type CapabilitiesPayload, type ConcurrencyPayload, type CredentialsPayload, type LlmDiscoverPayload, type LlmPayload, type LlmProbeResult, type ProbeResult } from '@dsh-ai-providers/core'
 import type { LlmRoutes } from './llm.ts'
 import type { AiProviders } from './registry.ts'
 import type { AiServices } from './services.ts'
 
-/** The slice of DSH's connection service this API relies on for browser authentication. */
-export interface ApiConnection {
-  requestRejection(request: { readonly headers: IncomingMessage['headers'] }): 401 | 403 | undefined
+/**
+ * The request facts the API reads. DSH's Connection carrier hands the handler a Fetch `Request`; the adapter below
+ * presents it in this shape, and the tests build one directly.
+ */
+export interface ApiRequest {
+  readonly method?: string
+  readonly url?: string
+  readonly headers: Readonly<Record<string, string | string[] | undefined>>
+  [Symbol.asyncIterator](): AsyncIterator<Uint8Array>
+}
+
+/** What a handler writes back; the adapter finishes it into a Fetch `Response`. */
+export interface ApiReply {
+  statusCode: number
+  headersSent: boolean
+  setHeader(name: string, value: string): void
+  end(body?: string): void
+  destroy(): void
 }
 
 const MAX_BODY_BYTES = 16 * 1024
@@ -19,22 +34,22 @@ class HttpError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
 }
 
-function send(res: ServerResponse, status: number, payload: unknown): void {
+function send(res: ApiReply, status: number, payload: unknown): void {
   res.statusCode = status
   res.setHeader('content-type', 'application/json; charset=utf-8')
   res.setHeader('cache-control', 'no-store')
   res.end(JSON.stringify(payload))
 }
 
-async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+async function readBody(req: ApiRequest): Promise<Record<string, unknown>> {
   const type = String(req.headers['content-type'] ?? '').split(';', 1)[0]?.trim().toLowerCase()
   if (type !== 'application/json') throw new HttpError(415, 'content-type must be application/json')
-  const chunks: Buffer[] = []
+  const chunks: Uint8Array[] = []
   let size = 0
   for await (const chunk of req) {
-    size += (chunk as Buffer).length
+    size += chunk.length
     if (size > MAX_BODY_BYTES) throw new HttpError(413, 'request body is too large')
-    chunks.push(chunk as Buffer)
+    chunks.push(chunk)
   }
   let body: unknown
   try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { throw new HttpError(400, 'request body is not valid JSON') }
@@ -53,13 +68,12 @@ export interface ApiDeps {
   llm: LlmRoutes
   /** DSH's model service, looked up on use. */
   models: () => Context['llm'] | undefined
-  connection: ApiConnection
   /** The credentials service, looked up on use: a profile without it cannot store keys. */
   credentials: () => Context['credentials'] | undefined
 }
 
-/** The handler mounted at `/ai-api`. */
-export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
+/** The handler for the routes below `/api/ai-api`; the Connection carrier authenticates before it is reached. */
+export function createApiHandler(deps: ApiDeps): (req: ApiRequest, res: ApiReply) => Promise<void> {
   const { registry, services } = deps
   const needCredentials = (): Context['credentials'] => {
     const credentials = deps.credentials()
@@ -67,7 +81,7 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
     return credentials
   }
 
-  const routes: Record<string, Partial<Record<string, (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<void>>>> = {
+  const routes: Record<string, Partial<Record<string, (req: ApiRequest, res: ApiReply, url: URL) => Promise<void>>>> = {
     [AI_API_ROUTES.capabilities]: {
       GET: async (_req, res) => {
         const payload: CapabilitiesPayload = {
@@ -96,7 +110,7 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
         const payload: CredentialsPayload = { ref, configured: info.configured, writable: info.writable, ...(info.source === undefined ? {} : { source: info.source }) }
         send(res, 200, payload)
       },
-      PUT: async (req, res) => {
+      POST: async (req, res) => {
         const body = await readBody(req)
         const ref = referenceOf(body['ref'])
         if (typeof body['value'] !== 'string') throw new HttpError(400, '"value" must be a string')
@@ -164,15 +178,9 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
     },
   }
 
-  return async (req, res) => {
-    const rejection = deps.connection.requestRejection(req)
-    if (rejection !== undefined) {
-      res.statusCode = rejection
-      res.end()
-      return
-    }
+  return async (req: ApiRequest, res: ApiReply) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    const methods = routes[url.pathname.slice(`/${AI_API_PREFIX}`.length) || '/']
+    const methods = routes[url.pathname.slice(`/${AI_API_PATH}`.length) || '/']
     if (methods === undefined) return send(res, 404, { message: 'not found' })
     const route = methods[req.method ?? '']
     if (route === undefined) {
@@ -335,12 +343,69 @@ export async function probeDecision(services: AiServices, registry: AiProviders)
   }
 }
 
-/** Mount the API once the web server and its authentication are available; profiles without them skip it. */
-export function registerApi(ctx: Context, deps: Omit<ApiDeps, 'connection' | 'credentials' | 'models'>): void {
-  ctx.inject(['webServer', 'connection'], (webCtx) => {
-    // The connection package is browser-side, so its service is typed locally.
-    const connection = Reflect.get(webCtx, 'connection') as ApiConnection
-    const handler = createApiHandler({ ...deps, connection, credentials: () => ctx.get('credentials'), models: () => ctx.get('llm') })
-    webCtx.effect(() => webCtx.webServer.register({ kind: 'prefix', path: `/${AI_API_PREFIX}`, handler }), 'dsh-ai-providers: http api')
+/** The methods each route owns, as DSH's shared channel registers exact routes. `PUT` is not a carrier method, so a write is a `POST`. */
+const API_ROUTE_METHODS: readonly (readonly [string, readonly ('GET' | 'HEAD' | 'POST')[]])[] = [
+  [AI_API_ROUTES.capabilities, ['GET']],
+  [AI_API_ROUTES.credentials, ['GET', 'POST']],
+  [AI_API_ROUTES.llm, ['GET']],
+  [AI_API_ROUTES.llmProbe, ['POST']],
+  [AI_API_ROUTES.llmDiscover, ['GET']],
+  [AI_API_ROUTES.concurrency, ['GET']],
+  [AI_API_ROUTES.probe, ['POST']],
+]
+
+/**
+ * Present one Fetch request to the node-style handler above, then finish what it wrote as a Response.
+ * @param handle - the routed handler.
+ * @returns the Fetch route DSH's Connection channel registers below `/api`.
+ */
+export function toFetchHandler(handle: (req: ApiRequest, res: ApiReply) => Promise<void>): (request: Request) => Promise<Response> {
+  return async (request) => {
+    const url = new URL(request.url)
+    const written: Record<string, string> = {}
+    let status = 200
+    let body: string | undefined
+    let written$: boolean = false
+    const reply: ApiReply = {
+      statusCode: 200,
+      get headersSent() { return written$ },
+      setHeader(name, value) { written[name.toLowerCase()] = value },
+      end(value) { status = reply.statusCode; body = value; written$ = true },
+      destroy() { written$ = true },
+    }
+    const stream = request.body
+    const req: ApiRequest = {
+      method: request.method,
+      // The carrier strips `/api` itself, so the handler sees the path it would own on its own carrier.
+      url: `${url.pathname.replace(new RegExp(`^${AI_API_CHANNEL}`), '')}${url.search}`,
+      headers: Object.fromEntries(request.headers.entries()),
+      async *[Symbol.asyncIterator]() {
+        if (stream === null) return
+        for await (const chunk of stream) yield chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk as ArrayBuffer)
+      },
+    }
+    await handle(req, reply)
+    if (body === undefined) return new Response(null, { status })
+    return new Response(body, {
+      status,
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...written },
+    })
+  }
+}
+
+/**
+ * Register the API on DSH's shared `/api` channel. Connection owns the Host/Origin fence, the browser credential and
+ * the request body limit, and removes these routes with this plugin.
+ */
+export function registerApi(ctx: Context, deps: Omit<ApiDeps, 'credentials' | 'models'>): void {
+  const handle = createApiHandler({ ...deps, credentials: () => ctx.get('credentials'), models: () => ctx.get('llm') })
+  const fetch = toFetchHandler(handle)
+  ctx.inject(['connection'], (webCtx) => {
+    for (const [path, methods] of API_ROUTE_METHODS) {
+      webCtx.effect(() => {
+        const remove = webCtx.connection.fetch.register({ path: `/${AI_API_PATH}${path}`, methods: [...methods], requestBody: 'buffered', fetch })
+        return () => { void remove() }
+      }, `dsh-ai-providers: api ${path}`)
+    }
   })
 }

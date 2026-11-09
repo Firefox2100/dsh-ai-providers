@@ -192,7 +192,7 @@ export class Controller {
       saveKey: async (id, value) => {
         const ref = this.list<DashScopeConnectionConfig>('connections').find(item => item.id === id)?.apiKeyRef.trim()
         if (!ref || !value.trim()) return false
-        const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.credentials}`, { method: 'PUT', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref, value }), signal: this.abort.signal })
+        const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.credentials}`, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref, value }), signal: this.abort.signal })
         if (response.ok) this.status = { ...this.status, [ref]: await response.json() as CredentialsPayload }
         this.store.set(this.project())
         return response.ok

@@ -16,7 +16,11 @@ export const AI_ERROR_CODES = [
 
 export type AiErrorCode = (typeof AI_ERROR_CODES)[number]
 
-/** The one error type of every AI service, so a caller can tell what to do without knowing the vendor. */
+/**
+ * The one error type of every AI service. It deliberately extends nothing from the harness: a contract package that
+ * imports a host implementation cannot be loaded where that implementation differs or is absent. The runtime turns an
+ * `AiError` into the harness's own error at the few seams where DSH sees it (see `host/harness-error.ts`).
+ */
 export class AiError extends Error {
   constructor(readonly code: AiErrorCode, message: string, options?: ErrorOptions) {
     super(message, options)

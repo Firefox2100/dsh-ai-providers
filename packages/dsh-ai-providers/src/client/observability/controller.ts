@@ -132,7 +132,7 @@ export class ObservabilityController {
         this.keyError = undefined
         let stored = false
         try {
-          const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.credentials}`, { method: 'PUT', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref: this.refOf(name), value }), signal: this.abort.signal })
+          const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.credentials}`, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref: this.refOf(name), value }), signal: this.abort.signal })
           if (!response.ok) this.keyError = ((await response.json().catch(() => ({}))) as { error?: string }).error ?? `the key could not be stored (${response.status})`
           else stored = true
         } catch (error) { this.keyError = error instanceof Error ? error.message : String(error) }
