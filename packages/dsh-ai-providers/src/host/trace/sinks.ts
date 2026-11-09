@@ -38,6 +38,11 @@ const attribute = (key: string, value: unknown): Attribute | undefined => {
 
 const nanos = (ms: number): string => `${Math.round(ms)}000000`
 const OTEL_STATUS_ERROR = 2
+const withoutTrailingSlashes = (value: string): string => {
+  let end = value.length
+  while (end > 0 && value[end - 1] === '/') end -= 1
+  return value.slice(0, end)
+}
 
 /** A span as OpenTelemetry carries it, with the attributes Langfuse reads its fields from. */
 export function otlpSpan(span: SpanRecord, environment: string | undefined): Record<string, unknown> {
@@ -76,7 +81,7 @@ export class LangfuseSink implements TraceSink {
   async write(items: readonly TraceItem[]): Promise<void> {
     const keys = await this.options.keys()
     if (keys === undefined) throw new Error('the Langfuse keys are not set')
-    const base = this.options.host().replace(/\/+$/, '')
+    const base = withoutTrailingSlashes(this.options.host())
     const authorization = `Basic ${Buffer.from(`${keys.publicKey}:${keys.secretKey}`).toString('base64')}`
     const spans = items.flatMap(item => item.type === 'span' ? [item.span] : [])
     if (spans.length > 0) {

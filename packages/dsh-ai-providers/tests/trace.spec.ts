@@ -211,7 +211,7 @@ describe('the sinks', () => {
   it('posts spans over OTLP with the ingestion version and basic auth, and scores to the scores API', async () => {
     const calls: { url: string; init: RequestInit }[] = []
     const send = ((url: string, init: RequestInit) => { calls.push({ url, init }); return Promise.resolve(new Response('{}', { status: 200 })) }) as unknown as typeof fetch
-    const sink = new LangfuseSink({ host: () => 'http://lf:3000/', keys: () => Promise.resolve({ publicKey: 'pk', secretKey: 'sk' }), fetch: send })
+    const sink = new LangfuseSink({ host: () => 'http://lf:3000///', keys: () => Promise.resolve({ publicKey: 'pk', secretKey: 'sk' }), fetch: send })
     await sink.write([{ type: 'span', span }, { type: 'score', score: { traceId: span.traceId, spanId: span.spanId, name: 'held', value: true, atMs: 1 } }])
     expect(calls.map(call => call.url)).toEqual(['http://lf:3000/api/public/otel/v1/traces', 'http://lf:3000/api/public/scores'])
     const headers = calls[0]!.init.headers as Record<string, string>

@@ -44,7 +44,7 @@ if (key) headers.authorization = `Bearer ${key}`
 for (let run = 1; run <= times; run += 1) {
   const started = Date.now()
   const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) })
-  if (!response.ok) { console.log(`#${run} HTTP ${response.status} ${(await response.text()).slice(0, 200)}`); continue }
+  if (!response.ok) { console.log(`#${run} HTTP ${response.status}`); await response.body?.cancel(); continue }
   let text = '', calls = 0, finish = '', tokens = ''
   const decoder = new TextDecoder()
   let pending = ''
