@@ -30,7 +30,8 @@ class LocalAiModelControl implements LlmModelControl {
     const connection = this.connection(route)
     const url = new URL(`${connection.baseUrl}/backend/monitor`)
     url.searchParams.set('model', requiredModel(model))
-    const response = await this.request(url, connection, signal === undefined ? {} : { signal })
+    const response = await this.request(url, connection, signal === undefined ? {} : { signal }, (status, said) => status === 500 && /not currently loaded/i.test(said ?? ''))
+    if (response === undefined) return { state: 'uninitialized' }
     const body = await readJson<{ state?: unknown; memory?: { total?: unknown } }>(response)
     if (body === undefined || typeof body.state !== 'number') throw new AiError('unavailable', 'LocalAI returned an invalid backend status')
     const memory = body.memory?.total
@@ -50,9 +51,10 @@ class LocalAiModelControl implements LlmModelControl {
 
   private async change(route: string, model: string, operation: 'load' | 'shutdown', signal?: AbortSignal): Promise<void> {
     const connection = this.connection(route)
+    // a model that is not loaded answers a shutdown with 404, and is as unloaded as the caller wanted
     await this.request(`${connection.baseUrl}/backend/${operation}`, connection, {
       method: 'POST', ...signal === undefined ? {} : { signal }, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: requiredModel(model) }),
-    })
+    }, operation === 'shutdown' ? status => status === 404 : undefined)
   }
 
   private connection(routeId: string): OpenAiConnection {
@@ -63,7 +65,8 @@ class LocalAiModelControl implements LlmModelControl {
     return validateConnection(connection)
   }
 
-  private async request(url: string | URL, connection: OpenAiConnection, init: RequestInit): Promise<Response> {
+  /** @param absent recognises the answer a server gives for a model that is not loaded; the request then returns nothing instead of failing. */
+  private async request(url: string | URL, connection: OpenAiConnection, init: RequestInit, absent?: (status: number, said: string | undefined) => boolean): Promise<Response | undefined> {
     let response: Response
     try {
       response = await this.send(url, { ...init, headers: { ...init.headers, ...await connectionHeaders(connection, this.deps.credentials) } })
@@ -74,6 +77,7 @@ class LocalAiModelControl implements LlmModelControl {
     if (!response.ok) {
       const body = await readJson<{ message?: unknown; error?: { message?: unknown } | string }>(response)
       const said = typeof body?.message === 'string' ? body.message : typeof body?.error === 'string' ? body.error : typeof body?.error?.message === 'string' ? body.error.message : undefined
+      if (absent?.(response.status, said) === true) return undefined
       throw httpFailure(response, said)
     }
     return response

@@ -108,6 +108,7 @@ export class FakeLlm extends LlmService {
 
   async * stream(call: LlmCall): AsyncGenerator<StreamChunk> {
     this.calls.push(call)
+    call.wire?.({ model: call.options.model, messages: 'as sent' })
     if (this.failWith !== undefined) throw this.failWith
     yield * this.chunks
   }

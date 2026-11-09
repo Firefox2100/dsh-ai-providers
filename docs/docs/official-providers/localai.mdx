@@ -36,7 +36,7 @@ Use `sampling.body` for LocalAI-native or backend-specific options such as const
 
 ### Model administration
 
-LocalAI routes support the optional model administration API exposed as `ctx.aiModels`: status uses `GET /backend/monitor`, loading uses `POST /backend/load`, and unloading uses `POST /backend/shutdown`, all relative to the configured `/v1` base URL. Status reports LocalAI's backend state and, when supplied, its memory use in bytes.
+LocalAI routes support the optional model administration API exposed as `ctx.aiModels`: status uses `GET /backend/monitor`, loading uses `POST /backend/load`, and unloading uses `POST /backend/shutdown`, all relative to the configured `/v1` base URL. Status reports LocalAI's backend state and, when supplied, its memory use in bytes. A model that is not loaded is reported as `uninitialized` (LocalAI answers its monitor request with a 500 error that says so), and unloading one is treated as done (LocalAI answers with a 404). Some backends, llama.cpp among them, cannot report their status at all: the request then fails, and a caller that wants the model gone should unload it anyway.
 
 These endpoints require administrative authorization when LocalAI authentication is enabled, so the connection credential must have that access. Loading and unloading change shared server state; use them only when the caller owns the model lifecycle and has accounted for concurrent requests.
 

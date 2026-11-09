@@ -85,6 +85,7 @@ export class OllamaLlmService extends LlmService {
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return { data: stored.data }
         })
+        call.wire?.(body)
         return this.send(`${connection.apiUrl}/chat`, {
           method: 'POST',
           signal,

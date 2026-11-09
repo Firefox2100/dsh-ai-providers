@@ -73,6 +73,7 @@ export class DashScopeLlmService extends LlmService {
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return { data: stored.data, mediaType: stored.ref.mediaType }
         })
+        call.wire?.(body)
         return this.send(`${connection.baseUrl}/services/aigc/${isMultimodal(call) ? 'multimodal-generation' : 'text-generation'}/generation`, {
           method: 'POST',
           signal,

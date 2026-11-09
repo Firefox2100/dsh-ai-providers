@@ -22,7 +22,7 @@ The project is primarily useful to plugin developers and to users of plugins bui
 
 - Configure a connection and DSH-managed credential once instead of repeating secrets in every feature or plugin.
 - Let users choose or change providers without coupling consumer plugins to vendor-specific APIs.
-- Share capability contracts, live configuration, and concurrency limits across plugins.
+- Share capability contracts, live configuration, concurrency limits, and optional tracing across plugins.
 - Retain vendor-specific controls where a common interface would otherwise hide useful behavior.
 
 The provider-neutral contracts are the foundation. A provider can be added behind those contracts without requiring each consumer plugin to add another vendor transport.
@@ -66,7 +66,7 @@ Consumer plugins depend on the contracts, not a particular vendor package. The r
 | --- | --- |
 | `@dsh-ai-providers/core` | Provider-neutral service contracts, errors, and shared types |
 | `@dsh-ai-providers/openai-compatible` | Reusable OpenAI-compatible wire transports; not a plugin |
-| `@dsh-ai-providers/runtime` | Provider registry, service selection, concurrency control, API routes, and settings UI |
+| `@dsh-ai-providers/runtime` | Provider registry, service selection, concurrency control, optional tracing, API routes, and settings UI |
 | `@dsh-ai-providers/openai` | OpenAI-compatible language models, embeddings, decisions, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/localai` | LocalAI language models, embeddings, reranking, decisions, TTS, file and live STT, and image generation |
 | `@dsh-ai-providers/anthropic` | Language models through Anthropic's native Messages API |
@@ -92,7 +92,7 @@ See the individual provider guides for configuration and supported features:
 
 ## Installation
 
-DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`.
+DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3`.
 
 Install the bundle into a DSH profile:
 

@@ -27,8 +27,11 @@ Do not import runtime internals or a vendor package merely to call a selected ca
 | `ctx.decisions` | `DecisionService` | A decision provider is selected and loaded |
 | `ctx.aiProviders` | `AiProviderRegistry` | The runtime plugin is loaded |
 | `ctx.aiModels` | `AiModelControls` | The runtime plugin is loaded |
+| `ctx.aiTrace` | `AiTracer` | Runtime tracing is enabled |
 
 Language models use DSH's existing `ctx.llm` service. Provider packages contribute routes through the runtime adapter instead of exposing another selected context service.
+
+`ctx.aiTrace` is optional by design. Consumers that add outer observations should retrieve it with `ctx.get('aiTrace')`; tracing must not become a required dependency. See [Observability](../concepts/observability) for nesting, linking and scoring examples.
 
 Besides `stream()`, an `LlmService` can list a configured route with `discover(route)` and inspect an endpoint that is not configured yet with `interrogate(draft)`. The runtime exposes both through DSH model discovery and reports each route's `baseUrl` and `retry` policy. On DSH 0.2.2 and later it also forwards model badges and emits `llm/models-updated` when a saved edit changes catalog display data. Older supported releases ignore badges and the refresh notice.
 

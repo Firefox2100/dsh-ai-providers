@@ -11,6 +11,7 @@ import { ConfiguredImageGeneration } from './image.ts'
 import { ConfiguredDecision } from './decision.ts'
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
+import type { Tracer } from './trace/tracer.ts'
 
 /**
  * Puts the configured services on the context. `ctx.embeddings` (and likewise `ctx.rerankers`) is
@@ -26,7 +27,7 @@ export class AiServices {
   readonly image: ConfiguredImageGeneration
   readonly decision: ConfiguredDecision
 
-  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config, gate?: RequestGate) {
+  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly config: Config, gate?: RequestGate, trace?: Tracer) {
     for (const capability of CAPABILITIES) ctx.provide(SERVICE_NAMES[capability])
     ctx.provide('streamingSpeechToText')
     this.embedding = new ConfiguredEmbedding({
@@ -34,12 +35,13 @@ export class AiServices {
       registry,
       holdMs: () => config.holdSeconds.get() * 1000,
       ...gate === undefined ? {} : { gate },
+      ...trace === undefined ? {} : { trace },
     })
-    this.rerank = new ConfiguredRerank({ selected: () => config.rerank.get(), registry, ...gate === undefined ? {} : { gate } })
-    this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry, ...gate === undefined ? {} : { gate } })
-    this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry, ...gate === undefined ? {} : { gate } })
-    this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry, ...gate === undefined ? {} : { gate } })
-    this.decision = new ConfiguredDecision({ selected: () => config.decision.get(), registry, ...gate === undefined ? {} : { gate } })
+    this.rerank = new ConfiguredRerank({ selected: () => config.rerank.get(), registry, ...gate === undefined ? {} : { gate }, ...trace === undefined ? {} : { trace } })
+    this.tts = new ConfiguredTts({ selected: () => config.tts.get(), registry, ...gate === undefined ? {} : { gate }, ...trace === undefined ? {} : { trace } })
+    this.stt = new ConfiguredStt({ selected: () => config.stt.get(), registry, ...gate === undefined ? {} : { gate }, ...trace === undefined ? {} : { trace } })
+    this.image = new ConfiguredImageGeneration({ selected: () => config.image.get(), registry, ...gate === undefined ? {} : { gate }, ...trace === undefined ? {} : { trace } })
+    this.decision = new ConfiguredDecision({ selected: () => config.decision.get(), registry, ...gate === undefined ? {} : { gate }, ...trace === undefined ? {} : { trace } })
     this.sync()
     ctx.effect(() => registry.subscribe(() => { this.sync() }), 'dsh-ai-providers: providers changed')
     ctx.on('loader/volatile-update', () => { this.sync() })

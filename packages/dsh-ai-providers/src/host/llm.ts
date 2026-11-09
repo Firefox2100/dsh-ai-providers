@@ -4,6 +4,8 @@ import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, GenerateOp
 import { LlmRequestError, type AiProvider, type LlmCall, type LlmModelSpec, type LlmRouteSpec, type LlmSampling, type LlmService } from '@dsh-ai-providers/core'
 import type { AiProviders } from './registry.ts'
 import type { RequestGate } from './gate.ts'
+import { observeLlm } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Events {
@@ -47,7 +49,7 @@ export function mergeSampling(...layers: readonly (LlmSampling | undefined)[]): 
  * that apply to it; the service only has to speak its endpoint's wire.
  */
 export class AiLlmAdapter extends LlmAdapter {
-  constructor(private readonly registry: AiProviders, private readonly gate?: RequestGate) { super() }
+  constructor(private readonly registry: AiProviders, private readonly gate?: RequestGate, private readonly trace?: Tracer) { super() }
 
   /** The routes served now, with who serves them. */
   owners(): RouteOwner[] {
@@ -109,7 +111,8 @@ export class AiLlmAdapter extends LlmAdapter {
     const call: LlmCall = { options, route, model, sampling: mergeSampling(route.sampling, model?.sampling, ...policies, requested(options, model)), headers: attributionHeaders() }
     try {
       // The route is held for the whole stream: the model is generating until its last chunk.
-      yield * (this.gate === undefined ? service.stream(call) : this.gate.stream({ capability: 'llm', route: route.id, priority, signal: options.signal }, () => service.stream(call)))
+      const served = (): AsyncIterable<StreamChunk> => service.stream(call)
+      yield * observeLlm(this.trace, call, () => (this.gate === undefined ? served() : this.gate.stream({ capability: 'llm', route: route.id, priority, signal: options.signal }, served)))
     } catch (error) {
       if (error instanceof LlmRequestError) {
         const { status, retryAfterMs, requestId } = error.facts
@@ -162,8 +165,8 @@ export class LlmRoutes {
   /** The models each route advertised when selectors last read them, to tell them when an edit changed the list. */
   private readonly advertised = new Map<string, string>()
 
-  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate) {
-    this.adapter = new AiLlmAdapter(registry, gate)
+  constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate, trace?: Tracer) {
+    this.adapter = new AiLlmAdapter(registry, gate, trace)
   }
 
   get routes(): AiLlmAdapter { return this.adapter }

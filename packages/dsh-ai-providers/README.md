@@ -2,7 +2,7 @@
 
 The shared provider runtime for DeepSeek Harness plugins.
 
-It gives users one place to register reusable connections and DSH-managed credentials, select providers, and manage request concurrency. It exposes provider-neutral AI services to consumer plugins, so each plugin does not need its own vendor configuration and integration layer.
+It gives users one place to register reusable connections and DSH-managed credentials, select providers, manage request concurrency, and optionally trace AI work. It exposes provider-neutral AI services to consumer plugins, so each plugin does not need its own vendor configuration and integration layer.
 
 The runtime does not implement a vendor API, add an assistant, or make AI requests by itself. Install at least one provider package and a plugin that consumes its services.
 
@@ -14,6 +14,6 @@ Most users should install [`@dsh-ai-providers/all`](https://www.npmjs.com/packag
 dsh plugin --profile <profile> add @dsh-ai-providers/runtime
 ```
 
-[Documentation](https://firefox2100.github.io/dsh-ai-providers/docs/intro) · [Configuration](https://firefox2100.github.io/dsh-ai-providers/docs/getting-started/configuration) · [Source](https://github.com/Firefox2100/dsh-ai-providers) · [Issues](https://github.com/Firefox2100/dsh-ai-providers/issues)
+[Documentation](https://firefox2100.github.io/dsh-ai-providers/docs/intro) · [Observability](https://firefox2100.github.io/dsh-ai-providers/docs/concepts/observability) · [Configuration](https://firefox2100.github.io/dsh-ai-providers/docs/getting-started/configuration) · [Source](https://github.com/Firefox2100/dsh-ai-providers) · [Issues](https://github.com/Firefox2100/dsh-ai-providers/issues)
 
 Licensed under GPL-3.0-only.

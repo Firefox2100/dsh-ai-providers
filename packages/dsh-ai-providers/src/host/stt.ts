@@ -1,7 +1,9 @@
 import type { RequestGate } from './gate.ts'
+import { observeCall } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 import { AiError, SttService, supportsStreamingStt, type AiProviderRegistry, type SpeechInput, type SpeechProviderInfo, type SttLiveOptions, type SttLiveSession, type Transcript } from '@dsh-ai-providers/core'
 
-interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'>; gate?: RequestGate }
+interface Source { selected: () => string; registry: Pick<AiProviderRegistry, 'get'>; gate?: RequestGate; trace?: Tracer }
 const NONE = 'none'
 
 export class ConfiguredStt extends SttService {
@@ -14,7 +16,8 @@ export class ConfiguredStt extends SttService {
     const service = this.need()
     if (signal.aborted) throw new AiError('cancelled', 'cancelled')
     if (input.audio.byteLength === 0) throw new AiError('invalid-input', 'the audio recording is empty')
-    const answer = this.source.gate === undefined ? await service.transcribe(input, signal) : await this.source.gate.run({ capability: 'stt', signal }, () => service.transcribe(input, signal))
+    const call = (): Promise<Transcript> => observeCall(this.source.trace, { capability: 'stt', provider: service.provider, model: service.model, input: { audioBytes: input.audio.byteLength, language: input.language } }, () => service.transcribe(input, signal), found => ({ output: found.text }))
+    const answer = this.source.gate === undefined ? await call() : await this.source.gate.run({ capability: 'stt', signal }, call)
     if (typeof answer.text !== 'string') throw new AiError('unavailable', `${service.provider} returned no transcript`)
     return answer
   }

@@ -70,6 +70,7 @@ export class AnthropicLlmService extends LlmService {
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return {data: stored.data, mediaType: stored.ref.mediaType}
         })
+        call.wire?.(body)
         response = await this.send(`${connection.baseUrl}/messages`, {method: 'POST', signal, redirect: 'error', headers: {...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'anthropic-version': this.deps.config.anthropicVersion.get(), 'content-type': 'application/json', accept: 'text/event-stream'}, body: JSON.stringify(body)})
       }
       catch (error) { throw this.failed(error, call, timedOut, idle, connection.baseUrl) }

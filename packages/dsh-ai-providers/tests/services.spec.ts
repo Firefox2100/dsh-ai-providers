@@ -4,14 +4,16 @@ import * as plugin from '../src/index.ts'
 import { FakeDecision, FakeEmbedding, FakeRerank, FakeStt, FakeTts, providerOf, settle } from './support.ts'
 
 let ctx: Context
+const tracing = { enabled: false }
+const trace = { traceEnabled: { get: () => tracing.enabled }, traceSink: { get: () => 'jsonl' }, traceCapture: { get: () => 'summary' }, traceSummaryChars: { get: () => 500 }, traceDirectory: { get: () => '' }, traceWire: { get: () => false }, traceRedact: { get: () => [] }, langfuseHost: { get: () => 'http://localhost:3000' }, langfuseEnvironment: { get: () => '' }, langfusePublicKeyRef: { get: () => 'AI_PROVIDERS_LANGFUSE_PUBLIC_KEY' }, langfuseSecretKeyRef: { get: () => 'AI_PROVIDERS_LANGFUSE_SECRET_KEY' } }
 let selection: Record<'embedding' | 'rerank' | 'tts' | 'stt' | 'image' | 'decision', string>
 const config = (embedding: string, rerank = '', tts = '', stt = '', decision = '') => {
   selection = { embedding, rerank, tts, stt, image: '', decision }
   const field = (key: keyof typeof selection) => ({ get: () => selection[key] })
-  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), decision: field('decision'), holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 } }
+  return { embedding: field('embedding'), rerank: field('rerank'), tts: field('tts'), stt: field('stt'), image: field('image'), decision: field('decision'), holdSeconds: { get: () => 300 }, limits: { get: () => [] }, maxWaitSeconds: { get: () => 0 }, maxHoldSeconds: { get: () => 0 }, ...trace }
 }
 
-beforeEach(() => { ctx = new Context() })
+beforeEach(() => { ctx = new Context(); tracing.enabled = false })
 
 afterEach(async () => { await ctx.fiber.dispose() })
 
@@ -168,5 +170,18 @@ describe('the speech-to-text service on the context', () => {
     const provider = registered[0] as { info: unknown; transcribe: unknown }
     expect(provider.info).toEqual({ ...ctx.apiSpeechToText.info })
     expect(typeof provider.transcribe).toBe('function')
+  })
+})
+
+describe('the tracer on the context', () => {
+  it('is there only while capture is switched on, and follows the setting', async () => {
+    await load('')
+    expect(ctx.get('aiTrace')).toBeUndefined()
+    tracing.enabled = true
+    edited()
+    expect(ctx.get('aiTrace')).toBeDefined()
+    tracing.enabled = false
+    edited()
+    expect(ctx.get('aiTrace')).toBeUndefined()
   })
 })

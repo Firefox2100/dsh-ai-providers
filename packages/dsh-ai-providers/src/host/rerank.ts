@@ -1,4 +1,6 @@
 import type { RequestGate } from './gate.ts'
+import { observeCall } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 import { AiError, RerankService, type AiProviderRegistry, type RerankOptions, type RerankResult } from '@dsh-ai-providers/core'
 
 interface Source {
@@ -6,6 +8,7 @@ interface Source {
   selected: () => string
   registry: Pick<AiProviderRegistry, 'get'>
   gate?: RequestGate
+  trace?: Tracer
 }
 
 const NAME_OF_NONE = 'none'
@@ -36,7 +39,8 @@ export class ConfiguredRerank extends RerankService {
     if (query.trim() === '') throw new AiError('invalid-input', 'the query is empty')
     if (documents.length === 0) return { results: [], model: service.model }
     if (options.topN !== undefined && (!Number.isInteger(options.topN) || options.topN < 1)) throw new AiError('invalid-input', 'topN must be a whole number from 1')
-    const answer = this.source.gate === undefined ? await service.rerank(query, documents, options) : await this.source.gate.run({ capability: 'rerank', priority: options.priority, signal: options.signal }, () => service.rerank(query, documents, options))
+    const call = (): Promise<RerankResult> => observeCall(this.source.trace, { capability: 'rerank', provider: service.provider, model: service.model, input: { query, documents } }, () => service.rerank(query, documents, options), found => ({ output: found.results, model: found.model }))
+    const answer = this.source.gate === undefined ? await call() : await this.source.gate.run({ capability: 'rerank', priority: options.priority, signal: options.signal }, call)
     const seen = new Set<number>()
     for (const { index, score } of answer.results) {
       if (!Number.isInteger(index) || index < 0 || index >= documents.length || seen.has(index)) throw new AiError('unavailable', `${service.provider} scored a document that was not given, or twice (position ${index})`)

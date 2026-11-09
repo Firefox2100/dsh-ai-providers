@@ -42,6 +42,14 @@ describe('LocalAI model controls', () => {
     expect(new Headers(seen[0]?.init.headers).get('content-type')).toBe('application/json')
   })
 
+  it('reads a model that is not loaded as uninitialized, and unloading it as done', async () => {
+    const missing = make(() => Response.json({ error: { code: 500, message: 'backend qwen is not currently loaded' } }, { status: 500 }))
+    await expect(missing.control.status!('local', 'qwen')).resolves.toEqual({ state: 'uninitialized' })
+    await expect(make(() => Response.json({ error: { code: 500, message: 'the backend crashed' } }, { status: 500 })).control.status!('local', 'qwen')).rejects.toMatchObject({ code: 'unavailable' })
+    await expect(make(() => Response.json({ error: { code: 404, message: 'Resource not found' } }, { status: 404 })).control.unload!('local', 'qwen')).resolves.toBeUndefined()
+    await expect(make(() => Response.json({ error: { code: 404, message: 'Resource not found' } }, { status: 404 })).control.load!('local', 'qwen')).rejects.toMatchObject({ code: 'rejected' })
+  })
+
   it('rejects invalid responses and preserves useful HTTP classifications', async () => {
     await expect(make(() => Response.json({ state: 'ready' })).control.status!('local', 'model')).rejects.toMatchObject({ code: 'unavailable' })
     await expect(make(() => Response.json({ message: 'admin token required' }, { status: 401 })).control.load!('local', 'model')).rejects.toMatchObject({ code: 'rejected', message: expect.stringContaining('admin token required') })

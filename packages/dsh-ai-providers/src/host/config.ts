@@ -25,6 +25,28 @@ export interface Config {
   maxWaitSeconds: Volatile<number>
   /** The longest a call may keep its places, in seconds; one that holds them longer is let go of (and the log says so). 0 for no limit. */
   maxHoldSeconds: Volatile<number>
+  /** Whether calls and the work around them are recorded (`ctx.aiTrace`). Traces hold whole prompts: keep them on a server you run yourself. */
+  traceEnabled: Volatile<boolean>
+  /** Where records go: `jsonl` (files), `langfuse` (a Langfuse server) or `both`. */
+  traceSink: Volatile<string>
+  /** `full` records inputs and outputs whole; `summary` cuts each to `traceSummaryChars`. */
+  traceCapture: Volatile<string>
+  /** What a text is cut to when only a summary is recorded. */
+  traceSummaryChars: Volatile<number>
+  /** The folder of the JSONL files; empty for `traces` in the DSH home. */
+  traceDirectory: Volatile<string>
+  /** Patterns (regular expressions) whose matches are replaced before anything is recorded. */
+  traceRedact: Volatile<string[]>
+  /** Keeps the exact request body of each language-model call, as the endpoint received it, so a call can be replayed. */
+  traceWire: Volatile<boolean>
+  /** The address of the Langfuse server. */
+  langfuseHost: Volatile<string>
+  /** Names the environment records belong to in Langfuse; empty for its default. */
+  langfuseEnvironment: Volatile<string>
+  /** The credential holding Langfuse's public key; the value is kept in the credential store, never here. */
+  langfusePublicKeyRef: Volatile<string>
+  /** The credential holding Langfuse's secret key. */
+  langfuseSecretKeyRef: Volatile<string>
 }
 
 export const Config = z.object({
@@ -44,4 +66,15 @@ export const Config = z.object({
   })).default([]).volatile(),
   maxWaitSeconds: z.natural().default(1800).volatile(),
   maxHoldSeconds: z.natural().default(1800).volatile(),
+  traceEnabled: z.boolean().default(false).volatile(),
+  traceSink: z.union([z.const('jsonl'), z.const('langfuse'), z.const('both')]).default('jsonl').volatile(),
+  traceCapture: z.union([z.const('full'), z.const('summary')]).default('summary').volatile(),
+  traceSummaryChars: z.natural().default(500).volatile(),
+  traceDirectory: z.string().default('').volatile(),
+  traceWire: z.boolean().default(false).volatile(),
+  traceRedact: z.array(z.string()).default([]).volatile(),
+  langfuseHost: z.string().default('http://localhost:3000').volatile(),
+  langfuseEnvironment: z.string().default('').volatile(),
+  langfusePublicKeyRef: z.string().default('AI_PROVIDERS_LANGFUSE_PUBLIC_KEY').volatile(),
+  langfuseSecretKeyRef: z.string().default('AI_PROVIDERS_LANGFUSE_SECRET_KEY').volatile(),
 })

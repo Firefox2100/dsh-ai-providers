@@ -1,4 +1,6 @@
 import type { RequestGate } from './gate.ts'
+import { observeCall } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 import { AiError, EmbeddingService, type AiProviderRegistry, type EmbedOptions, type EmbeddingResult } from '@dsh-ai-providers/core'
 
 interface Source {
@@ -8,6 +10,7 @@ interface Source {
   /** How long a prepared vector waits to be retrieved, in milliseconds. */
   holdMs: () => number
   gate?: RequestGate
+  trace?: Tracer
 }
 
 /** A vector with the model that made it. */
@@ -105,7 +108,8 @@ export class ConfiguredEmbedding extends EmbeddingService {
   private compute(prefix: string, texts: string[], service: EmbeddingService, options: EmbedOptions, hold: boolean): void {
     const { signal: _signal, priority, ...request } = options
     // The call is shared, so it does not stop when one caller does: callers stop waiting instead.
-    const start = (): Promise<EmbeddingResult> => service.embed(texts, request)
+    const send = (): Promise<EmbeddingResult> => observeCall(this.source.trace, { capability: 'embedding', provider: service.provider, model: service.model, kind: 'embedding', input: texts }, () => service.embed(texts, request), answer => ({ output: { vectors: answer.vectors.length, dimensions: answer.dimensions }, model: answer.model }))
+    const start = send
     const call = (this.source.gate === undefined ? start() : this.source.gate.run({ capability: 'embedding', priority }, start)).then((answer) => {
       if (answer.vectors.length !== texts.length) throw new AiError('unavailable', `${service.provider} returned ${answer.vectors.length} vectors for ${texts.length} texts`)
       return answer

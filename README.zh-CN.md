@@ -20,7 +20,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 
 - 一次配置连接和 DSH 凭据，无须在不同功能或插件中重复保存密钥。
 - 用户可以更换供应商，消费方插件不必绑定某个供应商的 API。
-- 多个插件可以共用能力契约、实时配置和并发限制。
+- 多个插件可以共用能力契约、实时配置、并发限制和可选的追踪功能。
 - 公共接口只统一可共用的行为，供应商特有的实用选项仍可保留。
 
 供应商无关的契约是项目的基础。新增供应商时，只需在契约后实现相应服务，不必让每个消费方插件重新加入一套传输代码。
@@ -64,7 +64,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 | --- | --- |
 | `@dsh-ai-providers/core` | 与供应商无关的服务契约、错误类型和公共类型 |
 | `@dsh-ai-providers/openai-compatible` | 可复用的 OpenAI 兼容传输实现；它不是插件 |
-| `@dsh-ai-providers/runtime` | 供应商注册、服务选择、并发控制、API 路由和设置界面 |
+| `@dsh-ai-providers/runtime` | 供应商注册、服务选择、并发控制、可选追踪、API 路由和设置界面 |
 | `@dsh-ai-providers/openai` | OpenAI 兼容的语言模型、嵌入、决策、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/localai` | LocalAI 的语言模型、嵌入、重排序、决策、TTS、文件及实时 STT 和图像生成 |
 | `@dsh-ai-providers/anthropic` | 通过 Anthropic Messages API 提供语言模型 |
@@ -90,7 +90,7 @@ DSH AI Providers 面向需要接入多种 AI 能力的插件。用户只需配�
 
 ## 安装
 
-DSH AI Providers 需要 Node.js 22 或更高版本，目前支持 DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-rc.2 <0.2.2`。
+DSH AI Providers 需要 Node.js 22 或更高版本，目前支持 DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3`。
 
 将完整安装包加入需要使用它的 DSH 配置档案：
 

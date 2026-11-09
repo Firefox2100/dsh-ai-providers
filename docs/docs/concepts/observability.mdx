@@ -1,0 +1,88 @@
+---
+title: Observability
+sidebar_position: 3
+---
+
+The runtime can trace calls made through its AI services. Plugins can also add named work around those calls, such as an agent turn or a helper run, so related operations appear in one trace tree. Recording is off by default.
+
+:::warning Before you enable recording
+Trace data can contain prompts, answers and other private text. Choose a destination you trust. If the source may contain credentials or other secrets, add redaction rules before you turn recording on.
+:::
+
+## What the runtime records
+
+| Call | Observation type | Recorded data |
+| --- | --- | --- |
+| Language model request | `generation` | Messages, tool declarations, merged sampling, model output, tool calls, token usage, time to first token and finish reason |
+| Embedding | `embedding` | Input texts, then vector count and dimensions; vectors are not stored |
+| Reranking | `span` | Query, documents and scores |
+| Image generation | `span` | Prompt, options, media type and image size; image bytes are not stored |
+| Speech synthesis or transcription | `span` | Text or audio size, then the transcript or media type |
+| Decision | `span` | State, questions and answers |
+
+Errors are attached to the observation and still reach the caller. Completed observations enter a background queue, so writing a trace is not part of the service call's response path. If a destination fails, the affected batch is lost and the runtime logs the failure once.
+
+The runtime supplies the model name and token counts when a provider reports them. A plugin can set a stable trace name, a session ID, a user ID and tags when it creates an outer observation. These fields support Langfuse filtering and session grouping; the runtime does not invent them when the calling plugin has not supplied them.
+
+## Configure recording
+
+Open **Settings -> Observability**. The page contains these controls:
+
+- Turn tracing on or off with **Record calls**.
+- Choose daily JSONL files, a Langfuse endpoint, or both under **Send records to**.
+- Use **What is recorded** to keep complete inputs and outputs or shortened summaries. Summaries default to 500 characters per value.
+- Enable **Keep the exact request** to store the request body that a language-model provider sent. This is off by default and can make a trace much larger.
+- Add one regular expression per line under **Hide what matches**. Matches become `[redacted]` before the value is shortened or sent anywhere. Invalid expressions are ignored and reported in the DSH log.
+
+When file output is selected, an empty folder setting writes to `traces` under the DSH home. The runtime creates one `trace-<date>.jsonl` file per day and writes one observation or score per line.
+
+The Langfuse section asks for a server address, an optional environment and two credential references. The default references are `AI_PROVIDERS_LANGFUSE_PUBLIC_KEY` and `AI_PROVIDERS_LANGFUSE_SECRET_KEY`. Their values stay in DSH's credential store. A value supplied by the environment is shown as read-only.
+
+### Langfuse and compatible endpoints
+
+The runtime sends spans as OpenTelemetry HTTP/JSON to `<server>/api/public/otel/v1/traces`. It includes Langfuse observation attributes and the v4 ingestion header. Scores use `<server>/api/public/scores`.
+
+This works with Langfuse and with systems that deliberately implement those Langfuse ingestion endpoints and attributes. A generic OTLP collector is not enough unless it also provides that compatibility. Check the receiving system's documentation before pointing the runtime at it.
+
+In Langfuse, language-model calls appear as generations and embedding calls as embeddings. Outer work can use `agent`, `tool`, `span` or `event`. Stable names matter because saved views, dashboards and evaluators can filter by observation name and type.
+
+## Replay a language-model request
+
+Enable **Keep the exact request** and use full capture if you need a complete body. Then run:
+
+```bash
+node scripts/replay-trace.mjs <trace.jsonl>
+```
+
+The script lists recorded language-model calls. Add `--span <id> --url <endpoint>` to send one request again. `--set temperature=0` changes a top-level field, and `--times <n>` repeats the request. The output reports the finish reason, tool calls, text length and token counts. Repeat a request several times before treating an occasional failure as a meaningful difference.
+
+Replay sends the recorded body to the URL you provide. Review it first, especially when full capture or wire capture is enabled.
+
+## Add an outer observation from a plugin
+
+`ctx.aiTrace` exists only while recording is enabled. Look it up with `ctx.get('aiTrace')` so your plugin keeps working when tracing is off or the runtime is absent.
+
+```ts
+const tracer = ctx.get('aiTrace')
+const turn = tracer?.start({
+  name: 'run-turn',
+  kind: 'agent',
+  input: text,
+  trace: { name: 'run-turn', sessionId: storyId },
+})
+const unlink = turn === undefined ? undefined : tracer?.link(chatId, turn.ref)
+
+// Model calls carrying this chat ID now nest below the turn.
+
+unlink?.()
+turn?.end({ output: answer })
+```
+
+The public tracer supports four common patterns:
+
+- `run(start, work)` makes a span current for asynchronous work and ends it when the work settles.
+- `start(start)` returns a handle for work that ends later, such as a stream. Call `end()` yourself.
+- `link(key, span)` assigns a parent to work that cannot inherit the asynchronous context. The runtime uses a language-model request's session ID as this key.
+- `score(span, score)` attaches a numeric, Boolean or categorical judgement to a trace or observation.
+
+A service call with no outer observation starts its own trace.

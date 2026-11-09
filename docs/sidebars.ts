@@ -23,7 +23,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Concepts',
-      items: ['concepts/architecture', 'concepts/concurrency'],
+      items: ['concepts/architecture', 'concepts/concurrency', 'concepts/observability'],
     },
     {
       type: 'category',

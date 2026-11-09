@@ -117,6 +117,7 @@ export class OpenAiLlmService extends LlmService {
   private async * generate(call: LlmCall): AsyncGenerator<StreamChunk> {
     const { route, connection } = this.configOf(call.options.provider)
     const body = wireBody(call, { maxTokensField: route.maxCompletionTokens === true ? 'max_completion_tokens' : 'max_tokens', replayReasoning: route.replayReasoning === true }, await this.pictures(call))
+    call.wire?.(body)
     const consumer = new AbortController()
     const signal = call.options.signal === undefined ? consumer.signal : AbortSignal.any([consumer.signal, call.options.signal])
     const idleMs = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())

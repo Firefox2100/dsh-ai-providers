@@ -1,10 +1,13 @@
 import type { RequestGate } from './gate.ts'
+import { observeCall } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 import { AiError, TtsService, type AiProviderRegistry, type CallOptions, type TtsOptions, type TtsResult, type TtsVoice } from '@dsh-ai-providers/core'
 
 interface Source {
   selected: () => string
   registry: Pick<AiProviderRegistry, 'get'>
   gate?: RequestGate
+  trace?: Tracer
 }
 
 const NAME_OF_NONE = 'none'
@@ -23,7 +26,8 @@ export class ConfiguredTts extends TtsService {
     if (text.trim() === '') throw new AiError('invalid-input', 'the text is empty')
     const release = await this.source.gate?.acquire({ capability: 'tts', priority: options.priority, signal: options.signal }) ?? (() => undefined)
     let answer: TtsResult
-    try { answer = await service.synthesize(text, options) } catch (error) { release(); throw error }
+    const { signal: _signal, ...settings } = options
+    try { answer = await observeCall(this.source.trace, { capability: 'tts', provider: service.provider, model: service.model, input: { text, options: settings } }, () => service.synthesize(text, options), found => ({ output: { mediaType: found.mediaType } })) } catch (error) { release(); throw error }
     // The synthesis goes on while the audio is read, so the resource is held until the body ends or is dropped.
     answer = { ...answer, audio: releasing(answer.audio, release) }
     if (!(answer.audio instanceof ReadableStream)) throw new AiError('unavailable', `${service.provider} returned no audio stream`)

@@ -1,4 +1,6 @@
 import type { RequestGate } from './gate.ts'
+import { observeCall } from './trace/observe.ts'
+import type { Tracer } from './trace/tracer.ts'
 import { AiError, DecisionService, validateDecisionRequest, type AiProviderRegistry, type DecisionOptions, type DecisionQuestion, type DecisionQuestions, type DecisionResult, type DecisionState } from '@dsh-ai-providers/core'
 
 interface Source {
@@ -6,6 +8,7 @@ interface Source {
   selected: () => string
   registry: Pick<AiProviderRegistry, 'get'>
   gate?: RequestGate
+  trace?: Tracer
 }
 
 const NAME_OF_NONE = 'none'
@@ -57,7 +60,8 @@ export class ConfiguredDecision extends DecisionService {
     if (service === undefined) throw new AiError('not-configured', 'no decision provider is selected, or the selected one is not loaded')
     if (options.signal?.aborted === true) throw new AiError('cancelled', 'cancelled')
     validateDecisionRequest(state, questions)
-    const answer = this.source.gate === undefined ? await service.decide(state, questions, options) : await this.source.gate.run({ capability: 'decision', priority: options.priority, signal: options.signal }, () => service.decide(state, questions, options))
+    const call = (): Promise<DecisionResult<Questions>> => observeCall(this.source.trace, { capability: 'decision', provider: service.provider, model: service.model, input: { state, questions } }, () => service.decide(state, questions, options), found => ({ output: found.answers }))
+    const answer = this.source.gate === undefined ? await call() : await this.source.gate.run({ capability: 'decision', priority: options.priority, signal: options.signal }, call)
     for (const [name, question] of Object.entries(questions)) {
       const problem = answerProblem(name, question, (answer.answers as Record<string, unknown>)[name])
       if (problem !== undefined) throw new AiError('unavailable', `${service.provider}: ${problem}`)

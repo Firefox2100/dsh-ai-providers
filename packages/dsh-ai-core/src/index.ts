@@ -14,4 +14,6 @@ export { ImageGenerationService, type GeneratedImage, type ImageGenerationOption
 export { localized, type LocalizedText, type RequestOption } from './options.ts'
 export { cosineSimilarity } from './similarity.ts'
 export type { AiProvider, AiProviderRegistry, ServiceFactory } from './provider.ts'
+export type { AiTracer, SpanHandle, SpanKind, SpanRef, SpanResult, SpanStart } from './trace.ts'
 import './context.ts'
+import './trace.ts'

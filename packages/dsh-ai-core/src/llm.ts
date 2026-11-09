@@ -127,6 +127,8 @@ export interface LlmCall {
   sampling: LlmSampling
   /** Headers that identify the harness to the endpoint; every request must carry them. */
   headers: Readonly<Record<string, string>>
+  /** Set while calls are traced: a service hands it the exact body it puts on the wire, once per attempt. */
+  wire?: (body: unknown) => void
 }
 
 /** Maps failures shared by streaming HTTP transports while keeping provider response errors intact. */
