@@ -6,9 +6,9 @@
   "type": "module",
   "icon": "./icon.svg",
   "main": "lib/index.js",
-  "types": "src/index.ts",
+  "types": "lib/index.d.ts",
   "exports": {
-    ".": { "types": "./src/index.ts", "default": "./lib/index.js" },
+    ".": { "types": "./lib/index.d.ts", "default": "./lib/index.js" },
     "./client": "./lib/client.js",
     "./package.json": "./package.json"
   },
@@ -38,17 +38,15 @@
   },
   "files": [
     "icon.svg",
-    "lib/*.js",
-    "lib/client.js",
-    "lib/client.js.map",
-    "src",
+    "lib",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
+    "@deepseek-ai/cosmokit": "^1.9.0",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/schemastery": "^3.18.4",
     "@dsh-ai-providers/core": "workspace:0.7.0"
   },
@@ -57,7 +55,8 @@
     "@dsh-ai-providers/runtime": "workspace:0.7.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/cosmokit": "^1.9.0",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
     "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.1",

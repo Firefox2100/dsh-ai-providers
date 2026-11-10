@@ -1,11 +1,13 @@
+import { createElement } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: these pull in the Context and SlotMap augmentations this feature relies on.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@dsh-ai-providers/core/slots'
-import { CAPABILITIES, providerSlotName, type Capability } from '@dsh-ai-providers/core'
+import { CAPABILITIES, type Capability } from '@dsh-ai-providers/core'
 import { ENTRY_ID } from '../../shared/ids.ts'
+import { nestedSection, storeHook, type FeaturePage } from '../page.tsx'
 import { CapabilityController } from './controller.ts'
 import { capabilitySection } from './CapabilitySection.tsx'
 import { dictionariesOf, type CapabilityLocaleKey } from './locales.ts'
@@ -21,42 +23,30 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
-/** Where each capability's tab sits in the settings modal, and the namespace of its copy. */
-const TABS = {
-  embedding: { id: 'ai-embedding', order: 45, namespace: 'ai.embedding' },
-  rerank: { id: 'ai-rerank', order: 46, namespace: 'ai.rerank' },
-  tts: { id: 'ai-tts', order: 47, namespace: 'ai.tts' },
-  stt: { id: 'ai-stt', order: 48, namespace: 'ai.stt' },
-  image: { id: 'ai-image', order: 49, namespace: 'ai.image' },
-  decision: { id: 'ai-decision', order: 50, namespace: 'ai.decision' },
-} as const satisfies Record<Capability, { id: string; order: number; namespace: 'ai.embedding' | 'ai.rerank' | 'ai.tts' | 'ai.stt' | 'ai.image' | 'ai.decision' }>
+/** The namespace of each capability's copy; one page each, inside the capabilities page. */
+const NAMESPACES = {
+  embedding: 'ai.embedding',
+  rerank: 'ai.rerank',
+  tts: 'ai.tts',
+  stt: 'ai.stt',
+  image: 'ai.image',
+  decision: 'ai.decision',
+} as const satisfies Record<Capability, string>
 
-function registerTab(ctx: Context, capability: Capability): void {
-  const { id, order, namespace } = TABS[capability]
-  const t = ctx.locale.bind(namespace)
-  ctx.effect(() => ctx.locale.register(namespace, dictionariesOf[capability]), `dsh-ai-providers: ${capability} dictionaries`)
-
-  const controller = new CapabilityController(ctx, ctx.configForms.get(ENTRY_ID), capability)
-  controller.start()
-  ctx.effect(() => () => { controller.dispose() }, `dsh-ai-providers: ${capability} tab`)
-
-  // The tab only exists while the host plugin is loaded and serves its form.
-  ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
-      ctx.slots.register({
-        name: 'settings.section',
-        id,
-        order,
-        label: () => t('nav'),
-        locale: namespace,
-        inject: () => controller.inject(),
-        children: { [providerSlotName(capability)]: { kind: 'list', scope: 'root' } },
-      }, capabilitySection(capability) as never))),
-    `dsh-ai-providers: ${capability} section`,
-  )
-}
-
-/** Adds a tab to the settings modal for each capability. */
-export function registerCapabilities(ctx: Context): void {
-  for (const capability of CAPABILITIES) registerTab(ctx, capability)
+/** The capabilities page: one nested tab per capability, each selecting its provider and testing it. */
+export function describeCapabilities(ctx: Context): FeaturePage {
+  const pages: FeaturePage[] = CAPABILITIES.map((capability) => {
+    const namespace = NAMESPACES[capability]
+    const t = ctx.locale.bind(namespace)
+    ctx.effect(() => ctx.locale.register(namespace, dictionariesOf[capability]), `dsh-ai-providers: ${capability} dictionaries`)
+    const controller = new CapabilityController(ctx, ctx.configForms.get(ENTRY_ID), capability)
+    controller.start()
+    ctx.effect(() => () => { controller.dispose() }, `dsh-ai-providers: ${capability} tab`)
+    const Body = capabilitySection(capability)
+    const face = controller.inject()
+    return { id: capability, label: t('tab'), render: props => createElement(Body, { ...props, t, ...face, useCapability: storeHook(face.hooks.capability) }) }
+  })
+  const t = ctx.locale.bind('ai.providers')
+  const Nested = nestedSection(pages, t('capabilities'))
+  return { id: 'capabilities', label: t('pageCapabilities'), render: props => createElement(Nested, props) }
 }

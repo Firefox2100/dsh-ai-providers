@@ -1,9 +1,11 @@
+import { createElement } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
+// Type-only: these pull in the Context and SlotMap augmentations this feature relies on.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@dsh-ai-providers/core/slots'
-import { ENTRY_ID } from '../../shared/ids.ts'
+import type { FeaturePage } from '../page.tsx'
 import { dictionaries, type ProvidersLocaleKey } from './locales.ts'
 import { ProvidersSection } from './ProvidersSection.tsx'
 
@@ -15,18 +17,9 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 const NAMESPACE = 'ai.providers'
 
-export function registerProviders(ctx: Context): void {
+/** The providers page: the endpoints and credentials every capability reuses, one card per installed provider. */
+export function describeProviders(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: providers dictionaries')
-  ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () => ctx.slots.register({
-      name: 'settings.section',
-      id: 'ai-provider-connections',
-      order: 42,
-      label: () => t('nav'),
-      locale: NAMESPACE,
-      children: { 'ai.provider.connection': { kind: 'list', scope: 'root' } },
-    }, ProvidersSection as never))),
-    'dsh-ai-providers: providers section',
-  )
+  return { id: 'providers', label: t('nav'), render: props => createElement(ProvidersSection, { ...props, t }) }
 }

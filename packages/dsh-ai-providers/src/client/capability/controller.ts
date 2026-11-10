@@ -1,3 +1,4 @@
+import { refreshOn } from '../subscriptions.ts'
 import type { Context } from '@deepseek-ai/cordis'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
@@ -67,6 +68,7 @@ export class CapabilityController {
   }
 
   start(): void {
+    refreshOn(this.ctx, ['settings/document-updated'], () => { void this.refresh() })
     this.unsubscribe = this.scope.subscribe(() => { this.refreshSoon() })
     void this.refresh()
   }

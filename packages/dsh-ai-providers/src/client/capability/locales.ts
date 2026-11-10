@@ -3,7 +3,7 @@ import type { Capability } from '@dsh-ai-providers/core'
 import type { Dictionaries } from '../i18n.ts'
 
 export type CapabilityLocaleKey =
-  | 'nav' | 'title' | 'description'
+  | 'nav' | 'tab' | 'title' | 'description'
   | 'provider' | 'providerNone' | 'providerNotLoaded' | 'noProviders' | 'chooseProvider'
   | 'status' | 'statusAvailable' | 'statusUnavailable'
   | 'test' | 'testing' | 'testSaveFirst' | 'testOk' | 'testFailed'
@@ -13,6 +13,7 @@ export type CapabilityLocaleKey =
 const embedding: Dictionaries<CapabilityLocaleKey> = {
   en: {
     nav: 'Embedding',
+    tab: 'Embedding',
     title: 'Embedding',
     description: 'Turns text into vectors, so that other plugins can find what is similar by meaning. Choose which provider supplies it and configure that provider; the service is then available to every plugin that asks for it.',
     provider: 'Provider',
@@ -40,6 +41,7 @@ const embedding: Dictionaries<CapabilityLocaleKey> = {
   },
   zh: {
     nav: '嵌入',
+    tab: '嵌入',
     title: '嵌入',
     description: '把文本转换为向量，让其他插件能按含义查找相近内容。选择由哪个提供方提供该服务并完成配置；之后所有需要它的插件都可以使用。',
     provider: '提供方',
@@ -71,6 +73,7 @@ const rerank: Dictionaries<CapabilityLocaleKey> = {
   en: {
     ...embedding.en,
     nav: 'Reranking',
+    tab: 'Reranking',
     title: 'Reranking',
     description: 'Judges how well each of a few texts answers a question by reading them together, which is more accurate than comparing vectors. Other plugins use it to put the best of what a cheaper search found first. Choose which provider supplies it and configure that provider.',
     noProviders: 'No reranking provider is installed. Install a provider plugin such as @dsh-ai-providers/jina.',
@@ -80,6 +83,7 @@ const rerank: Dictionaries<CapabilityLocaleKey> = {
   zh: {
     ...embedding.zh,
     nav: '重排序',
+    tab: '重排',
     title: '重排序',
     description: '把问题和几段文本放在一起阅读，判断每段文本回答问题的程度，比单独比较向量更准确。其他插件用它把较便宜的检索找到的内容按相关度排好。选择由哪个提供方提供该服务并完成配置。',
     noProviders: '尚未安装任何重排序提供方。请安装如 @dsh-ai-providers/jina 之类的提供方插件。',
@@ -92,6 +96,7 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
   en: {
     ...embedding.en,
     nav: 'Text to speech',
+    tab: 'Voice',
     title: 'Text to speech',
     description: 'Turns text into streamed speech audio. Choose which provider supplies it and configure its model, voice and output defaults.',
     noProviders: 'No text-to-speech provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.',
@@ -101,6 +106,7 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
   zh: {
     ...embedding.zh,
     nav: '文本转语音',
+    tab: '语音合成',
     title: '文本转语音',
     description: '把文本转换为流式语音音频。选择由哪个提供方提供，并配置其模型、声音和输出默认值。',
     noProviders: '尚未安装任何文本转语音提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。',
@@ -110,18 +116,18 @@ const tts: Dictionaries<CapabilityLocaleKey> = {
 }
 
 const stt: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'API speech to text', title: 'API speech to text', description: 'Transcribes completed recordings through the same provider shape as DSH Voice Input; a provider may also support realtime transcription. This API service can be disabled while DSH Voice Input uses SenseVoice.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can use API transcription now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: 'API 语音转文本', title: 'API 语音转文本', description: '使用与 DSH 语音输入提供方相同的接口转录完整录音；提供方还可选择支持实时转录。此 API 服务可以禁用，同时让 DSH 语音输入使用 SenseVoice。', noProviders: '尚未安装任何语音转文本提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以使用 API 转录。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'API speech to text', tab: 'Speech', title: 'API speech to text', description: 'Transcribes completed recordings through the same provider shape as DSH Voice Input; a provider may also support realtime transcription. This API service can be disabled while DSH Voice Input uses SenseVoice.', noProviders: 'No speech-to-text provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can use API transcription now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: 'API 语音转文本', tab: '语音识别', title: 'API 语音转文本', description: '使用与 DSH 语音输入提供方相同的接口转录完整录音；提供方还可选择支持实时转录。此 API 服务可以禁用，同时让 DSH 语音输入使用 SenseVoice。', noProviders: '尚未安装任何语音转文本提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以使用 API 转录。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 const image: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'Image generation', title: 'Image generation', description: 'Creates bitmap images from text prompts. Choose which provider supplies it and configure its model and output defaults.', noProviders: 'No image generation provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can generate images now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: '图像生成', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'Image generation', tab: 'Images', title: 'Image generation', description: 'Creates bitmap images from text prompts. Choose which provider supplies it and configure its model and output defaults.', noProviders: 'No image generation provider is installed. Install a provider plugin such as @dsh-ai-providers/openai.', statusAvailable: 'Available: other plugins can generate images now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '图像生成', tab: '图像', title: '图像生成', description: '根据文本提示创建位图图像。选择由哪个提供方提供，并配置其模型和输出默认值。', noProviders: '尚未安装任何图像生成提供方。请安装如 @dsh-ai-providers/openai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以生成图像。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 const decision: Dictionaries<CapabilityLocaleKey> = {
-  en: { ...embedding.en, nav: 'Decisions', title: 'Decisions', description: 'Answers typed questions about a text (does a statement hold, which option fits, where it falls on a scale) with a model that scores the options in one pass instead of writing text. The answers are probabilities, so a plugin can act on a confident one and leave an unsure one to a slower model. Choose which provider supplies it and configure that provider.', noProviders: 'No decision provider is installed. Install a provider plugin such as @dsh-ai-providers/typesafe or @dsh-ai-providers/localai.', statusAvailable: 'Available: other plugins can ask decisions now.', testOk: 'Works: {model}, {milliseconds} ms.' },
-  zh: { ...embedding.zh, nav: '决策', title: '决策', description: '针对一段文本回答带类型的问题（某个陈述是否成立、哪个选项最合适、在量表上处于什么位置），由一个一次性为各选项打分、而不是逐字生成文本的模型完成。答案是概率，因此插件可以采纳把握大的答案，把没把握的交给更慢的模型。选择由哪个提供方提供该服务并完成配置。', noProviders: '尚未安装任何决策提供方。请安装如 @dsh-ai-providers/typesafe 或 @dsh-ai-providers/localai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以请求决策。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
+  en: { ...embedding.en, nav: 'Decisions', tab: 'Decisions', title: 'Decisions', description: 'Answers typed questions about a text (does a statement hold, which option fits, where it falls on a scale) with a model that scores the options in one pass instead of writing text. The answers are probabilities, so a plugin can act on a confident one and leave an unsure one to a slower model. Choose which provider supplies it and configure that provider.', noProviders: 'No decision provider is installed. Install a provider plugin such as @dsh-ai-providers/typesafe or @dsh-ai-providers/localai.', statusAvailable: 'Available: other plugins can ask decisions now.', testOk: 'Works: {model}, {milliseconds} ms.' },
+  zh: { ...embedding.zh, nav: '决策', tab: '决策', title: '决策', description: '针对一段文本回答带类型的问题（某个陈述是否成立、哪个选项最合适、在量表上处于什么位置），由一个一次性为各选项打分、而不是逐字生成文本的模型完成。答案是概率，因此插件可以采纳把握大的答案，把没把握的交给更慢的模型。选择由哪个提供方提供该服务并完成配置。', noProviders: '尚未安装任何决策提供方。请安装如 @dsh-ai-providers/typesafe 或 @dsh-ai-providers/localai 之类的提供方插件。', statusAvailable: '可用：其他插件现在可以请求决策。', testOk: '可用：{model}，{milliseconds} 毫秒。' },
 }
 
 /** The copy of each capability's tab. */

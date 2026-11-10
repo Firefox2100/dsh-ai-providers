@@ -1,21 +1,7 @@
-import { LlmRequestError, type LlmFailureCode } from '@dsh-ai-providers/core'
+import { LlmRequestError, describeLlmErrorBody, requestIdOf, retryAfterMsOf, type LlmFailureCode, type LlmFailureFacts } from '@dsh-ai-providers/core'
 
 const CONTEXT = /too many tokens|context (length|window)|exceeds? (the )?(maximum|limit)|prompt is too long|input is too long/i
 const QUOTA = /credit|billing|payment|usage limit|quota/i
-
-/** The message of Cohere's `{ "message": "..." }`, whatever else the body is. */
-export function messageOf(raw: unknown): string {
-  if (typeof raw === 'string') return raw
-  if (typeof raw !== 'object' || raw === null) return ''
-  const row = raw as { message?: unknown; error?: unknown; detail?: unknown }
-  const nested = typeof row.error === 'object' && row.error !== null ? (row.error as { message?: unknown }).message : row.error
-  return [row.message, nested, row.detail].find((candidate): candidate is string => typeof candidate === 'string') ?? ''
-}
-
-function retryAfter(headers: Pick<Headers, 'get'>): number | undefined {
-  const seconds = Number(headers.get('retry-after'))
-  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined
-}
 
 function classify(status: number | undefined, message: string): LlmFailureCode {
   if (CONTEXT.test(message)) return 'CONTEXT_WINDOW_EXCEEDED'
@@ -28,10 +14,11 @@ function classify(status: number | undefined, message: string): LlmFailureCode {
 }
 
 export function httpError(response: Response, raw: unknown): LlmRequestError {
-  const message = messageOf(raw)
-  const wait = retryAfter(response.headers)
-  const id = response.headers.get('x-request-id') ?? response.headers.get('request-id')
-  return new LlmRequestError(classify(response.status, message), `the endpoint answered ${response.status}${message === '' ? '' : `: ${message}`}`, { status: response.status, ...wait === undefined ? {} : { retryAfterMs: wait }, ...id === null ? {} : { requestId: id } })
+  const { message } = describeLlmErrorBody(raw)
+  const retryAfterMs = retryAfterMsOf(response.headers)
+  const requestId = requestIdOf(response.headers, raw)
+  const facts: LlmFailureFacts = { status: response.status, ...retryAfterMs === undefined ? {} : { retryAfterMs }, ...requestId === undefined ? {} : { requestId } }
+  return new LlmRequestError(classify(response.status, message), `the endpoint answered ${response.status}${message === '' ? '' : `: ${message}`}`, facts)
 }
 
 /** An error the server reports inside a stream that already answered 200, or as the reason a message ended. */

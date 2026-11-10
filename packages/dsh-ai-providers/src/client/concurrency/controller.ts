@@ -1,3 +1,4 @@
+import { refreshOn } from '../subscriptions.ts'
 import type { Context } from '@deepseek-ai/cordis'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import {
@@ -58,6 +59,9 @@ const limitsField: SettingsFieldSpec = {
 
 const REFRESH_MS = 3000
 
+/** Whether the settings page is in front; a hidden tab reads nothing. */
+const pageHidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden'
+
 /** The tab of concurrency limits: which shared resources hold calls back, and what is running and waiting on each now. */
 export class ConcurrencyController {
   private readonly form: SettingsFormModel<ConcurrencySettings>
@@ -74,9 +78,17 @@ export class ConcurrencyController {
   }
 
   start(ctx: Context): void {
+    refreshOn(ctx, ['settings/document-updated'], () => { void this.refresh() })
     void this.refresh()
-    this.timer = setInterval(() => { void this.refresh() }, REFRESH_MS)
-    ctx.effect(() => () => { this.dispose() }, 'dsh-ai-providers: concurrency tab')
+    // The counters are live, so they are read on a timer — but only while the page is in front: a settings tab left in
+    // the background must not keep asking the host.
+    this.timer = setInterval(() => { if (!pageHidden()) void this.refresh() }, REFRESH_MS)
+    const onVisibility = (): void => { if (!pageHidden()) void this.refresh() }
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility)
+    ctx.effect(() => () => {
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibility)
+      this.dispose()
+    }, 'dsh-ai-providers: concurrency tab')
   }
 
   private limits(): LimitRule[] {

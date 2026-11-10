@@ -232,6 +232,68 @@ export class LlmRequestError extends AiError {
   }
 }
 
+/** What a provider's error body says, whichever shape the vendor wraps it in. */
+export interface LlmErrorBody {
+  /** The provider's own message, empty when it gave none. */
+  readonly message: string
+  /** Type, code and message joined, for a classifier's patterns to read. */
+  readonly detail: string
+  /** The vendor's error type, when it names one. */
+  readonly type: string
+  /** The vendor's error code, when it names one. */
+  readonly code: string
+}
+
+/**
+ * Reads a provider error body: a bare string, `{ error: string | { message, type, code } }`, or `{ message, code, detail }`.
+ * Every transport here receives one of those shapes, so the parsing lives in one place instead of drifting per vendor.
+ * @param raw - the decoded body.
+ * @returns its message, type, code, and the joined detail.
+ */
+export function describeLlmErrorBody(raw: unknown): LlmErrorBody {
+  const text = (value: unknown): string => typeof value === 'string' ? value : ''
+  if (typeof raw === 'string') return { message: raw, detail: raw, type: '', code: '' }
+  if (typeof raw !== 'object' || raw === null) return { message: '', detail: '', type: '', code: '' }
+  const row = raw as Record<string, unknown>
+  const error = row['error']
+  const nested = typeof error === 'object' && error !== null ? error as Record<string, unknown> : undefined
+  const message = text(nested?.['message']) || text(row['message']) || text(typeof error === 'string' ? error : undefined) || text(row['detail'])
+  const type = text(nested?.['type']) || text(row['type'])
+  const code = text(nested?.['code']) || text(row['code'])
+  return { message, detail: [type, code, message].filter(part => part !== '').join(' '), type, code }
+}
+
+/**
+ * `Retry-After` as milliseconds, reading the millisecond header some vendors send first, then seconds, then an HTTP date.
+ * @param headers - the failed response's headers.
+ * @returns how long to wait, or `undefined` when the provider did not say.
+ */
+export function retryAfterMsOf(headers: Pick<Headers, 'get'>): number | undefined {
+  const milliseconds = Number(headers.get('retry-after-ms'))
+  if (Number.isFinite(milliseconds) && milliseconds > 0) return Math.round(milliseconds)
+  const header = headers.get('retry-after')
+  if (header === null) return undefined
+  const seconds = Number(header)
+  if (Number.isFinite(seconds) && seconds > 0) return Math.round(seconds * 1000)
+  const at = Date.parse(header)
+  const wait = at - Date.now()
+  return Number.isFinite(wait) && wait > 0 ? wait : undefined
+}
+
+/**
+ * The provider's request id, from the headers vendors use or from a body that names one.
+ * @param headers - the failed response's headers.
+ * @param body - the decoded body, when it may carry `request_id`.
+ * @returns the id, or `undefined` when the provider did not give one.
+ */
+export function requestIdOf(headers: Pick<Headers, 'get'>, body?: unknown): string | undefined {
+  const header = headers.get('request-id') ?? headers.get('x-request-id')
+  if (header !== null && header !== '') return header
+  if (typeof body !== 'object' || body === null) return undefined
+  const id = (body as { request_id?: unknown }).request_id
+  return typeof id === 'string' && id !== '' ? id : undefined
+}
+
 /** A provider's language models: the routes it serves and the streaming of a request to one of them. */
 export abstract class LlmService extends AiService {
   readonly capability = 'llm' as const

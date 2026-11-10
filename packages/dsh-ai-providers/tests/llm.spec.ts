@@ -35,6 +35,19 @@ async function run(options: GenerateOptions): Promise<StreamChunk[]> {
 }
 
 describe('the language model routes', () => {
+  it('reads a model list once, reuses it briefly, and drops the reading when configuration changes', async () => {
+    let reads = 0
+    fake.discover = async () => { reads += 1; return [{ id: 'a', name: 'A' }] }
+    const first = routes.discoverRoute('fake', 'local')
+    const second = routes.discoverRoute('fake', 'local')
+    expect(await first).toEqual([{ id: 'a', name: 'A' }])
+    await second
+    expect(reads).toBe(1)
+    routes.sync()
+    await routes.discoverRoute('fake', 'local')
+    expect(reads).toBe(2)
+    expect(routes.discoverRoute('fake', 'nope')).toBeUndefined()
+  })
   it('are served to DSH under their own ids, with their models, context window, output limit and reasoning levels', async () => {
     expect(runtime.listProviders()).toEqual([{ id: 'local', name: 'Local' }])
     expect((await runtime.listModels('local')).map(model => model.id)).toEqual(['big'])

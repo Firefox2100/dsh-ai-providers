@@ -1,24 +1,13 @@
-import { AiError, type Capability } from '@dsh-ai-providers/core'
+import { AiError, credentialHeaders, validateHttpConnection, type Capability, type HttpConnection } from '@dsh-ai-providers/core'
 import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import type { Config, OpenAiConnectionConfig } from './config.ts'
 
-export interface OpenAiConnection {
-  baseUrl: string
-  apiKeyRef: string
-}
+export type OpenAiConnection = HttpConnection
 
-const withoutTrailingSlashes = (value: string): string => {
-  let end = value.length
-  while (value[end - 1] === '/') end -= 1
-  return value.slice(0, end)
-}
-
-export async function connectionHeaders(connection: OpenAiConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
-  if (connection.apiKeyRef === '') return {}
-  let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-  try { key = await credentials()?.resolve(credentialRef(connection.apiKeyRef)) }
-  catch (error) { throw new AiError('not-configured', `the credential name "${connection.apiKeyRef}" is not valid: ${error instanceof Error ? error.message : String(error)}`, { cause: error }) }
-  return key === undefined ? {} : { authorization: `Bearer ${key.value}` }
+/** The key of the connection, when one is configured and stored. */
+export function connectionHeaders(connection: OpenAiConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
+  const provider = credentials()
+  return credentialHeaders(connection, provider === undefined ? undefined : () => provider.resolve(credentialRef(connection.apiKeyRef)))
 }
 
 export type OpenAiCapability = Extract<Capability, 'embedding' | 'tts' | 'stt' | 'image' | 'decision'>
@@ -41,11 +30,5 @@ export function resolveConnection(config: Config, capability: OpenAiCapability):
 }
 
 export function validateConnection(connection: OpenAiConnectionConfig): OpenAiConnection {
-  const baseUrl = withoutTrailingSlashes(connection.baseUrl.trim())
-  if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
-  let url: URL
-  try { url = new URL(baseUrl) }
-  catch (error) { throw new AiError('not-configured', `the base URL for connection "${connection.name}" is invalid`, { cause: error }) }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new AiError('not-configured', `the base URL for connection "${connection.name}" must use HTTP or HTTPS`)
-  return { baseUrl, apiKeyRef: connection.apiKeyRef.trim() }
+  return validateHttpConnection(connection)
 }

@@ -151,10 +151,10 @@ export function createApiHandler(deps: ApiDeps): (req: ApiRequest, res: ApiReply
     },
     [AI_API_ROUTES.llmDiscover]: {
       GET: async (_req, res, url) => {
-        const owner = deps.llm.routes.owners().find(candidate => candidate.provider.id === url.searchParams.get('provider') && candidate.route.id === url.searchParams.get('route'))
-        if (owner === undefined) throw new HttpError(404, 'there is no such route')
+        const listed = deps.llm.discoverRoute(url.searchParams.get('provider') ?? '', url.searchParams.get('route') ?? '')
+        if (listed === undefined) throw new HttpError(404, 'there is no such route')
         let found
-        try { found = await owner.service.discover(owner.route.id) }
+        try { found = await listed }
         catch (error) { throw new HttpError(502, error instanceof Error ? error.message : String(error)) }
         const payload: LlmDiscoverPayload = { models: found.map(model => ({ id: model.id, name: model.name, ...model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }, ...model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens }, ...model.inputs === undefined ? {} : { inputs: [...model.inputs] }, ...model.reasoning === undefined ? {} : { reasoning: { levels: model.reasoning.levels.map(level => ({ id: level.id, name: level.name, body: { ...level.body } })), ...model.reasoning.default === undefined ? {} : { default: model.reasoning.default } } } })) }
         send(res, 200, payload)

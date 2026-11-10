@@ -31,7 +31,7 @@ The publishing script skips package versions that already exist, packs the remai
 
 After every package exists on npm, configure an npm trusted publisher for `.github/workflows/publish.yml` in this repository. Every push to `main` then validates the workspace and publishes only package versions that do not already exist. Each existing package version has its publish step visibly skipped. The workflow can also be started manually on `main` and does not use an npm token.
 
-Configure the trusted publisher separately on each of the eight npm package settings pages with:
+Configure the trusted publisher separately on each of the fourteen npm package settings pages with:
 
 - GitHub organization or user: `Firefox2100`
 - Repository: `dsh-ai-providers`

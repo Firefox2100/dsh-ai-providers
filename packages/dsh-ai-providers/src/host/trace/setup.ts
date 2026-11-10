@@ -1,5 +1,5 @@
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: declares `ctx.credentials` and the `loader/volatile-update` event.
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
@@ -9,7 +9,22 @@ import type { Config } from '../config.ts'
 import { JsonlSink, LangfuseSink } from './sinks.ts'
 import { Tracer, type TraceSink } from './tracer.ts'
 
-const dshHome = (): string => process.env['DSH_HOME'] ?? join(homedir(), '.dsh')
+/**
+ * Expands a leading `~` to the user's home, so `DSH_HOME` and a configured trace directory read the way they do
+ * everywhere else. This is the one piece of DSH's home-path handling the trace sink needs, kept local rather than
+ * importing a package for it.
+ * @param value - a configured path, possibly empty or starting with a tilde.
+ * @returns the absolute path, or an empty string when nothing was configured.
+ */
+export function expandHome(value: string): string {
+  const path = value.trim()
+  if (path === '') return ''
+  if (path === '~') return homedir()
+  if (path.startsWith('~/') || path.startsWith('~\\')) return join(homedir(), path.slice(1))
+  return resolve(path)
+}
+
+const dshHome = (): string => expandHome(process.env['DSH_HOME'] ?? '') || join(homedir(), '.dsh')
 
 function patterns(sources: readonly string[], onProblem: (message: string) => void): RegExp[] {
   const found: RegExp[] = []
@@ -30,7 +45,7 @@ export function createTracer(ctx: Context, config: Config, onProblem: (message: 
     if (credentials === undefined) return undefined
     return (await credentials.resolve(credentialRef(ref)))?.value
   }
-  const jsonl = new JsonlSink(() => config.traceDirectory.get() || join(dshHome(), 'traces'))
+  const jsonl = new JsonlSink(() => expandHome(config.traceDirectory.get()) || join(dshHome(), 'traces'))
   const langfuse = new LangfuseSink({
     host: () => config.langfuseHost.get(),
     environment: () => config.langfuseEnvironment.get(),

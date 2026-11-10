@@ -5,12 +5,12 @@
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
-  "types": "src/index.ts",
+  "types": "lib/index.d.ts",
   "exports": {
-    ".": {"types": "./src/index.ts", "default": "./lib/index.js"},
+    ".": {"types": "./lib/index.d.ts", "default": "./lib/index.js"},
     "./package.json": "./package.json"
   },
-  "engines": {"node": ">=22"},
+  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-jina-cohere"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
@@ -21,7 +21,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
-  "files": ["lib", "src", "README.md", "LICENSE"],
+  "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",

@@ -18,7 +18,8 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3"
   },
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-core"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
@@ -34,11 +35,11 @@
   "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
     "@types/node": "^22.20.0",
     "tsdown": "^0.22.2",

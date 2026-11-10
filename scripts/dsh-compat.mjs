@@ -2,7 +2,13 @@
 export const DSH_RELEASES = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.5', '0.2.2-rc.1']
 /** The release the workspace is developed against: dev dependencies pin it exactly. */
 export const DSH_DEVELOPMENT = DSH_RELEASES.at(-1)
-/** Compatibility explicitly offered beyond the exact releases used by the test matrix. */
+/**
+ * Compatibility explicitly offered beyond the exact releases used by the test matrix.
+ *
+ * DSH ships alphas and release candidates, and a patch bump has carried breaking changes before, so every range stops
+ * before the next patch line. Opening a new line is a deliberate release after the plugin has been run against it, not
+ * something an upgrade slips past: widening a range requires a manual check plus a new version of these packages.
+ */
 const DSH_COMPATIBILITY = [
   { packages: '0.2.0-rc.2', engines: '>=0.2.0-rc.2 <0.2.1' },
   { packages: '>=0.2.1-0 <0.2.2', engines: '>=0.2.1-0 <0.2.2' },

@@ -46,7 +46,6 @@
   ],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
     "@deepseek-ai/schemastery": "^3.18.4",
     "@dsh-ai-providers/core": "workspace:0.7.0"
   },
@@ -55,7 +54,7 @@
     "@dsh-ai-providers/systemone": "workspace:0.7.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
     "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.1",

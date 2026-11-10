@@ -1,4 +1,4 @@
-import { Button, SettingsForm, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, Checkbox, SettingsForm, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ConcurrencyFace } from './controller.ts'
 import type { ConcurrencyLocaleKey } from './locales.ts'
@@ -42,19 +42,27 @@ export function ConcurrencySection(props: ConcurrencySectionProps) {
                 <div className={css.choices}>
                   {state.routes.length === 0 && <span className={css.muted}>{t('noRoutes')}</span>}
                   {state.routes.map(route => (
-                    <label key={route.id} className={css.choice}>
-                      <input type="checkbox" checked={rule.routes.includes(route.id)} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { routes: toggle(rule.routes, route.id, event.target.checked) }) }} />
-                      {route.name}
-                    </label>
+                    <Checkbox
+                      key={route.id}
+                      className={css.choice}
+                      checked={rule.routes.includes(route.id)}
+                      disabled={!state.writable}
+                      label={route.name}
+                      onChange={(next: boolean) => { props.updateLimit(index, { routes: toggle(rule.routes, route.id, next) }) }}
+                    />
                   ))}
                 </div>
                 <span className={css.label}>{t('capabilities')}</span>
                 <div className={css.choices}>
                   {state.capabilities.map(capability => (
-                    <label key={capability} className={css.choice}>
-                      <input type="checkbox" checked={rule.capabilities.includes(capability)} disabled={!state.writable} onChange={(event) => { props.updateLimit(index, { capabilities: toggle(rule.capabilities, capability, event.target.checked) }) }} />
-                      {t(`capability.${capability}` as ConcurrencyLocaleKey)}
-                    </label>
+                    <Checkbox
+                      key={capability}
+                      className={css.choice}
+                      checked={rule.capabilities.includes(capability)}
+                      disabled={!state.writable}
+                      label={t(`capability.${capability}` as ConcurrencyLocaleKey)}
+                      onChange={(next: boolean) => { props.updateLimit(index, { capabilities: toggle(rule.capabilities, capability, next) }) }}
+                    />
                   ))}
                 </div>
                 <span className={`${css.live} ${live !== undefined && live.active > 0 ? css.busy : ''}`}>

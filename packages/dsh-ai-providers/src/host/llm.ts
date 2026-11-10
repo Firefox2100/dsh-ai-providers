@@ -174,12 +174,37 @@ export class LlmRoutes {
   private readonly captured = new Map<string, string>()
   /** The models each route advertised when selectors last read them, to tell them when an edit changed the list. */
   private readonly advertised = new Map<string, string>()
+  /** Readings of a route's model list, with when they were taken, so opening the settings page does not query the endpoint on every render. */
+  private readonly listings = new Map<string, { at: number; models: Promise<readonly LlmModelSpec[]> }>()
 
   constructor(private readonly ctx: Context, private readonly registry: AiProviders, private readonly onProblem: (message: string) => void, gate?: RequestGate, trace?: Tracer) {
     this.adapter = new AiLlmAdapter(registry, gate, trace)
   }
 
   get routes(): AiLlmAdapter { return this.adapter }
+
+  /** How long one reading of a route's model list is reused. */
+  private static readonly LISTING_TTL_MS = 30_000
+
+  /**
+   * The models a route's endpoint lists, read at most once per {@link LISTING_TTL_MS} and shared by callers that ask
+   * while the first reading is still running. A failed reading is not kept.
+   * @param providerId - the provider row the route belongs to.
+   * @param routeId - the route.
+   * @returns the reading, or `undefined` when no such route is served.
+   */
+  discoverRoute(providerId: string, routeId: string): Promise<readonly LlmModelSpec[]> | undefined {
+    const key = `${providerId}/${routeId}`
+    const now = Date.now()
+    const cached = this.listings.get(key)
+    if (cached !== undefined && now - cached.at < LlmRoutes.LISTING_TTL_MS) return cached.models
+    const owner = this.adapter.owners().find(candidate => candidate.provider.id === providerId && candidate.route.id === routeId)
+    if (owner === undefined) return undefined
+    const models = owner.service.discover(routeId)
+    this.listings.set(key, { at: now, models })
+    models.catch(() => { if (this.listings.get(key)?.models === models) this.listings.delete(key) })
+    return models
+  }
 
   state(routeId: string): RouteState {
     const problem = this.problems.get(routeId)
@@ -188,6 +213,8 @@ export class LlmRoutes {
 
   /** Registers the routes that are new and withdraws those that went. Call it when configuration or providers change. */
   sync(): void {
+    // A configuration change can move an endpoint, so no reading of its model list survives it.
+    this.listings.clear()
     const wanted = new Set<string>()
     let owners: RouteOwner[] = []
     try { owners = this.adapter.owners() } catch (error) { this.onProblem(`language model routes could not be read: ${error instanceof Error ? error.message : String(error)}`) }

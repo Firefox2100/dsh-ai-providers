@@ -74,6 +74,7 @@ describe('client controllers', () => {
       },
       locale: { subscribe: (listener: () => void) => { listener(); return disposeLocale } },
       effect: (setup: () => () => void) => { effects.push(setup()) },
+      inject: () => undefined,
     } as unknown as Context
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       capabilities: [{ capability: 'embedding', providers: [{ id: 'test' }], available: true }],
@@ -97,6 +98,7 @@ describe('client controllers', () => {
       slots: { entriesOfSlot: () => [{ options: { id: 'embedding:test', order: 1, label: 'Test' } }], subscribe: () => () => {} },
       locale: { subscribe: () => () => {} },
       effect: () => {},
+      inject: () => undefined,
     } as unknown as Context
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       capabilities: [{ capability: 'embedding', providers: [{ id: 'test' }], available: false }],
@@ -115,7 +117,7 @@ describe('client controllers', () => {
     let available = false
     const form = { ...scope({ embedding: 'test' }), subscribe: (listener: () => void) => { notify = listener; return () => {} } }
     const ctx = {
-      slots: { entriesOfSlot: () => [], subscribe: () => () => {} }, locale: { subscribe: () => () => {} }, effect: () => {},
+      slots: { entriesOfSlot: () => [], subscribe: () => () => {} }, locale: { subscribe: () => () => {} }, effect: () => {}, inject: () => undefined,
     } as unknown as Context
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       capabilities: [{ capability: 'embedding', providers: [{ id: 'test' }], available }],
@@ -135,7 +137,7 @@ describe('client controllers', () => {
   it('starts periodic concurrency reads and exposes the returned status', async () => {
     vi.useFakeTimers()
     const disposers: Array<() => void> = []
-    const ctx = { effect: (setup: () => () => void) => { disposers.push(setup()) } } as unknown as Context
+    const ctx = { effect: (setup: () => () => void) => { disposers.push(setup()) }, inject: () => undefined } as unknown as Context
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       limits: [{ id: 'gpu', running: 1, waiting: 2 }], routes: [{ id: 'local', name: 'Local' }],
     }), { status: 200, headers: { 'content-type': 'application/json' } })))
@@ -165,7 +167,7 @@ describe('client controllers', () => {
     vi.stubGlobal('fetch', fetchMock)
     const controller = new LlmController()
 
-    controller.start()
+    controller.start({ inject: () => undefined } as unknown as Context)
     await vi.waitFor(() => {
       expect(controller.inject().hooks.llm.getSnapshot().status).toBe('ready')
     })
@@ -191,7 +193,7 @@ describe('client controllers', () => {
       return new Response(JSON.stringify({ ref: 'X', configured: stored, writable: true, ...stored ? { source: 'file' } : {} }), { status: 200 })
     }))
     const controller = new ObservabilityController(scope({ traceEnabled: true, traceSink: 'both', langfusePublicKeyRef: 'MY_PUBLIC' }))
-    await controller.start({ effect: () => {} } as unknown as Context)
+    await controller.start({ effect: () => {}, inject: () => undefined } as unknown as Context)
     await vi.waitFor(() => { expect(controller.inject().hooks.observability.getSnapshot().keys.publicKey).toMatchObject({ configured: false }) })
     expect(controller.inject().hooks.observability.getSnapshot()).toMatchObject({ enabled: true })
     expect(calls[0]!.url).toContain('ref=MY_PUBLIC')
@@ -208,7 +210,7 @@ describe('client controllers', () => {
       ? new Response(JSON.stringify({ error: 'credential store is read only' }), { status: 403 })
       : new Response(JSON.stringify({ configured: false, writable: true }), { status: 200 })))
     const controller = new ObservabilityController(scope({}))
-    controller.start({ effect: () => {} } as unknown as Context)
+    controller.start({ effect: () => {}, inject: () => undefined } as unknown as Context)
 
     expect(await controller.inject().storeKey('publicKey', 'keep-this-value')).toBe(false)
     expect(controller.inject().hooks.observability.getSnapshot().keyError).toBe('credential store is read only')

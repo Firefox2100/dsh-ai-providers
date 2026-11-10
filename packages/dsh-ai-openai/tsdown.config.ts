@@ -69,7 +69,7 @@ const host: UserConfig = {
   format: 'esm',
   platform: 'node',
   target: 'es2024',
-  dts: false,
+  dts: true,
   clean: false,
   sourcemap: true,
   fixedExtension: false,

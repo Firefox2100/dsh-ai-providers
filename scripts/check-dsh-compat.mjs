@@ -32,7 +32,7 @@ async function check(version) {
 
   const copy = await mkdtemp(join(tmpdir(), 'dsh-compat-'))
   try {
-    await cp(root, copy, { recursive: true, filter: source => !/(^|\/)(node_modules|coverage|lib|\.git)(\/|$)/.test(source.slice(root.length)) })
+    await cp(root, copy, { recursive: true, filter: source => !/(^|\/)(node_modules|coverage|lib|\.git)(\/|$)/.test(source.slice(root.length).replaceAll('\\\\', '/')) })
     for (const folder of await readdir(join(copy, 'packages'))) {
       const file = join(copy, 'packages', folder, 'package.json')
       const manifest = JSON.parse(await readFile(file, 'utf8'))
@@ -50,7 +50,10 @@ async function check(version) {
     runPnpm(['install', '--no-frozen-lockfile'], copy)
     runPnpm(['-r', 'run', 'typecheck'], copy)
     runPnpm(['-r', 'run', 'test'], copy)
-    console.log(`The packages type-check and pass their tests against DSH ${version}.`)
+    // A release also has to build against the release it claims: declarations, host bundles and the client bundles
+    // whose module boundary fails the build when a browser half reaches for a host package.
+    runPnpm(['--filter', './packages/*', 'run', 'build'], copy)
+    console.log(`The packages type-check, pass their tests and build against DSH ${version}.`)
   } finally {
     if (process.env.KEEP_COPY === undefined) await rm(copy, { recursive: true, force: true })
     else console.log(`kept ${copy}`)

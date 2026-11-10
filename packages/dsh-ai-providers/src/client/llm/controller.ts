@@ -1,3 +1,5 @@
+import { refreshOn } from '../subscriptions.ts'
+import type { Context } from '@deepseek-ai/cordis'
 import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { AI_API_PREFIX, AI_API_ROUTES, type LlmPayload, type LlmProbeResult, type LlmRouteSummary } from '@dsh-ai-providers/core'
 
@@ -23,7 +25,10 @@ export class LlmController {
   private readonly store = createSnapshotStore<LlmState>({ status: 'loading', routes: [], probes: {} }, { flush: 'sync' })
   private readonly abort = new AbortController()
 
-  start(): void { void this.load() }
+  start(ctx: Context): void {
+    refreshOn(ctx, ['llm/adapters-updated', 'llm/models-updated', 'settings/document-updated'], () => { void this.load() })
+    void this.load()
+  }
 
   private patch(change: Partial<LlmState>): void {
     this.store.set({ ...this.store.getSnapshot(), ...change })

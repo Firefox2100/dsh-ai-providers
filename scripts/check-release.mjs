@@ -1,4 +1,7 @@
 import { access, readFile } from 'node:fs/promises'
+
+/** Read a text file with one line ending, so a comparison does not depend on how the checkout stored it. */
+const text = async path => (await readFile(path, 'utf8')).replaceAll('\r\n', '\n')
 import { resolve } from 'node:path'
 import { DSH_DEVELOPMENT, DSH_ENGINES, DSH_PACKAGE_PEERS } from './dsh-compat.mjs'
 import { releasePackages } from './release-packages.mjs'
@@ -27,7 +30,7 @@ for (const { folder, name } of releasePackages) {
   if (!Array.isArray(manifest.keywords) || !manifest.keywords.includes('deepseek-harness')) throw new Error(`${name}: keywords are missing`)
   if (!Array.isArray(manifest.files) || !manifest.files.includes('README.md') || !manifest.files.includes('LICENSE')) throw new Error(`${name}: README.md and LICENSE must be included`)
 
-  const readme = await readFile(resolve(directory, 'README.md'), 'utf8')
+  const readme = await text(resolve(directory, 'README.md'))
   if (!readme.startsWith(`# ${name}\n`)) throw new Error(`${name}: README heading must match the package name`)
 
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
@@ -82,13 +85,13 @@ for (const [folder, name, id] of standaloneBundles) {
   const directory = resolve(root, 'packages', folder)
   const manifest = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8'))
   const expected = `- insert:\n    - id: ${id}\n      name: '${name}'\n`
-  if (await readFile(resolve(directory, 'cordis.patch.yml'), 'utf8') !== expected) throw new Error(`${name}: standalone bundle must insert only its own plugin row`)
+  if (await text(resolve(directory, 'cordis.patch.yml')) !== expected) throw new Error(`${name}: standalone bundle must insert only its own plugin row`)
   if (name !== '@dsh-ai-providers/runtime' && manifest.dependencies?.['@dsh-ai-providers/runtime'] !== `workspace:${version}`) {
     throw new Error(`${name}: vendor bundle must install @dsh-ai-providers/runtime without inserting its row`)
   }
 }
 
-const workspaceFile = await readFile(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
+const workspaceFile = await text(resolve(root, 'pnpm-workspace.yaml'))
 if (!workspaceFile.includes(`  '@deepseek-ai/dsh': ${DSH_DEVELOPMENT}\n`)) throw new Error(`pnpm-workspace.yaml must override @deepseek-ai/dsh to ${DSH_DEVELOPMENT} (run pnpm sync:dsh)`)
 const resolvedDsh = new Set([...(await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8')).matchAll(/^  '@deepseek-ai\/dsh[a-z-]*@([^':(]+)/gm)].map(match => match[1]))
 if (resolvedDsh.size !== 1 || !resolvedDsh.has(DSH_DEVELOPMENT)) throw new Error(`pnpm-lock.yaml must resolve every DSH package to ${DSH_DEVELOPMENT}, found ${[...resolvedDsh].join(', ')}: reinstall without the lockfile`)

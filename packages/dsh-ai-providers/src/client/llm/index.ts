@@ -1,13 +1,14 @@
+import { createElement } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 // Type-only: these pull in the Context and SlotMap augmentations this feature relies on.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@dsh-ai-providers/core/slots'
-import { ENTRY_ID } from '../../shared/ids.ts'
+import { storeHook, type FeaturePage } from '../page.tsx'
 import { LlmController } from './controller.ts'
-import { dictionaries, type LlmLocaleKey } from './locales.ts'
 import { LlmSection } from './LlmSection.tsx'
+import { dictionaries, type LlmLocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -17,24 +18,13 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 const NAMESPACE = 'ai.llm'
 
-/** Adds the Language models tab to the settings modal. */
-export function registerLlm(ctx: Context): void {
+/** The language models page: which routes the providers serve to DSH, and whether a model answers. */
+export function describeLlm(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: llm dictionaries')
   const controller = new LlmController()
-  controller.start()
+  controller.start(ctx)
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: llm tab')
-  ctx.effect(
-    () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () =>
-      ctx.slots.register({
-        name: 'settings.section',
-        id: 'ai-llm',
-        order: 43,
-        label: () => t('nav'),
-        locale: NAMESPACE,
-        inject: () => controller.inject(),
-        children: { 'ai.provider.llm': { kind: 'list', scope: 'root' } },
-      }, LlmSection as never))),
-    'dsh-ai-providers: llm section',
-  )
+  const face = controller.inject()
+  return { id: 'llm', label: t('nav'), render: props => createElement(LlmSection, { ...props, t, ...face, useLlm: storeHook(face.hooks.llm) }) }
 }

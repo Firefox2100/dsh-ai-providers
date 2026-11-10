@@ -19,6 +19,10 @@ function run(command, args, options = {}) {
 }
 
 try {
+  // A publish must ship a fresh build: build every package, then validate the manifests and the outputs they point at.
+  run('pnpm', ['run', 'release:build'])
+  run('pnpm', ['run', 'release:check'])
+
   for (const entry of packages) {
     const manifest = JSON.parse(await readFile(resolve(root, 'packages', entry.folder, 'package.json'), 'utf8'))
     if (await isPublished(entry.name, manifest.version)) {

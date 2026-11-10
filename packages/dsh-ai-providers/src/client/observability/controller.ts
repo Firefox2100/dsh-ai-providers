@@ -1,3 +1,4 @@
+import { refreshOn } from '../subscriptions.ts'
 import type { Context } from '@deepseek-ai/cordis'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import {
@@ -95,6 +96,7 @@ export class ObservabilityController {
   }
 
   start(ctx: Context): void {
+    refreshOn(ctx, ['credentials/record-updated', 'credentials/reference-updated', 'settings/document-updated'], () => { void this.readKeys() })
     void this.readKeys()
     ctx.effect(() => () => { this.dispose() }, 'dsh-ai-providers: observability tab')
   }

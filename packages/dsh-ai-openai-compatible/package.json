@@ -5,13 +5,13 @@
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
   "main": "lib/index.js",
-  "types": "src/index.ts",
+  "types": "lib/index.d.ts",
   "exports": {
-    ".": {"types": "./src/index.ts", "default": "./lib/index.js"},
-    "./config": {"types": "./src/config.ts", "default": "./lib/config.js"},
+    ".": {"types": "./lib/index.d.ts", "default": "./lib/index.js"},
+    "./config": {"types": "./lib/config.d.ts", "default": "./lib/config.js"},
     "./package.json": "./package.json"
   },
-  "engines": {"node": ">=22"},
+  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-openai-compatible"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
@@ -22,10 +22,11 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
-  "files": ["lib", "src", "README.md", "LICENSE"],
+  "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/cosmokit": "^1.9.0",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
     "@deepseek-ai/schemastery": "^3.18.4",
@@ -35,7 +36,8 @@
     "ws": "^8.22.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/cosmokit": "^1.9.0",
+    "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-credentials": "0.2.2-rc.1",
     "@deepseek-ai/dsh-llm": "0.2.2-rc.1",
     "@deepseek-ai/schemastery": "^3.18.5",

@@ -50,3 +50,55 @@ export function httpFailure(response: Pick<Response, 'status' | 'statusText'>, s
   if (response.status >= 500) return new AiError('unavailable', `the API failed (${what})${detail}`)
   return new AiError('rejected', `the API refused the request (${what})${detail}`)
 }
+
+/** A validated way to reach an API: its root with no trailing slashes, and the name of its credential, if any. */
+export interface HttpConnection {
+  baseUrl: string
+  apiKeyRef: string
+}
+
+/**
+ * Checks and normalizes a configured connection: trimmed, without trailing slashes, and HTTP or HTTPS only.
+ * @param connection - the configured endpoint.
+ * @returns its normalized root and credential name.
+ * @throws {AiError} `not-configured` when there is no URL, it does not parse, or it is not HTTP(S).
+ */
+export function validateHttpConnection(connection: { name: string; baseUrl: string; apiKeyRef: string }): HttpConnection {
+  const trimmed = connection.baseUrl.trim()
+  let end = trimmed.length
+  while (trimmed[end - 1] === '/') end -= 1
+  const baseUrl = trimmed.slice(0, end)
+  if (baseUrl === '') throw new AiError('not-configured', 'no base URL is configured')
+  let url: URL
+  try { url = new URL(baseUrl) } catch (error) { throw new AiError('not-configured', `the base URL for connection "${connection.name}" is invalid`, { cause: error }) }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new AiError('not-configured', `the base URL for connection "${connection.name}" must use HTTP or HTTPS`)
+  return { baseUrl, apiKeyRef: connection.apiKeyRef.trim() }
+}
+
+/** How a provider authenticates a request: the header name and the value built from the stored credential. */
+export interface CredentialHeader {
+  /** Defaults to `authorization`. */
+  name?: string
+  /** Defaults to `Bearer <credential>`. */
+  format?: (credential: string) => string
+}
+
+/**
+ * The credential of a connection as request headers, read on use so an edited key applies to the next request.
+ * @param connection - the validated connection.
+ * @param resolve - reads the stored credential by name; `undefined` when the profile has no credential store.
+ * @param header - the header to set and how to format its value.
+ * @returns the header map, empty when the connection names no credential or nothing is stored for it.
+ * @throws {AiError} `not-configured` when the credential name is not a valid reference.
+ */
+export async function credentialHeaders(
+  connection: Pick<HttpConnection, 'apiKeyRef'>,
+  resolve: (() => Promise<{ value: string } | undefined>) | undefined,
+  header: CredentialHeader = {},
+): Promise<Record<string, string>> {
+  if (connection.apiKeyRef === '') return {}
+  let found: { value: string } | undefined
+  try { found = await resolve?.() } catch (error) { throw new AiError('not-configured', `the credential name "${connection.apiKeyRef}" is not valid`, { cause: error }) }
+  if (found === undefined) return {}
+  return { [header.name ?? 'authorization']: (header.format ?? (credential => `Bearer ${credential}`))(found.value) }
+}

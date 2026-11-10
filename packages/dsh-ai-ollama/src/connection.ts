@@ -1,5 +1,5 @@
 import { credentialRef, type CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError } from '@dsh-ai-providers/core'
+import { AiError, credentialHeaders, validateHttpConnection } from '@dsh-ai-providers/core'
 import type { Config, OllamaConnectionConfig } from './config.ts'
 
 /** A validated way to reach a server: the address of its API, and the name of the credential for it, if any. */
@@ -18,11 +18,8 @@ function root(value: string): string {
 }
 
 export function validateConnection(connection: OllamaConnectionConfig): OllamaConnection {
-  const base = root(connection.baseUrl.trim())
-  let url: URL
-  try { url = new URL(base) } catch (error) { throw new AiError('not-configured', `the base URL for connection "${connection.name}" is invalid`, { cause: error }) }
-  if (!['http:', 'https:'].includes(url.protocol)) throw new AiError('not-configured', `the base URL for connection "${connection.name}" must use HTTP or HTTPS`)
-  return { apiUrl: `${base}/api`, apiKeyRef: connection.apiKeyRef.trim() }
+  const validated = validateHttpConnection({ name: connection.name, baseUrl: root(connection.baseUrl.trim()), apiKeyRef: connection.apiKeyRef })
+  return { apiUrl: `${validated.baseUrl}/api`, apiKeyRef: validated.apiKeyRef }
 }
 
 /** The connection a capability selection names; a selection that names none is not configured. */
@@ -32,9 +29,7 @@ export function resolveConnection(config: Config, selected: string): OllamaConne
   return validateConnection(connection)
 }
 
-export async function connectionHeaders(connection: OllamaConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
-  if (connection.apiKeyRef === '') return {}
-  let key: Awaited<ReturnType<CredentialProvider['resolve']>>
-  try { key = await credentials()?.resolve(credentialRef(connection.apiKeyRef)) } catch (error) { throw new AiError('not-configured', `the credential name "${connection.apiKeyRef}" is not valid`, { cause: error }) }
-  return key === undefined ? {} : { authorization: `Bearer ${key.value}` }
+export function connectionHeaders(connection: OllamaConnection, credentials: () => Pick<CredentialProvider, 'resolve'> | undefined): Promise<Record<string, string>> {
+  const provider = credentials()
+  return credentialHeaders(connection, provider === undefined ? undefined : () => provider.resolve(credentialRef(connection.apiKeyRef)))
 }

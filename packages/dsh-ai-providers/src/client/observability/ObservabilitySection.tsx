@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, SettingsForm, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, SettingsForm, SettingsSecretField, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { KeyName, ObservabilityFace } from './controller.ts'
 import type { ObservabilityLocaleKey } from './locales.ts'
@@ -21,20 +21,29 @@ function KeyBox(props: { name: KeyName; label: string; refText: string; refField
   }
   return (
     <div className={css.key} data-testid={`ai-observability-${props.name}`}>
-      <span className={css.label}>{props.label}</span>
       <label className={css.row}>
         {t('keyName')}
         <input className={css.input} value={props.refText} disabled={!props.writable} onChange={(event) => { props.edit(props.refField, event.target.value) }} />
       </label>
+      <SettingsSecretField
+        id={`ai-observability-${props.name}-value`}
+        label={props.label}
+        hint={t('keyHelp')}
+        text={value}
+        disabled={locked}
+        onEdit={setValue}
+        configured={status?.configured === true}
+        stateLabel={status === undefined
+          ? t('keyChecking')
+          : status.configured
+            ? `${t('keySet')}${status.source === undefined ? '' : ` (${t('keySource', { source: status.source })})`}`
+            : t('keyUnset')}
+      />
       <div className={css.row}>
-        <input className={css.input} type="password" autoComplete="off" value={value} disabled={locked} aria-label={props.label} onChange={(event) => { setValue(event.target.value) }} />
         <Button variant="outline" size="sm" disabled={locked || value === ''} onClick={() => { store(value) }}>{busy ? t('keySaving') : t('keySave')}</Button>
         <Button variant="ghost" size="sm" disabled={locked || status?.configured !== true} onClick={() => { store('') }}>{t('keyRemove')}</Button>
+        {locked && <span className={css.muted} role="status">{t('keyReadOnly')}</span>}
       </div>
-      <span className={css.muted} role="status">
-        {status === undefined ? t('keyChecking') : status.configured ? `${t('keySet')}${status.source === undefined ? '' : ` (${t('keySource', { source: status.source })})`}` : t('keyUnset')}
-        {locked ? ` ${t('keyReadOnly')}` : ''}
-      </span>
     </div>
   )
 }
