@@ -21,7 +21,7 @@ Factories must read live configuration when called. Do not capture a connection,
 
 ### Routes, retries and discovery
 
-A route (`LlmRouteSpec`) may carry `baseUrl`, the endpoint its configuration fixes, and `retry`, a DSH retry policy; the runtime reports both to DSH. A model may carry `systemPromptUpdate: 'in-history'` when its chat template reads a changed system message anywhere in the conversation. It may also carry a short `badge` with text and a `neutral`, `info`, `success`, or `warning` tone. DSH 0.2.2 selectors display the badge and refresh after a live model edit. Earlier supported releases ignore it.
+A route (`LlmRouteSpec`) may carry `baseUrl`, the endpoint its configuration fixes, and `retry`, a DSH retry policy; the runtime reports both to DSH. A model may carry `systemPromptUpdate: 'in-history'` when its chat template reads a changed system message anywhere in the conversation. It may also carry a short `badge` with text and a `neutral`, `info`, `success`, or `warning` tone. DSH displays the badge in model selectors and refreshes them after a live model edit.
 
 Override `LlmService.interrogate(draft, signal)` to list the models of an endpoint that is not configured yet (`draft.baseUrl`, and a key for this one question in `draft.apiKey`); the default throws an `unsupported` error. `discover(route)` stays the way to list the models of a configured route.
 

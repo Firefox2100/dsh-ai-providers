@@ -26,5 +26,5 @@ export function describeConcurrency(ctx: Context): FeaturePage {
   controller.start(ctx)
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: concurrency tab')
   const face = controller.inject()
-  return { id: 'concurrency', label: t('nav'), render: props => createElement(ConcurrencySection, { ...props, t, ...face, useConcurrency: storeHook(face.hooks.concurrency) }) }
+  return { id: 'concurrency', label: () => t('nav'), render: props => createElement(ConcurrencySection, { ...props, t, ...face, useConcurrency: storeHook(face.hooks.concurrency) }) }
 }

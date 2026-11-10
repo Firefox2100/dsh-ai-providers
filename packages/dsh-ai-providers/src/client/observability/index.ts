@@ -26,5 +26,5 @@ export function describeObservability(ctx: Context): FeaturePage {
   controller.start(ctx)
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: observability tab')
   const face = controller.inject()
-  return { id: 'observability', label: t('nav'), render: props => createElement(ObservabilitySection, { ...props, t, ...face, useObservability: storeHook(face.hooks.observability) }) }
+  return { id: 'observability', label: () => t('nav'), render: props => createElement(ObservabilitySection, { ...props, t, ...face, useObservability: storeHook(face.hooks.observability) }) }
 }

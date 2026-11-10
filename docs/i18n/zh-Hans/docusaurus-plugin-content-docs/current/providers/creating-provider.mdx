@@ -21,7 +21,7 @@ sidebar_position: 1
 
 ### 路由、重试与发现
 
-路由（`LlmRouteSpec`）可以带有 `baseUrl`（其配置固定的端点）和 `retry`（DSH 重试策略），运行时会把两者报告给 DSH。如果模型的聊天模板会把对话中任意位置改变的系统消息当作完整的系统提示，可为该模型设置 `systemPromptUpdate: 'in-history'`。模型还可以带有简短的 `badge`，其中包含文字及 `neutral`、`info`、`success` 或 `warning` 语气。DSH 0.2.2 的选择器会显示标签，并在模型配置实时变更后刷新；较早的受支持版本会忽略它。
+路由（`LlmRouteSpec`）可以带有 `baseUrl`（其配置固定的端点）和 `retry`（DSH 重试策略），运行时会把两者报告给 DSH。如果模型的聊天模板会把对话中任意位置改变的系统消息当作完整的系统提示，可为该模型设置 `systemPromptUpdate: 'in-history'`。模型还可以带有简短的 `badge`，其中包含文字及 `neutral`、`info`、`success` 或 `warning` 语气。DSH 会在模型选择器中显示标签，并在模型配置实时变更后刷新选择器。
 
 重写 `LlmService.interrogate(draft, signal)`，可列出尚未配置的端点所拥有的模型（`draft.baseUrl`，以及仅为这一次提问提供的密钥 `draft.apiKey`）；默认实现会抛出 `unsupported` 错误。列出已配置路由的模型仍用 `discover(route)`。
 

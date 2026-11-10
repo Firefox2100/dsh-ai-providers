@@ -1,9 +1,19 @@
-/*
- * The tab strips this section renders. DSH's SegmentedTabs gives every tab an equal share of the row; a label longer
- * than that share wraps onto a second line, which reads badly with two-character-wide Chinese labels. Keeping the text
- * on one line — with the short labels the dictionaries provide — is the whole fix.
- */
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.tabScroller {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
 .tabs {
+  width: 100%;
+  min-width: calc(var(--ai-tab-count) * var(--ai-tab-min));
   white-space: nowrap;
 }
 

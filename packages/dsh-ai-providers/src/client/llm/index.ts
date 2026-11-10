@@ -26,5 +26,5 @@ export function describeLlm(ctx: Context): FeaturePage {
   controller.start(ctx)
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: llm tab')
   const face = controller.inject()
-  return { id: 'llm', label: t('nav'), render: props => createElement(LlmSection, { ...props, t, ...face, useLlm: storeHook(face.hooks.llm) }) }
+  return { id: 'llm', label: () => t('nav'), render: props => createElement(LlmSection, { ...props, t, ...face, useLlm: storeHook(face.hooks.llm) }) }
 }

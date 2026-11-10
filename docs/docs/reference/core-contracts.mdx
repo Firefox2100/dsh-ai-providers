@@ -33,7 +33,7 @@ Language models use DSH's existing `ctx.llm` service. Provider packages contribu
 
 `ctx.aiTrace` is optional by design. Consumers that add outer observations should retrieve it with `ctx.get('aiTrace')`; tracing must not become a required dependency. See [Observability](../concepts/observability) for nesting, linking and scoring examples.
 
-Besides `stream()`, an `LlmService` can list a configured route with `discover(route)` and inspect an endpoint that is not configured yet with `interrogate(draft)`. The runtime exposes both through DSH model discovery and reports each route's `baseUrl` and `retry` policy. On DSH 0.2.2 and later it also forwards model badges and emits `llm/models-updated` when a saved edit changes catalog display data. Older supported releases ignore badges and the refresh notice.
+Besides `stream()`, an `LlmService` can list a configured route with `discover(route)` and inspect an endpoint that is not configured yet with `interrogate(draft)`. The runtime exposes both through DSH model discovery and reports each route's `baseUrl` and `retry` policy. It also forwards model badges and emits `llm/models-updated` when a saved edit changes catalog display data.
 
 `LlmPolicy` receives DSH's request `purpose` unchanged. DSH 0.2.2 lets the plugin that owns an auxiliary request declare its purpose through `LlmRequestPurposeMap`; this project does not keep a competing purpose list.
 

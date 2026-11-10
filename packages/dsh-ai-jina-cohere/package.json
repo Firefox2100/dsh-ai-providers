@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/jina-cohere",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Reusable Jina- and Cohere-style rerank and embedding transports for DSH AI providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -10,7 +10,7 @@
     ".": {"types": "./lib/index.d.ts", "default": "./lib/index.js"},
     "./package.json": "./package.json"
   },
-  "engines": {"node": ">=22", "dsh": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3"},
+  "engines": {"node": ">=22", "dsh": ">=0.2.2-rc.1 <0.2.3"},
   "repository": {"type": "git", "url": "git+https://github.com/Firefox2100/dsh-ai-providers.git", "directory": "packages/dsh-ai-jina-cohere"},
   "homepage": "https://firefox2100.github.io/dsh-ai-providers/docs/reference/packages",
   "bugs": {"url": "https://github.com/Firefox2100/dsh-ai-providers/issues"},
@@ -24,12 +24,12 @@
   "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
-    "@dsh-ai-providers/core": "workspace:0.7.0"
+    "@deepseek-ai/dsh-credentials": ">=0.2.2-rc.1 <0.2.3",
+    "@dsh-ai-providers/core": "workspace:0.7.1"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-credentials": "0.2.2-rc.1",
-    "@dsh-ai-providers/core": "workspace:0.7.0",
+    "@dsh-ai-providers/core": "workspace:0.7.1",
     "@types/node": "^22.20.0",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",

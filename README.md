@@ -92,7 +92,7 @@ See the individual provider guides for configuration and supported features:
 
 ## Installation
 
-DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.0-rc.2 <0.2.1 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3`.
+DSH AI Providers requires Node.js 22 or later and currently targets DSH `>=0.2.2-rc.1 <0.2.3`.
 
 Install the bundle into a DSH profile:
 

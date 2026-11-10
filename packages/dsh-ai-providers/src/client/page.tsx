@@ -1,6 +1,6 @@
 import { SegmentedTabs, type SegmentedTab } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { useSyncExternalStore, useState } from 'react'
+import { useLayoutEffect, useRef, useSyncExternalStore, useState, type CSSProperties } from 'react'
 import css from './page.module.css'
 
 /** Every provider panel a page may render, so one section can own all of their slots. */
@@ -12,7 +12,7 @@ export type SectionProps = PropsRuntime<'settings.section'> & PropsRenderSlots<P
 /** One page of the section: its tab and how to draw it. */
 export interface FeaturePage {
   id: string
-  label: string
+  label: () => string
   render: (props: SectionProps) => JSX.Element
 }
 
@@ -26,17 +26,23 @@ export interface FeaturePage {
  * @param props.size - `sm` for a nested strip.
  * @returns the tab list.
  */
-export function PageTabs(props: { pages: readonly FeaturePage[]; label: string; selected: string; onSelect: (id: string) => void; size?: 'sm' | 'md' }) {
-  const items = props.pages.map(page => ({ value: page.id, label: page.label, id: `ai-page-${page.id}`, panelId: `ai-panel-${page.id}` }))
+export function PageTabs(props: { pages: readonly FeaturePage[]; label: () => string; selected: string; onSelect: (id: string) => void; size?: 'sm' | 'md' }) {
+  const items = props.pages.map(page => ({ value: page.id, label: page.label(), id: `ai-page-${page.id}`, panelId: `ai-panel-${page.id}` }))
+  const scroller = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    scroller.current?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [props.selected])
   return (
-    <SegmentedTabs
-      items={items as [SegmentedTab, ...SegmentedTab[]]}
-      value={props.selected}
-      onChange={props.onSelect}
-      label={props.label}
-      size={props.size}
-      className={css.tabs}
-    />
+    <div ref={scroller} className={css.tabScroller} style={{ '--ai-tab-count': items.length, '--ai-tab-min': props.size === 'sm' ? '82px' : '108px' } as CSSProperties}>
+      <SegmentedTabs
+        items={items as [SegmentedTab, ...SegmentedTab[]]}
+        value={props.selected}
+        onChange={props.onSelect}
+        label={props.label()}
+        size={props.size}
+        className={css.tabs}
+      />
+    </div>
   )
 }
 
@@ -56,11 +62,11 @@ export function pageBody(pages: readonly FeaturePage[], selected: string, props:
  * @param label - accessible name for the outer tab list.
  * @returns the section component the slot registration mounts.
  */
-export function settingsSection(pages: readonly FeaturePage[], label: string) {
+export function settingsSection(pages: readonly FeaturePage[], label: () => string) {
   return function AiProvidersSection(props: SectionProps) {
     const [selected, setSelected] = useState(pages[0]!.id)
     return (
-      <div>
+      <div className={css.pages}>
         <PageTabs pages={pages} label={label} selected={selected} onSelect={setSelected} />
         {pageBody(pages, selected, props)}
       </div>
@@ -75,11 +81,11 @@ export function settingsSection(pages: readonly FeaturePage[], label: string) {
  * @param label - accessible name for the nested tab list.
  * @returns the component the outer page renders.
  */
-export function nestedSection(pages: readonly FeaturePage[], label: string) {
+export function nestedSection(pages: readonly FeaturePage[], label: () => string) {
   return function NestedPages(props: SectionProps) {
     const [selected, setSelected] = useState(pages[0]!.id)
     return (
-      <div>
+      <div className={css.pages}>
         <PageTabs pages={pages} label={label} selected={selected} onSelect={setSelected} size="sm" />
         {pageBody(pages, selected, props)}
       </div>

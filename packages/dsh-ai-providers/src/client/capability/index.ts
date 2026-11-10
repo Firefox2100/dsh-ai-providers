@@ -44,9 +44,9 @@ export function describeCapabilities(ctx: Context): FeaturePage {
     ctx.effect(() => () => { controller.dispose() }, `dsh-ai-providers: ${capability} tab`)
     const Body = capabilitySection(capability)
     const face = controller.inject()
-    return { id: capability, label: t('tab'), render: props => createElement(Body, { ...props, t, ...face, useCapability: storeHook(face.hooks.capability) }) }
+    return { id: capability, label: () => t('tab'), render: props => createElement(Body, { ...props, t, ...face, useCapability: storeHook(face.hooks.capability) }) }
   })
   const t = ctx.locale.bind('ai.providers')
-  const Nested = nestedSection(pages, t('capabilities'))
-  return { id: 'capabilities', label: t('pageCapabilities'), render: props => createElement(Nested, props) }
+  const Nested = nestedSection(pages, () => t('capabilities'))
+  return { id: 'capabilities', label: () => t('pageCapabilities'), render: props => createElement(Nested, props) }
 }

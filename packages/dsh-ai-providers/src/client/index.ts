@@ -28,7 +28,7 @@ export function apply(ctx: Context): void {
     describeConcurrency(ctx),
     describeObservability(ctx),
   ]
-  const Section = settingsSection(pages, t('tablist'))
+  const Section = settingsSection(pages, () => t('tablist'))
   ctx.effect(
     () => ctx.configForms.whileServed([ENTRY_ID], () => ctx.slots.inject('settings.section', () => ctx.slots.register({
       name: 'settings.section',

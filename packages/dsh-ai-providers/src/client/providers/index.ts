@@ -21,5 +21,5 @@ const NAMESPACE = 'ai.providers'
 export function describeProviders(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: providers dictionaries')
-  return { id: 'providers', label: t('nav'), render: props => createElement(ProvidersSection, { ...props, t }) }
+  return { id: 'providers', label: () => t('nav'), render: props => createElement(ProvidersSection, { ...props, t }) }
 }
