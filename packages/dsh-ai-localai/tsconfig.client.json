@@ -1,5 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "jsx": "react-jsx", "lib": ["ES2024", "DOM", "DOM.Iterable"], "types": ["react"], "paths": { "@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"], "@dsh-ai-providers/core/slots": ["../dsh-ai-core/src/slots.ts"] } },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["react"],
+    "paths": {
+      "@dsh-ai-providers/core": ["../dsh-ai-core/src/index.ts"],
+      "@dsh-ai-providers/core/slots": ["../dsh-ai-core/src/slots.ts"],
+      "@dsh-ai-providers/openai-compatible/config": ["../dsh-ai-openai-compatible/src/config.ts"]
+    }
+  },
   "include": ["src/client/**/*.ts", "src/client/**/*.tsx"]
 }
