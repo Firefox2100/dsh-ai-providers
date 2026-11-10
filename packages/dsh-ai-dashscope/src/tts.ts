@@ -65,12 +65,19 @@ const MEDIA_TYPES: Record<DashScopeSpeechFormat, string> = { mp3: 'audio/mpeg', 
 
 interface QwenSpeech { output?: { audio?: { url?: unknown } } }
 
+function withoutTrailingSlashes(value: string): string {
+  let end = value.length
+  while (value[end - 1] === '/') end -= 1
+  return value.slice(0, end)
+}
+
 /** The WebSocket address of the inference API beside the HTTP one: `…/api/v1` becomes `…/api-ws/v1/inference`. */
 export function inferenceSocketUrl(baseUrl: string): string {
   const url = new URL(baseUrl)
-  if (!url.pathname.replace(/\/+$/, '').endsWith('/api/v1')) throw new AiError('not-configured', `the base URL ${baseUrl} does not end with /api/v1, so the speech WebSocket address cannot be derived`)
+  const pathname = withoutTrailingSlashes(url.pathname)
+  if (!pathname.endsWith('/api/v1')) throw new AiError('not-configured', `the base URL ${baseUrl} does not end with /api/v1, so the speech WebSocket address cannot be derived`)
   url.protocol = url.protocol === 'http:' ? 'ws:' : 'wss:'
-  url.pathname = `${url.pathname.replace(/\/+$/, '').slice(0, -'/api/v1'.length)}/api-ws/v1/inference`
+  url.pathname = `${pathname.slice(0, -'/api/v1'.length)}/api-ws/v1/inference`
   return url.toString()
 }
 

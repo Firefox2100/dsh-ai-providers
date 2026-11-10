@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { AI_ERROR_CODES, AiError, CAPABILITIES, DecisionService, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, configuredLlmRoute, cosineSimilarity, llmTransportFailure, ndjsonLines, validateDecisionRequest, requestJson, sseData, streamLlmHttp, localized, parseProviderSlotId, providerSlotId, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
+import { AI_ERROR_CODES, AiError, CAPABILITIES, DecisionService, EmbeddingService, LlmRequestError, RerankService, SERVICE_NAMES, SttService, TtsService, configuredLlmModel, configuredLlmRoute, cosineSimilarity, credentialHeaders, describeLlmErrorBody, httpFailure, llmTransportFailure, ndjsonLines, requestIdOf, retryAfterMsOf, validateDecisionRequest, validateHttpConnection, requestJson, sseData, streamLlmHttp, localized, parseProviderSlotId, providerSlotId, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '../src/index.ts'
 
 class Fake extends EmbeddingService {
   readonly provider = 'fake'
@@ -66,6 +66,54 @@ describe('bounded JSON requests', () => {
     const controller = new AbortController()
     controller.abort()
     await expect(requestJson((async () => { throw new Error('aborted') }) as typeof fetch, 'https://api.test/x', { headers: {} }, 1000, messageOf, controller.signal)).rejects.toMatchObject({ code: 'cancelled' })
+  })
+})
+
+describe('shared HTTP connections', () => {
+  it('normalizes HTTP endpoints and validates their boundary', () => {
+    expect(validateHttpConnection({ name: 'primary', baseUrl: ' https://api.test/v1/// ', apiKeyRef: ' key ' })).toEqual({ baseUrl: 'https://api.test/v1', apiKeyRef: 'key' })
+    for (const baseUrl of ['', 'not a URL', 'file:///tmp/socket']) {
+      expect(() => validateHttpConnection({ name: 'primary', baseUrl, apiKeyRef: '' })).toThrowError(AiError)
+    }
+  })
+
+  it('reads and formats credentials only when configured and available', async () => {
+    await expect(credentialHeaders({ apiKeyRef: '' }, undefined)).resolves.toEqual({})
+    await expect(credentialHeaders({ apiKeyRef: 'missing' }, async () => undefined)).resolves.toEqual({})
+    await expect(credentialHeaders({ apiKeyRef: 'token' }, async () => ({ value: 'secret' }))).resolves.toEqual({ authorization: 'Bearer secret' })
+    await expect(credentialHeaders({ apiKeyRef: 'token' }, async () => ({ value: 'secret' }), { name: 'x-key', format: value => `Key ${value}` })).resolves.toEqual({ 'x-key': 'Key secret' })
+    await expect(credentialHeaders({ apiKeyRef: 'broken' }, async () => { throw new Error('invalid reference') })).rejects.toMatchObject({ code: 'not-configured' })
+  })
+
+  it('classifies every HTTP status family and preserves server detail', () => {
+    expect(httpFailure({ status: 401, statusText: 'Unauthorized' }, 'bad key')).toMatchObject({ code: 'rejected', message: expect.stringContaining('bad key') })
+    expect(httpFailure({ status: 403, statusText: 'Forbidden' })).toMatchObject({ code: 'rejected' })
+    expect(httpFailure({ status: 429, statusText: 'Too Many Requests' })).toMatchObject({ code: 'unavailable' })
+    expect(httpFailure({ status: 503, statusText: 'Unavailable' })).toMatchObject({ code: 'unavailable' })
+    expect(httpFailure({ status: 400, statusText: 'Bad Request' })).toMatchObject({ code: 'rejected' })
+  })
+})
+
+describe('shared language-model failure metadata', () => {
+  it('reads the vendor error shapes used by compatible APIs', () => {
+    expect(describeLlmErrorBody('plain failure')).toEqual({ message: 'plain failure', detail: 'plain failure', type: '', code: '' })
+    expect(describeLlmErrorBody({ error: { message: 'nested', type: 'request', code: 'bad' } })).toEqual({ message: 'nested', detail: 'request bad nested', type: 'request', code: 'bad' })
+    expect(describeLlmErrorBody({ error: 'wrapped' }).message).toBe('wrapped')
+    expect(describeLlmErrorBody({ message: 'top', code: 'E' })).toMatchObject({ message: 'top', code: 'E' })
+    expect(describeLlmErrorBody({ detail: 'detail only' }).message).toBe('detail only')
+    expect(describeLlmErrorBody(null)).toEqual({ message: '', detail: '', type: '', code: '' })
+  })
+
+  it('reads retry delays and request ids in their supported order', () => {
+    expect(retryAfterMsOf(new Headers({ 'retry-after-ms': '125.4', 'retry-after': '9' }))).toBe(125)
+    expect(retryAfterMsOf(new Headers({ 'retry-after': '1.5' }))).toBe(1500)
+    expect(retryAfterMsOf(new Headers({ 'retry-after': new Date(Date.now() + 60_000).toUTCString() }))).toBeGreaterThan(50_000)
+    expect(retryAfterMsOf(new Headers())).toBeUndefined()
+    expect(retryAfterMsOf(new Headers({ 'retry-after': 'invalid' }))).toBeUndefined()
+    expect(requestIdOf(new Headers({ 'request-id': 'header-id' }), { request_id: 'body-id' })).toBe('header-id')
+    expect(requestIdOf(new Headers({ 'x-request-id': 'alternate-id' }))).toBe('alternate-id')
+    expect(requestIdOf(new Headers(), { request_id: 'body-id' })).toBe('body-id')
+    expect(requestIdOf(new Headers(), { request_id: 1 })).toBeUndefined()
   })
 })
 
