@@ -1,6 +1,6 @@
 import type { Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { Config as OpenAiConfig, type Config as OpenAiCompatibleConfig } from '@dsh-ai-providers/openai-compatible/config'
+import { extendConfig, type Config as OpenAiCompatibleConfig } from '@dsh-ai-providers/openai-compatible/config'
 
 export interface Config extends OpenAiCompatibleConfig {
   rerankConnection: Volatile<string>
@@ -22,8 +22,7 @@ export interface Config extends OpenAiCompatibleConfig {
 
 const localConnection = [{ id: 'localai', name: 'LocalAI', baseUrl: 'http://localhost:8080/v1', apiKeyRef: '' }]
 
-export const Config = z.object({
-    ...OpenAiConfig.dict,
+export const Config = extendConfig({
     connections: z.array(z.object({
       id: z.string().required(),
       name: z.string().required(),
@@ -52,4 +51,4 @@ export const Config = z.object({
     sttModel: z.string().default('').volatile(),
     sttRealtimeModel: z.string().default('').volatile(),
     imageModel: z.string().default('').volatile(),
-}) as unknown as z<Config>
+})

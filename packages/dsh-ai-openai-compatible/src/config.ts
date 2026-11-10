@@ -164,7 +164,23 @@ function routeSchema() {
   })
 }
 
-export const Config = z.object({
+/**
+ * The schema of {@link Config}: DSH calls it with the profile document and hands the resolved result to `apply`.
+ * Declared as a plain function over the input shape on purpose — left inferred, the published declaration embeds
+ * schemastery's generic machinery, and through it cosmokit's `Dict`, which a consumer cannot resolve. The value is still
+ * the schemastery schema at runtime; only its type is narrowed to the contract this package relies on.
+ */
+export interface ConfigSchema {
+  (input?: ConfigInput): Config
+}
+
+/** What a profile document may write: the same fields with plain values, optional at every depth because the schema fills defaults. */
+export type ConfigInput = Partialish<{ [K in keyof Config]: Config[K] extends Volatile<infer Value> ? Value : Config[K] }>
+
+/** A shape whose members are all optional at every depth, for a document that states only what it changes. */
+type Partialish<T> = T extends readonly (infer Item)[] ? readonly Partialish<Item>[] : T extends object ? { [K in keyof T]?: Partialish<T[K]> } : T
+
+const fields = {
   connections: z.array(z.object({
     id: z.string().required(),
     name: z.string().required(),
@@ -194,4 +210,17 @@ export const Config = z.object({
   llmIdleTimeoutMs: z.natural().default(300_000).volatile(),
   batchSize: z.natural().default(64).volatile(),
   timeoutMs: z.natural().default(60_000).volatile(),
-})
+}
+
+/**
+ * A configuration schema that starts from this one and adds fields, for a transport that extends the OpenAI-compatible
+ * document (LocalAI, for instance, keeps the same connections and adds its own model settings).
+ * @param extra - the additional fields, as schemastery schemas.
+ * @returns the extended schema.
+ */
+export function extendConfig(extra: Record<string, unknown> = {}): ConfigSchema {
+  return z.object({ ...fields, ...extra } as never) as unknown as ConfigSchema
+}
+
+/** The schema a profile's configuration is resolved through. */
+export const Config = extendConfig()

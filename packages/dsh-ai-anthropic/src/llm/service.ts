@@ -1,6 +1,6 @@
 import type {RetryPolicyConfig, StreamChunk} from '@deepseek-ai/dsh-llm'
 import type {CredentialProvider} from '@deepseek-ai/dsh-credentials'
-import {AiError, LlmRequestError, LlmService, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
+import {AiError, LlmRequestError, LlmService, sseData, streamLlmHttp, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling} from '@dsh-ai-providers/core'
 import type {AnthropicLlmModelConfig, AnthropicLlmRouteConfig, AnthropicSamplingConfig, Config} from '../config.ts'
 import {connectionHeaders, validateConnection, type AnthropicConnection} from '../connection.ts'
 import {PROVIDER_ID} from '../ids.ts'
@@ -53,36 +53,28 @@ export class AnthropicLlmService extends LlmService {
     }) : []
   }
   stream(call: LlmCall): AsyncIterable<StreamChunk> { return this.generate(call) }
-  private async* generate(call: LlmCall): AsyncGenerator<StreamChunk> {
+  private async * generate(call: LlmCall): AsyncGenerator<StreamChunk> {
     const {route, connection} = this.configOf(call.options.provider)
-    const controller = new AbortController()
-    const signal = call.options.signal ? AbortSignal.any([call.options.signal, controller.signal]) : controller.signal
-    const idle = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())
-    let timedOut = false
-    let timer: ReturnType<typeof setTimeout>
-    const pulse = () => { clearTimeout(timer); timer = setTimeout(() => {timedOut = true; controller.abort()}, idle) }
-    pulse()
-    try {
-      let response: Response
-      try {
+    // One lifecycle for every streaming transport: the idle watchdog, cancellation and failure classification live in core.
+    yield * streamLlmHttp({
+      signal: call.options.signal,
+      idleMs: this.deps.config.llmIdleTimeoutMs.get(),
+      url: connection.baseUrl,
+      request: async signal => {
         const body = await wireBody(call, async ref => {
           const stored = await this.deps.attachments?.()?.readImage(ref as never, signal)
           if (stored === undefined) throw new LlmRequestError('UNSUPPORTED_CONTENT', 'this deployment has no attachment service for image input')
           return {data: stored.data, mediaType: stored.ref.mediaType}
         })
         call.wire?.(body)
-        response = await this.send(`${connection.baseUrl}/messages`, {method: 'POST', signal, redirect: 'error', headers: {...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'anthropic-version': this.deps.config.anthropicVersion.get(), 'content-type': 'application/json', accept: 'text/event-stream'}, body: JSON.stringify(body)})
-      }
-      catch (error) { throw this.failed(error, call, timedOut, idle, connection.baseUrl) }
-      if (!response.ok) throw httpError(response, await response.json().catch(() => undefined))
-      if (!response.body) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', {status: response.status})
-      try { yield* translate(sseData(response.body, pulse, signal)) } catch (error) { throw this.failed(error, call, timedOut, idle, connection.baseUrl) }
-    } finally { clearTimeout(timer!); controller.abort() }
-  }
-  private failed(error: unknown, call: LlmCall, timedOut: boolean, idle: number, baseUrl: string): unknown {
-    if (error instanceof LlmRequestError) return error
-    if (call.options.signal?.aborted) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, {cause: error})
-    if (timedOut) return new LlmRequestError('TIMEOUT', `${baseUrl} was silent for ${Math.round(idle / 1000)} seconds`, {}, {cause: error})
-    return new LlmRequestError('TRANSPORT', `${baseUrl} could not be reached or the connection dropped`, {}, {cause: error})
+        return this.send(`${connection.baseUrl}/messages`, {
+          method: 'POST', signal, redirect: 'error',
+          headers: {...route.headers, ...call.headers, ...await connectionHeaders(connection, this.deps.credentials), 'anthropic-version': this.deps.config.anthropicVersion.get(), 'content-type': 'application/json', accept: 'text/event-stream'},
+          body: JSON.stringify(body),
+        })
+      },
+      responseError: async response => httpError(response, await response.json().catch(() => undefined)),
+      translate: (stream, pulse, signal) => translate(sseData(stream, pulse, signal)),
+    })
   }
 }

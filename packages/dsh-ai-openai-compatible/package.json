@@ -25,7 +25,6 @@
   "files": ["lib", "README.md", "LICENSE"],
   "license": "GPL-3.0-only",
   "peerDependencies": {
-    "@deepseek-ai/cosmokit": "^1.9.0",
     "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || >=0.2.1-0 <0.2.2 || >=0.2.2-rc.1 <0.2.3",
@@ -36,7 +35,6 @@
     "ws": "^8.22.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cosmokit": "^1.9.0",
     "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/dsh-credentials": "0.2.2-rc.1",
     "@deepseek-ai/dsh-llm": "0.2.2-rc.1",

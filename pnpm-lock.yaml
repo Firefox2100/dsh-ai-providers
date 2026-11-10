@@ -236,6 +236,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.0
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -300,6 +303,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.0
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -388,6 +394,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.0
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -534,6 +543,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.0
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -595,6 +607,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.0
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -629,9 +644,6 @@ importers:
       '@deepseek-ai/cordis':
         specifier: 4.1.0
         version: 4.1.0(@deepseek-ai/cordis-plugin-loader@1.1.0)
-      '@deepseek-ai/cosmokit':
-        specifier: ^1.9.0
-        version: 1.9.0
       '@deepseek-ai/dsh-client-locale':
         specifier: 0.2.2-rc.1
         version: 0.2.2-rc.1(@deepseek-ai/cordis@4.1.0)
@@ -693,9 +705,6 @@ importers:
       '@deepseek-ai/cordis':
         specifier: 4.1.0
         version: 4.1.0(@deepseek-ai/cordis-plugin-loader@1.1.0)
-      '@deepseek-ai/cosmokit':
-        specifier: ^1.9.0
-        version: 1.9.0
       '@deepseek-ai/dsh-credentials':
         specifier: 0.2.2-rc.1
         version: 0.2.2-rc.1(@deepseek-ai/cordis@4.1.0)
@@ -808,6 +817,24 @@ importers:
       tsdown:
         specifier: ^0.22.2
         version: 0.22.14(typescript@6.0.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.8
+        version: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@22.20.5)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))
+
+  packages/dsh-ai-testkit:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.1.0
+        version: 4.1.0(@deepseek-ai/cordis-plugin-loader@1.1.0)
+      '@dsh-ai-providers/runtime':
+        specifier: workspace:0.7.0
+        version: link:../dsh-ai-providers
+      '@types/node':
+        specifier: ^22.20.0
+        version: 22.20.5
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

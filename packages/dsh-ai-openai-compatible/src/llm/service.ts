@@ -1,6 +1,6 @@
 import type { RetryPolicyConfig, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
-import { AiError, LlmRequestError, LlmService, readJson, sseData, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
+import { AiError, LlmService, readJson, sseData, streamLlmHttp, type LlmCall, type LlmEndpointDraft, type LlmModelSpec, type LlmRouteSpec, type LlmSampling } from '@dsh-ai-providers/core'
 import type { Config, OpenAiLlmModelConfig, OpenAiLlmRouteConfig, OpenAiSamplingConfig } from '../config.ts'
 import { connectionHeaders, validateConnection, type OpenAiConnection } from '../connection.ts'
 import { httpError } from './errors.ts'
@@ -118,42 +118,24 @@ export class OpenAiLlmService extends LlmService {
     const { route, connection } = this.configOf(call.options.provider)
     const body = wireBody(call, { maxTokensField: route.maxCompletionTokens === true ? 'max_completion_tokens' : 'max_tokens', replayReasoning: route.replayReasoning === true }, await this.pictures(call))
     call.wire?.(body)
-    const consumer = new AbortController()
-    const signal = call.options.signal === undefined ? consumer.signal : AbortSignal.any([consumer.signal, call.options.signal])
-    const idleMs = Math.max(1, this.deps.config.llmIdleTimeoutMs.get())
-    let timedOut = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const pulse = (): void => {
-      clearTimeout(timer)
-      timer = setTimeout(() => { timedOut = true; consumer.abort() }, idleMs)
-    }
-    pulse()
-    try {
-      let response: Response
-      try {
-        response = await this.send(`${connection.baseUrl}/chat/completions`, {
-          method: 'POST', signal, redirect: 'error', body: JSON.stringify(body),
-          headers: { ...route.headers, ...call.headers, 'content-type': 'application/json', accept: 'text/event-stream', ...await connectionHeaders(connection, this.deps.credentials) },
-        })
-      } catch (error) {
-        throw this.failed(error, call, timedOut, idleMs, connection.baseUrl)
-      }
-      if (!response.ok) {
+    // One lifecycle for every streaming transport: the idle watchdog, cancellation and failure classification live in core.
+    yield * streamLlmHttp({
+      signal: call.options.signal,
+      idleMs: this.deps.config.llmIdleTimeoutMs.get(),
+      url: connection.baseUrl,
+      request: async signal => this.send(`${connection.baseUrl}/chat/completions`, {
+        method: 'POST', signal, redirect: 'error', body: JSON.stringify(body),
+        headers: { ...route.headers, ...call.headers, 'content-type': 'application/json', accept: 'text/event-stream', ...await connectionHeaders(connection, this.deps.credentials) },
+      }),
+      responseError: async (response) => {
+        // A status is what counts when the body is not JSON, so the text is kept as it came.
         const text = await response.text()
         let raw: unknown = text
-        try { raw = JSON.parse(text) } catch { /* the status is what counts when the body is not JSON */ }
-        throw httpError(response.status, response.statusText, raw, response.headers)
-      }
-      if (response.body === null) throw new LlmRequestError('EMPTY_RESPONSE', 'the endpoint answered without a body', { status: response.status })
-      try {
-        yield * translate(sseData(response.body, pulse, signal), route.reasoningTags ?? 'tags')
-      } catch (error) {
-        throw this.failed(error, call, timedOut, idleMs, connection.baseUrl)
-      }
-    } finally {
-      clearTimeout(timer)
-      consumer.abort()
-    }
+        try { raw = JSON.parse(text) } catch { /* not JSON */ }
+        return httpError(response.status, response.statusText, raw, response.headers)
+      },
+      translate: (stream, pulse, signal) => translate(sseData(stream, pulse, signal), route.reasoningTags ?? 'tags'),
+    })
   }
 
   /** The pictures the request carries, read from the attachment service, for a model that is declared to see them. */
@@ -173,10 +155,4 @@ export class OpenAiLlmService extends LlmService {
     return found
   }
 
-  private failed(error: unknown, call: LlmCall, timedOut: boolean, idleMs: number, baseUrl: string): unknown {
-    if (error instanceof LlmRequestError) return error
-    if (call.options.signal?.aborted === true) return new LlmRequestError('ABORTED', 'the request was cancelled', {}, { cause: error })
-    if (timedOut) return new LlmRequestError('TIMEOUT', `${baseUrl} was silent for ${Math.round(idleMs / 1000)} seconds`, {}, { cause: error })
-    return new LlmRequestError('TRANSPORT', `${baseUrl} could not be reached or the connection dropped: ${error instanceof Error ? error.message : String(error)}`, {}, { cause: error })
-  }
 }
