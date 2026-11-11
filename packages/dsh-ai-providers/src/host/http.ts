@@ -403,7 +403,7 @@ export function registerApi(ctx: Context, deps: Omit<ApiDeps, 'credentials' | 'm
   ctx.inject(['connection'], (webCtx) => {
     for (const [path, methods] of API_ROUTE_METHODS) {
       webCtx.effect(() => {
-        const remove = webCtx.connection.fetch.register({ path: `/${AI_API_PATH}${path}`, methods: [...methods], requestBody: 'buffered', fetch })
+        const remove = webCtx.connection.fetch.register({ path: `${AI_API_CHANNEL}/${AI_API_PATH}${path}`, methods: [...methods], requestBody: 'buffered', fetch })
         return () => { void remove() }
       }, `dsh-ai-providers: api ${path}`)
     }

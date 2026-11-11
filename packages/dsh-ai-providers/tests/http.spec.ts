@@ -1,7 +1,7 @@
 import { LlmRoutes } from '../src/host/llm.ts'
 import { Context } from '@deepseek-ai/cordis'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApiHandler, probeDecision, probeLlm, probeEmbedding, probeRerank, type ApiReply, type ApiRequest } from '../src/host/http.ts'
+import { createApiHandler, registerApi, probeDecision, probeLlm, probeEmbedding, probeRerank, type ApiReply, type ApiRequest } from '../src/host/http.ts'
 import { AiProviders } from '../src/host/registry.ts'
 import { AiServices } from '../src/host/services.ts'
 import { FakeDecision, FakeEmbedding, FakeRerank, providerOf } from './support.ts'
@@ -154,5 +154,20 @@ describe('the language model probe', () => {
     expect(answered).toMatchObject({ ok: true, text: 'ready', outputTokens: 3 })
     const reasoned = await probeLlm(llm([{ type: 'reasoning-delta', index: 0, text: 'I need to say ready' }, { type: 'finish', reason: { kind: 'max-tokens' } }]), 'route', 'model')
     expect(reasoned).toMatchObject({ ok: false, code: 'empty', message: expect.stringContaining('reasoned') as string })
+  })
+})
+
+describe('the routes on the shared channel', () => {
+  it('are registered under their whole path, because the connection matches the request path exactly', () => {
+    const paths: string[] = []
+    const fake = {
+      get: () => undefined,
+      inject: (_: string[], run: (inner: unknown) => void) => {
+        run({ effect: (make: () => unknown) => { make() }, connection: { fetch: { register: (route: { path: string }) => { paths.push(route.path); return () => undefined } } } })
+      },
+    }
+    registerApi(fake as never, { registry, services } as never)
+    expect(paths).toContain('/api/ai-api/credentials')
+    expect(paths.every(path => path.startsWith('/api/ai-api/'))).toBe(true)
   })
 })

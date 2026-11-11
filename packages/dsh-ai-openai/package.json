@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/openai",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "OpenAI language, embedding, decision, speech, and image provider for DSH.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -49,11 +49,11 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.1.0",
     "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.7.2"
+    "@dsh-ai-providers/core": "workspace:0.7.3"
   },
   "dependencies": {
-    "@dsh-ai-providers/openai-compatible": "workspace:0.7.2",
-    "@dsh-ai-providers/runtime": "workspace:0.7.2"
+    "@dsh-ai-providers/openai-compatible": "workspace:0.7.3",
+    "@dsh-ai-providers/runtime": "workspace:0.7.3"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.1.0",
@@ -67,8 +67,8 @@
     "@deepseek-ai/schemastery": "^3.18.5",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
-    "@dsh-ai-providers/core": "workspace:0.7.2",
-    "@dsh-ai-providers/openai-compatible": "workspace:0.7.2",
+    "@dsh-ai-providers/core": "workspace:0.7.3",
+    "@dsh-ai-providers/openai-compatible": "workspace:0.7.3",
     "lightningcss": "^1.33.0",
     "react": "^18.3.1",
     "tsdown": "^0.22.2",
