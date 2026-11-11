@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "LocalAI",
+    "description": "Fournit les modèles de langage, embeddings, reranking, décisions, services vocaux et génération d’images de LocalAI."
+  }
+}

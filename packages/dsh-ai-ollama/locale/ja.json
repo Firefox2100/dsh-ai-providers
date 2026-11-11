@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Ollama",
+    "description": "Ollama の言語モデルと埋め込みへネイティブに接続します。"
+  }
+}

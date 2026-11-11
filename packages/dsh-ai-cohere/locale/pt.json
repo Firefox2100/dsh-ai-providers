@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cohere",
+    "description": "Disponibiliza modelos de linguagem, embeddings e reordenação da Cohere."
+  }
+}

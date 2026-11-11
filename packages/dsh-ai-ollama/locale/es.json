@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Ollama",
+    "description": "Ofrece acceso nativo a los modelos de lenguaje y embeddings de Ollama."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Ollama",
+    "description": "Bietet nativen Zugriff auf Ollama-Sprachmodelle und -Embeddings."
+  }
+}

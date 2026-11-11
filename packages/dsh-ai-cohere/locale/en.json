@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cohere",
+    "description": "Provides Cohere language models, embeddings, and reranking."
+  }
+}

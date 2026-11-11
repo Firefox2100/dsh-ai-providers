@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/runtime",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "DSH plugin that selects and exposes embedding, reranking, decision, speech, and image providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -9,7 +9,8 @@
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "dsh": {
     "bundle": {
@@ -37,6 +38,7 @@
   },
   "files": [
     "icon.svg",
+    "locale",
     "lib/*.js",
     "lib/client.js",
     "lib/client.js.map",
@@ -52,7 +54,7 @@
     "@deepseek-ai/schemastery": "^3.18.4"
   },
   "dependencies": {
-    "@dsh-ai-providers/core": "workspace:0.7.1"
+    "@dsh-ai-providers/core": "workspace:0.7.2"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-api-gateway": "0.2.2-rc.1",

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cohere",
+    "description": "Stellt Cohere-Sprachmodelle, Embeddings und Reranking bereit."
+  }
+}

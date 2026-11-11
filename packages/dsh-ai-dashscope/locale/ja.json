@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "DashScope",
+    "description": "DashScope の言語モデル、埋め込み、リランキング、音声、画像生成を提供します。"
+  }
+}

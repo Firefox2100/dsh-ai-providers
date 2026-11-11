@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "DashScope",
+    "description": "Ofrece modelos de lenguaje, embeddings, reranking, voz y generación de imágenes de DashScope."
+  }
+}
