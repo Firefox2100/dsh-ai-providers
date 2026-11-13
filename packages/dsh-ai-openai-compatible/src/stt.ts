@@ -3,6 +3,12 @@ import { AiError, SttService, httpFailure, readJson, type SpeechInput, type Spee
 import type { Config } from './config.ts'
 import { connectionHeaders, type OpenAiConnection } from './connection.ts'
 
+/**
+ * The languages DSH's speech settings can name. An endpoint cannot report which languages its model accepts, so every one of them is offered and the person who chose the model knows
+ * whether it fits; languages beyond these wait until DSH can name any language code.
+ */
+const OFFERED_LANGUAGES = ['auto', 'zh', 'en', 'yue', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt'] as const
+
 export interface OpenAiLiveSttOptions extends SttLiveOptions { model?: string }
 
 interface SocketLike {
@@ -62,7 +68,7 @@ export class OpenAiSttService extends SttService {
   get info(): SpeechProviderInfo {
     const hostname = new URL(this.deps.connection().baseUrl).hostname
     const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
-    return { id: this.provider, name: 'OpenAI compatible', location: local ? 'host-local' : 'cloud', languages: ['auto', 'zh', 'en', 'yue', 'ja', 'ko'] }
+    return { id: this.provider, name: 'OpenAI compatible', location: local ? 'host-local' : 'cloud', languages: OFFERED_LANGUAGES }
   }
 
   async transcribe(input: SpeechInput, signal: AbortSignal): Promise<Transcript> {

@@ -1,10 +1,19 @@
 import { Button, SettingsForm } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { providerSlotId, providerSlotName, type Capability } from '@dsh-ai-providers/core'
+import { providerSlotId, providerSlotName, type Capability, type ProbeResult } from '@dsh-ai-providers/core'
 import type {} from '@dsh-ai-providers/core/slots'
 import css from './CapabilitySection.module.css'
 import { formLabels } from './locales.ts'
 import type { CapabilityFace } from './controller.ts'
+import type { CapabilityLocaleKey } from './locales.ts'
+
+function probeMessage(t: (key: CapabilityLocaleKey, values?: Record<string, string | number>) => string, result: Extract<ProbeResult, { ok: false }>): string {
+  if (result.messageKey === undefined) return result.message
+  const key = {
+    noProvider: 'probeNoProvider', oddRanking: 'probeOddRanking', emptyAudio: 'probeEmptyAudio', emptyImage: 'probeEmptyImage', oddDecision: 'probeOddDecision',
+  }[result.messageKey] as CapabilityLocaleKey
+  return t(key, result.values)
+}
 
 /** Every capability tab uses the same structure and localized copy keys. */
 export type CapabilitySectionProps =
@@ -63,7 +72,7 @@ function Section(props: CapabilitySectionProps & { capability: Capability }) {
             <span className={result.ok ? css.ok : css.error} role="status" data-testid={`ai-${capability}-probe`}>
               {result.ok
                 ? t('testOk', { model: result.model, dimensions: result.dimensions ?? '', milliseconds: result.milliseconds })
-                : t('testFailed', { code: result.code, message: result.message })}
+                : t('testFailed', { code: result.code, message: probeMessage(t, result) })}
             </span>
           )}
         </div>

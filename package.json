@@ -1,6 +1,6 @@
 {
   "name": "dsh-ai-providers-workspace",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.3.4",

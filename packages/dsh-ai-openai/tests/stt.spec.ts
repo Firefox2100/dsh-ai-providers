@@ -37,6 +37,10 @@ describe('OpenAI-compatible transcription', () => {
     expect(Object.fromEntries([...form.entries()].map(([key, value]) => [key, typeof value === 'string' ? value : value.name]))).toEqual({ file: 'recording.wav', model: 'whisper-1', response_format: 'json', language: 'en' })
   })
 
+  it('offers the eleven languages DSH names, so that a model that supports one of them can be chosen', () => {
+    expect(setup().service.info.languages).toEqual(['auto', 'zh', 'en', 'yue', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt'])
+  })
+
   it('opens a realtime session, appends audio and yields delta and final events', async () => {
     const { service, socket, request } = setup()
     const session = await service.startStreaming({ language: 'en', prompt: 'Ada', format: 'pcm16' })

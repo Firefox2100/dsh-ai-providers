@@ -202,7 +202,7 @@ const PROBE_MAX_TOKENS = 1024
 
 /** Ask a model a short question through DSH's own model service, as a chat would, and report what it answered and how fast. */
 export async function probeLlm(llm: Context['llm'] | undefined, route: string, model: string): Promise<LlmProbeResult> {
-  if (llm === undefined) return { ok: false, code: 'not-configured', message: 'this profile has no model service' }
+  if (llm === undefined) return { ok: false, code: 'not-configured', message: 'this profile has no model service', messageKey: 'noModelService' }
   const started = performance.now()
   let text = ''
   let reasoned = false
@@ -218,7 +218,9 @@ export async function probeLlm(llm: Context['llm'] | undefined, route: string, m
     return { ok: false, code: error instanceof AiError ? error.code : 'internal', message: error instanceof Error ? error.message : String(error) }
   }
   if (text.trim() === '') {
-    return { ok: false, code: 'empty', message: reasoned ? `the model reasoned but wrote no answer within ${PROBE_MAX_TOKENS} tokens; raise the route's output limit, or lower its reasoning level` : 'the model answered with no text' }
+    return reasoned
+      ? { ok: false, code: 'empty', message: `the model reasoned but wrote no answer within ${PROBE_MAX_TOKENS} tokens; raise the route's output limit, or lower its reasoning level`, messageKey: 'reasonedWithoutAnswer', values: { tokens: PROBE_MAX_TOKENS } }
+      : { ok: false, code: 'empty', message: 'the model answered with no text', messageKey: 'emptyAnswer' }
   }
   return { ok: true, route, model, milliseconds: Math.round(performance.now() - started), ...outputTokens === undefined ? {} : { outputTokens }, text: text.trim() }
 }
@@ -227,7 +229,7 @@ export async function probeLlm(llm: Context['llm'] | undefined, route: string, m
 export async function probeEmbedding(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('embedding')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.embedding
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no embedding provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no embedding provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
@@ -243,13 +245,13 @@ export async function probeEmbedding(services: AiServices, registry: AiProviders
 export async function probeRerank(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('rerank')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.rerank
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no rerank provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no rerank provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
     const documents = ['The stock market closed higher on Tuesday.', 'A quick brown fox jumped over the lazy dog.', 'Recipes for a good tomato soup.']
     const answer = await service.rerank('Which sentence is about a fox?', documents, { topN: 3 })
-    if (answer.results[0]?.index !== 1) return { ok: false, code: 'unavailable', message: `${service.provider} ranked the sentences oddly: it did not put the one about the fox first` }
+    if (answer.results[0]?.index !== 1) return { ok: false, code: 'unavailable', message: `${service.provider} ranked the sentences oddly: it did not put the one about the fox first`, messageKey: 'oddRanking', values: { provider: service.provider } }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
@@ -261,7 +263,7 @@ export async function probeRerank(services: AiServices, registry: AiProviders): 
 export async function probeTts(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('tts')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.tts
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no text-to-speech provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no text-to-speech provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
@@ -273,7 +275,7 @@ export async function probeTts(services: AiServices, registry: AiProviders): Pro
       if (part.done) break
       bytes += part.value.byteLength
     }
-    if (bytes === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned empty audio` }
+    if (bytes === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned empty audio`, messageKey: 'emptyAudio', values: { provider: service.provider } }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
@@ -295,7 +297,7 @@ function silentWav(): Uint8Array {
 export async function probeStt(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('stt')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.stt
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no speech-to-text provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no speech-to-text provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
@@ -310,12 +312,12 @@ export async function probeStt(services: AiServices, registry: AiProviders): Pro
 export async function probeImage(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('image')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.image
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no image generation provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no image generation provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
     const answer = await service.generate('A small red circle centered on a plain white background.')
-    if (answer.images[0]?.data.size === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned no image data` }
+    if (answer.images[0]?.data.size === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned no image data`, messageKey: 'emptyImage', values: { provider: service.provider } }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
@@ -327,7 +329,7 @@ export async function probeImage(services: AiServices, registry: AiProviders): P
 export async function probeDecision(services: AiServices, registry: AiProviders): Promise<ProbeResult> {
   const id = services.selected('decision')
   const factory = id === '' ? undefined : registry.get(id)?.capabilities.decision
-  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no decision provider is selected, or the selected one is not loaded' }
+  if (factory === undefined) return { ok: false, code: 'not-configured', message: 'no decision provider is selected, or the selected one is not loaded', messageKey: 'noProvider' }
   const started = performance.now()
   try {
     const service = factory()
@@ -335,7 +337,7 @@ export async function probeDecision(services: AiServices, registry: AiProviders)
       angry: { type: 'noul', instructions: 'The customer is angry.' },
       topic: { type: 'choice', instructions: 'What is the message about?', criteria: { billing: 'Being charged, refunds and payments.', shipping: 'Delivery of a parcel and where it is.', account: 'Signing in, passwords and profile settings.' } },
     } as const)
-    if (answer.answers.topic.choice !== 'billing' || answer.answers.angry.probability < 0.5) return { ok: false, code: 'unavailable', message: `${service.provider} decided oddly: the customer charged twice and ignored was not found angry and writing about billing` }
+    if (answer.answers.topic.choice !== 'billing' || answer.answers.angry.probability < 0.5) return { ok: false, code: 'unavailable', message: `${service.provider} decided oddly: the customer charged twice and ignored was not found angry and writing about billing`, messageKey: 'oddDecision', values: { provider: service.provider } }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }

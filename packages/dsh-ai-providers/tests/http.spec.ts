@@ -124,7 +124,7 @@ describe('testing the rerank provider', () => {
 
   it('says so when the provider ranks the wrong sentence first or fails', async () => {
     ranker.answer = { results: [{ index: 0, score: 0.9 }, { index: 1, score: 0.1 }], model: 'rank-1' }
-    expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('did not put the one about the fox first') })
+    expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'unavailable', messageKey: 'oddRanking', values: { provider: 'fake' } })
     ranker.answer = undefined
     ranker.failWith = Object.assign(new Error('bad key'), { name: 'AiError' })
     expect(await probeRerank(services, registry)).toMatchObject({ ok: false, code: 'internal' })
@@ -140,7 +140,7 @@ describe('testing the decision provider', () => {
 
   it('says so when the provider decides oddly or fails', async () => {
     decider.noul = 0.1
-    expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'unavailable', message: expect.stringContaining('decided oddly') })
+    expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'unavailable', messageKey: 'oddDecision', values: { provider: 'fake' } })
     decider.failWith = Object.assign(new Error('no key'), { name: 'AiError' })
     expect(await probeDecision(services, registry)).toMatchObject({ ok: false, code: 'internal' })
   })
@@ -153,7 +153,7 @@ describe('the language model probe', () => {
     const answered = await probeLlm(llm([{ type: 'text-delta', index: 0, text: ' ready ' }, { type: 'usage', usage: { outputTokens: 3 } }]), 'route', 'model')
     expect(answered).toMatchObject({ ok: true, text: 'ready', outputTokens: 3 })
     const reasoned = await probeLlm(llm([{ type: 'reasoning-delta', index: 0, text: 'I need to say ready' }, { type: 'finish', reason: { kind: 'max-tokens' } }]), 'route', 'model')
-    expect(reasoned).toMatchObject({ ok: false, code: 'empty', message: expect.stringContaining('reasoned') as string })
+    expect(reasoned).toMatchObject({ ok: false, code: 'empty', messageKey: 'reasonedWithoutAnswer', values: { tokens: 1024 } })
   })
 })
 

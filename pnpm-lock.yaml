@@ -170,37 +170,37 @@ importers:
   packages/dsh-ai-all:
     dependencies:
       '@dsh-ai-providers/anthropic':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-anthropic
       '@dsh-ai-providers/cohere':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-cohere
       '@dsh-ai-providers/dashscope':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-dashscope
       '@dsh-ai-providers/jina':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-jina
       '@dsh-ai-providers/localai':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-localai
       '@dsh-ai-providers/ollama':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-ollama
       '@dsh-ai-providers/openai':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-openai
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
       '@dsh-ai-providers/typesafe':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-typesafe
 
   packages/dsh-ai-anthropic:
     dependencies:
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
     devDependencies:
       '@deepseek-ai/cordis':
@@ -234,7 +234,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@dsh-ai-providers/testkit':
         specifier: workspace:0.0.0
@@ -264,10 +264,10 @@ importers:
   packages/dsh-ai-cohere:
     dependencies:
       '@dsh-ai-providers/jina-cohere':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-jina-cohere
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
     devDependencies:
       '@deepseek-ai/cordis':
@@ -301,7 +301,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@dsh-ai-providers/testkit':
         specifier: workspace:0.0.0
@@ -355,7 +355,7 @@ importers:
   packages/dsh-ai-dashscope:
     dependencies:
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
       ws:
         specifier: ^8.22.0
@@ -392,7 +392,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@dsh-ai-providers/testkit':
         specifier: workspace:0.0.0
@@ -422,10 +422,10 @@ importers:
   packages/dsh-ai-jina:
     dependencies:
       '@dsh-ai-providers/jina-cohere':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-jina-cohere
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
     devDependencies:
       '@deepseek-ai/cordis':
@@ -456,7 +456,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0
@@ -486,7 +486,7 @@ importers:
         specifier: 0.2.2-rc.1
         version: 0.2.2-rc.1(@deepseek-ai/cordis@4.1.0)
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0
@@ -504,13 +504,13 @@ importers:
   packages/dsh-ai-localai:
     dependencies:
       '@dsh-ai-providers/openai-compatible':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-openai-compatible
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
       '@dsh-ai-providers/systemone':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-systemone
     devDependencies:
       '@deepseek-ai/cordis':
@@ -541,7 +541,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@dsh-ai-providers/testkit':
         specifier: workspace:0.0.0
@@ -571,7 +571,7 @@ importers:
   packages/dsh-ai-ollama:
     dependencies:
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
     devDependencies:
       '@deepseek-ai/cordis':
@@ -605,7 +605,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@dsh-ai-providers/testkit':
         specifier: workspace:0.0.0
@@ -635,10 +635,10 @@ importers:
   packages/dsh-ai-openai:
     dependencies:
       '@dsh-ai-providers/openai-compatible':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-openai-compatible
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
     devDependencies:
       '@deepseek-ai/cordis':
@@ -672,7 +672,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0
@@ -715,7 +715,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0
@@ -733,7 +733,7 @@ importers:
   packages/dsh-ai-providers:
     dependencies:
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
     devDependencies:
       '@deepseek-ai/cordis':
@@ -809,7 +809,7 @@ importers:
         specifier: 0.2.2-rc.1
         version: 0.2.2-rc.1(@deepseek-ai/cordis@4.1.0)
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0
@@ -830,7 +830,7 @@ importers:
         specifier: 4.1.0
         version: 4.1.0(@deepseek-ai/cordis-plugin-loader@1.1.0)
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
       '@types/node':
         specifier: ^22.20.0
@@ -845,10 +845,10 @@ importers:
   packages/dsh-ai-typesafe:
     dependencies:
       '@dsh-ai-providers/runtime':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-providers
       '@dsh-ai-providers/systemone':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-systemone
     devDependencies:
       '@deepseek-ai/cordis':
@@ -879,7 +879,7 @@ importers:
         specifier: 3.19.0
         version: 3.19.0
       '@dsh-ai-providers/core':
-        specifier: workspace:0.7.3
+        specifier: workspace:0.7.4
         version: link:../dsh-ai-core
       '@types/node':
         specifier: ^22.20.0

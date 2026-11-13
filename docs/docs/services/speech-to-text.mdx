@@ -55,3 +55,5 @@ Call `commit()` at an utterance boundary when the provider should process the cu
 ## Audio and language boundaries
 
 The provider-neutral file interface carries bytes and a language hint; it does not resample or inspect arbitrary containers. Supply the encoding expected by the configured endpoint. For live PCM, preserve the negotiated sample format across every appended chunk. Use `auto` only when provider-side language detection is preferable to a known language hint.
+
+The OpenAI-compatible provider offers the eleven languages DSH's speech settings can name: `auto`, `zh`, `en`, `yue`, `ja`, `ko`, `es`, `fr`, `de`, `ru` and `pt`. An endpoint cannot report which languages its model accepts, so the list is not narrowed to the model; choose a language the configured model supports, or `auto`. Other language codes are not offered yet, because DSH's settings label only these eleven; this can be extended when DSH names any language code.

@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ai-providers/cohere",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Native Cohere language model, embedding and reranking provider for dsh-ai-providers.",
   "author": {"name": "Firefox2100", "url": "https://github.com/Firefox2100"},
   "type": "module",
@@ -35,11 +35,11 @@
   "license": "GPL-3.0-only",
   "peerDependencies": {
     "@deepseek-ai/schemastery": "^3.18.4",
-    "@dsh-ai-providers/core": "workspace:0.7.3"
+    "@dsh-ai-providers/core": "workspace:0.7.4"
   },
   "dependencies": {
-    "@dsh-ai-providers/jina-cohere": "workspace:0.7.3",
-    "@dsh-ai-providers/runtime": "workspace:0.7.3"
+    "@dsh-ai-providers/jina-cohere": "workspace:0.7.4",
+    "@dsh-ai-providers/runtime": "workspace:0.7.4"
   },
   "devDependencies": {
     "@dsh-ai-providers/testkit": "workspace:0.0.0",
@@ -55,8 +55,8 @@
     "@deepseek-ai/schemastery": "^3.18.5",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.31",
-    "@dsh-ai-providers/core": "workspace:0.7.3",
-    "@dsh-ai-providers/jina-cohere": "workspace:0.7.3",
+    "@dsh-ai-providers/core": "workspace:0.7.4",
+    "@dsh-ai-providers/jina-cohere": "workspace:0.7.4",
     "lightningcss": "^1.33.0",
     "react": "^18.3.1",
     "tsdown": "^0.22.2",

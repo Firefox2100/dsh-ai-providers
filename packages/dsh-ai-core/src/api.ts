@@ -66,7 +66,7 @@ export interface CredentialWrite {
 /** `POST /ai-api/probe?capability=<capability>`: whether the configured service works, as the user would see it. */
 export type ProbeResult =
   | { ok: true; provider: string; model: string; milliseconds: number; /** For embedding: how many dimensions its vectors have. */ dimensions?: number }
-  | { ok: false; code: AiErrorCode | 'internal'; message: string }
+  | { ok: false; code: AiErrorCode | 'internal'; message: string; messageKey?: 'noProvider' | 'oddRanking' | 'emptyAudio' | 'emptyImage' | 'oddDecision'; values?: Record<string, string | number> }
 
 /** The paths of the API. */
 /** One route of a provider's language models as the settings UI shows it. */
@@ -89,7 +89,7 @@ export interface LlmPayload {
 /** `POST /ai-api/llm/probe?route=&model=`: one short request through DSH's own model service, as a chat would send it. */
 export type LlmProbeResult =
   | { ok: true; route: string; model: string; milliseconds: number; outputTokens?: number; text: string }
-  | { ok: false; code: string; message: string }
+  | { ok: false; code: string; message: string; messageKey?: 'noModelService' | 'reasonedWithoutAnswer' | 'emptyAnswer'; values?: Record<string, string | number> }
 
 /** `GET /ai-api/llm/discover?provider=&route=`: the models the endpoint of a route lists. */
 export interface LlmDiscoverPayload {

@@ -1,8 +1,16 @@
 import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@dsh-ai-providers/core/slots'
+import type { LlmProbeResult } from '@dsh-ai-providers/core'
 import type { LlmFace } from './controller.ts'
+import type { LlmLocaleKey } from './locales.ts'
 import css from './LlmSection.module.css'
+
+function probeMessage(t: (key: LlmLocaleKey, values?: Record<string, string | number>) => string, result: Extract<LlmProbeResult, { ok: false }>): string {
+  if (result.messageKey === undefined) return result.message
+  const key = { noModelService: 'probeNoModelService', reasonedWithoutAnswer: 'probeReasonedWithoutAnswer', emptyAnswer: 'probeEmptyAnswer' }[result.messageKey] as LlmLocaleKey
+  return t(key, result.values)
+}
 
 export type LlmSectionProps = PropsRuntime<'settings.section'> & PropsLocale<'ai.llm'> & PropsRenderSlots<'ai.provider.llm'> & InjectFace<LlmFace>
 
@@ -41,7 +49,7 @@ export function LlmSection(props: LlmSectionProps) {
                 <Button variant="outline" size="sm" disabled={!route.active || probe?.status === 'running'} onClick={() => { props.probe(route.id, model.id) }}>{probe?.status === 'running' ? t('testing') : t('test')}</Button>
                 {probe?.status === 'done' && (probe.result.ok
                   ? <span className={css.ok} role="status">{t('testOk', { text: probe.result.text.slice(0, 60), milliseconds: probe.result.milliseconds, tokens: probe.result.outputTokens === undefined ? '' : `, ${probe.result.outputTokens} tokens` })}</span>
-                  : <span className={css.error} role="status">{t('testFailed', { code: probe.result.code, message: probe.result.message })}</span>)}
+                  : <span className={css.error} role="status">{t('testFailed', { code: probe.result.code, message: probeMessage(t, probe.result) })}</span>)}
               </div>
             )
           })}
