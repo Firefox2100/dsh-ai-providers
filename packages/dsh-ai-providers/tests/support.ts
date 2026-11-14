@@ -1,5 +1,5 @@
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { DecisionService, EmbeddingService, LlmService, RerankService, SttService, TtsService, type AiProvider, type LlmCall, type LlmModelSpec, LlmRouteSpec, type DecisionOptions, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
+import { DecisionService, EmbeddingService, ImageGenerationService, LlmService, RerankService, SttService, TtsService, type AiProvider, type GeneratedImage, type ImageGenerationResult, type LlmCall, type LlmModelSpec, LlmRouteSpec, type DecisionOptions, type DecisionQuestions, type DecisionResult, type DecisionState, type EmbedOptions, type EmbeddingResult, type RerankOptions, type RerankResult, type SpeechInput, type Transcript, type TtsResult } from '@dsh-ai-providers/core'
 
 /** A provider's service that counts what it is asked, and answers [length, index of the text in its call]. */
 export class FakeEmbedding extends EmbeddingService {
@@ -39,8 +39,24 @@ export class FakeRerank extends RerankService {
 export class FakeTts extends TtsService {
   readonly provider = 'fake'
   model = 'voice-1'
+  /** Whether to answer with an empty stream, as a provider that accepts the text and produces nothing does. */
+  silent = false
+  failWith: Error | undefined
   synthesize(text: string): Promise<TtsResult> {
-    return Promise.resolve({ audio: new Blob([text]).stream(), mediaType: 'audio/mpeg', model: this.model })
+    if (this.failWith !== undefined) return Promise.reject(this.failWith)
+    return Promise.resolve({ audio: new Blob([this.silent ? new Uint8Array() : text]).stream(), mediaType: 'audio/mpeg', model: this.model })
+  }
+}
+
+export class FakeImage extends ImageGenerationService {
+  readonly provider = 'fake'
+  model = 'draw-1'
+  /** Which images to answer with: one drawn picture by default, nothing when the provider answers with no picture at all. */
+  images: GeneratedImage[] | undefined
+  failWith: Error | undefined
+  generate(prompt: string): Promise<ImageGenerationResult> {
+    if (this.failWith !== undefined) return Promise.reject(this.failWith)
+    return Promise.resolve({ images: this.images ?? [{ data: new Blob([prompt]), mediaType: 'image/png' }], model: this.model })
   }
 }
 
@@ -48,7 +64,9 @@ export class FakeStt extends SttService {
   readonly provider = 'fake'
   readonly model = 'listen-1'
   readonly info = { id: 'fake', name: 'Fake speech', location: 'host-local' as const, languages: ['auto', 'en'] }
+  failWith: Error | undefined
   transcribe(input: SpeechInput, _signal: AbortSignal): Promise<Transcript> {
+    if (this.failWith !== undefined) return Promise.reject(this.failWith)
     return Promise.resolve({ text: 'heard', audioSeconds: input.audio.byteLength / 32_000, inferenceSeconds: 0.01 })
   }
 }
@@ -81,11 +99,12 @@ export class FakeDecision extends DecisionService {
   }
 }
 
-export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank, tts?: FakeTts, stt?: FakeStt, decision?: FakeDecision): AiProvider => ({
+export const providerOf = (id: string, service: FakeEmbedding | undefined, rerank?: FakeRerank, tts?: FakeTts, stt?: FakeStt, decision?: FakeDecision, image?: FakeImage, llm?: FakeLlm): AiProvider => ({
   id,
   label: id.toUpperCase(),
   configEntryId: `ai-${id}`,
-  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }), ...(tts === undefined ? {} : { tts: () => tts }), ...(stt === undefined ? {} : { stt: () => stt }), ...(decision === undefined ? {} : { decision: () => decision }) },
+  capabilities: { ...(service === undefined ? {} : { embedding: () => service }), ...(rerank === undefined ? {} : { rerank: () => rerank }), ...(tts === undefined ? {} : { tts: () => tts }), ...(stt === undefined ? {} : { stt: () => stt }), ...(decision === undefined ? {} : { decision: () => decision }), ...(image === undefined ? {} : { image: () => image }) },
+  ...(llm === undefined ? {} : { llm: () => llm }),
 })
 
 export const settle = (ms = 30): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))

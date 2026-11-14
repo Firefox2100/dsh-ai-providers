@@ -30,7 +30,15 @@ const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 4
 /** The languages the settings UI ships; DSH requires `zh` and `en` and falls back to English for a missing key. */
 export const UI_LOCALES = ['en', 'zh', 'ja', 'es', 'fr', 'de', 'ru', 'pt'] as const
 
-const placeholdersOf = (value: string): string[] => [...value.matchAll(/\{(\w+)\}/g)].map(match => match[1]!).sort()
+/** Sorts in the dictionary's own order, so two languages can be compared regardless of the engine's default. */
+const byName = (a: string, b: string): number => a.localeCompare(b)
+
+/** The placeholder names in a string, in a fixed order so two languages can be compared. */
+const placeholdersOf = (value: string): string[] =>
+  [...value.matchAll(/\{(\w+)\}/g)].map(match => match[1]!).sort(byName)
+
+/** The keys of a dictionary in a fixed order, so two languages can be compared. */
+const keysOf = (dictionary: Record<string, string>): string[] => Object.keys(dictionary).sort(byName)
 
 /**
  * Checks that a client half's copy covers every language the settings UI ships, with the same keys and the same
@@ -43,8 +51,10 @@ export function expectLocaleCoverage(dictionaries: Record<string, Record<string,
   const reference = dictionaries.en!
   for (const locale of UI_LOCALES) {
     const entries = dictionaries[locale]!
-    expect(Object.keys(entries).sort(), `${locale} keys`).toEqual(Object.keys(reference).sort())
-    for (const [key, value] of Object.entries(entries)) expect(placeholdersOf(value), `${locale}.${key} placeholders`).toEqual(placeholdersOf(reference[key]!))
+    expect(keysOf(entries), `${locale} keys`).toEqual(keysOf(reference))
+    for (const [key, value] of Object.entries(entries)) {
+      expect(placeholdersOf(value), `${locale}.${key} placeholders`).toEqual(placeholdersOf(reference[key]!))
+    }
   }
 }
 

@@ -317,7 +317,8 @@ export async function probeImage(services: AiServices, registry: AiProviders): P
   try {
     const service = factory()
     const answer = await service.generate('A small red circle centered on a plain white background.')
-    if (answer.images[0]?.data.size === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned no image data`, messageKey: 'emptyImage', values: { provider: service.provider } }
+    const image = answer.images[0]
+    if (image === undefined || image.data.size === 0) return { ok: false, code: 'unavailable', message: `${service.provider} returned no image data`, messageKey: 'emptyImage', values: { provider: service.provider } }
     return { ok: true, provider: service.provider, model: answer.model, milliseconds: Math.round(performance.now() - started) }
   } catch (error) {
     if (error instanceof AiError) return { ok: false, code: error.code, message: error.message }
