@@ -1,14 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">DSH AI Providers</title>
-  <desc id="desc">A consumer signal passing through a stable interface into capability ports.</desc>
+  <title id="title">LocalAI provider</title>
+  <desc id="desc">A locally hosted chip with its pins.</desc>
   <rect width="64" height="64" fill="#0c1720"/>
-  <path fill="none" stroke="#d68b45" stroke-width="4" d="M8 18h15v10"/>
-  <rect x="7" y="14" width="8" height="8" fill="#d68b45"/>
-  <rect x="13" y="26" width="43" height="13" fill="#eef2f3"/>
-  <path fill="none" stroke="#4fb6a6" stroke-width="3" d="M23 39v10M35 39v10M47 39v10"/>
-  <rect x="18" y="48" width="10" height="8" fill="#4fb6a6"/>
-  <rect x="30" y="48" width="10" height="8" fill="#4fb6a6"/>
-  <rect x="42" y="48" width="10" height="8" fill="#4fb6a6"/>
-  <path fill="none" stroke="#0c1720" stroke-width="2" d="M20 32h29"/>
+  <path fill="none" stroke="#4fb6a6" stroke-width="4" d="M22 18V12M32 18V12M42 18V12M22 46v6M32 46v6M42 46v6M18 22h-6M18 42h-6M46 22h6M46 42h6"/>
+  <rect x="18" y="18" width="28" height="28" fill="none" stroke="#4fb6a6" stroke-width="4"/>
+  <rect x="26" y="26" width="12" height="12" fill="#d68b45"/>
 </svg>
-

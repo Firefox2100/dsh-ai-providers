@@ -2,7 +2,9 @@ import { Context } from '@deepseek-ai/cordis'
 import { AiProviders } from '@dsh-ai-providers/runtime'
 import { DecisionService } from '@dsh-ai-providers/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectLocaleCoverage } from '@dsh-ai-providers/testkit'
 import * as plugin from '../src/index.ts'
+import { dictionaries } from '../src/client/locales.ts'
 
 let ctx: Context
 const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 40))
@@ -36,5 +38,11 @@ describe('the provider', () => {
       connections: [{ id: 'typesafe', name: 'TypeSafe', baseUrl: 'https://api.typesafe.ai/v1', apiKeyRef: 'TYPESAFE_API_KEY' }],
       decisionConnection: 'typesafe', decisionModel: 'jev-latest', longContext: false, timeoutMs: 30_000,
     })
+  })
+})
+
+describe('the copy', () => {
+  it('speaks every language the settings UI ships', () => {
+    expectLocaleCoverage(dictionaries)
   })
 })

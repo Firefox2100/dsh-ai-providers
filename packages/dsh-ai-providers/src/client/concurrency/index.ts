@@ -22,9 +22,13 @@ const NAMESPACE = 'ai.concurrency'
 export function describeConcurrency(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: concurrency dictionaries')
-  const controller = new ConcurrencyController(ctx.configForms.get(ENTRY_ID))
-  controller.start(ctx)
+  const controller = new ConcurrencyController(ctx, ctx.configForms.get(ENTRY_ID))
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: concurrency tab')
   const face = controller.inject()
-  return { id: 'concurrency', label: () => t('nav'), render: props => createElement(ConcurrencySection, { ...props, t, ...face, useConcurrency: storeHook(face.hooks.concurrency) }) }
+  return {
+    id: 'concurrency',
+    label: () => t('nav'),
+    render: props => createElement(ConcurrencySection, { ...props, t, ...face, useConcurrency: storeHook(face.hooks.concurrency) }),
+    runtime: { start: () => { controller.start() }, stop: () => { controller.stop() } },
+  }
 }

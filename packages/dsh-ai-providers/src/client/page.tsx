@@ -1,6 +1,6 @@
 import { SegmentedTabs, type SegmentedTab } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { useLayoutEffect, useRef, useSyncExternalStore, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, useState, type CSSProperties } from 'react'
 import css from './page.module.css'
 
 /** Every provider panel a page may render, so one section can own all of their slots. */
@@ -9,11 +9,21 @@ export type ProviderPanel = 'ai.provider.connection' | 'ai.provider.llm' | 'ai.p
 /** What the settings section's renderer hands to the section, and to every page inside it. */
 export type SectionProps = PropsRuntime<'settings.section'> & PropsRenderSlots<ProviderPanel> & PropsLocale<'ai.providers'>
 
+/** What a page keeps running only while it is on screen: host listeners and the requests they trigger. */
+export interface PageRuntime {
+  /** Called when the page is shown. */
+  start(): void
+  /** Called when the page is hidden or the section goes away. */
+  stop(): void
+}
+
 /** One page of the section: its tab and how to draw it. */
 export interface FeaturePage {
   id: string
   label: () => string
   render: (props: SectionProps) => JSX.Element
+  /** Present when the page talks to the host; started on mount and stopped on unmount. */
+  runtime?: PageRuntime
 }
 
 /**
@@ -46,14 +56,29 @@ export function PageTabs(props: { pages: readonly FeaturePage[]; label: () => st
   )
 }
 
+/**
+ * One page drawn in its panel. The panel owns the page's lifetime: its runtime starts when the panel mounts and stops when
+ * it unmounts, so a page nobody opens never asks the host for anything.
+ */
+function PagePanel(props: { page: FeaturePage; section: SectionProps }): JSX.Element {
+  const { page } = props
+  const runtime = page.runtime
+  useEffect(() => {
+    if (!runtime) return
+    runtime.start()
+    return () => { runtime.stop() }
+  }, [runtime])
+  return (
+    <div id={`ai-panel-${page.id}`} role="tabpanel" aria-labelledby={`ai-page-${page.id}`}>
+      {page.render(props.section)}
+    </div>
+  )
+}
+
 /** One selected page of a set, with its panel wired to the tab that names it. */
 export function pageBody(pages: readonly FeaturePage[], selected: string, props: SectionProps): JSX.Element {
   const page = pages.find(candidate => candidate.id === selected) ?? pages[0]!
-  return (
-    <div id={`ai-panel-${page.id}`} role="tabpanel" aria-labelledby={`ai-page-${page.id}`}>
-      {page.render(props)}
-    </div>
-  )
+  return <PagePanel page={page} section={props} />
 }
 
 /**

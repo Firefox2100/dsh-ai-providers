@@ -23,11 +23,28 @@ export interface LlmFace {
 /** The tab of language models: which routes the providers serve to DSH, and whether a model answers. */
 export class LlmController {
   private readonly store = createSnapshotStore<LlmState>({ status: 'loading', routes: [], probes: {} }, { flush: 'sync' })
-  private readonly abort = new AbortController()
+  private abort = new AbortController()
+  /** Unsubscribes the forwarded events; set only while the page is mounted. */
+  private stopEvents: (() => void) | undefined
 
-  start(ctx: Context): void {
-    refreshOn(ctx, ['llm/adapters-updated', 'llm/models-updated', 'settings/document-updated'], () => { void this.load() })
+  constructor(private readonly ctx: Context) {}
+
+  /**
+   * Asks the host what the providers serve, and listens for changes until {@link stop}. A page calls this when it mounts,
+   * so a profile whose settings page is never opened does not read `/ai-api` at every start.
+   */
+  start(): void {
+    if (this.stopEvents) return
+    this.stopEvents = refreshOn(this.ctx, ['llm/adapters-updated', 'llm/models-updated', 'settings/document-updated'], () => { void this.load() })
     void this.load()
+  }
+
+  /** Drops the listeners and the requests of a page that is no longer on screen. */
+  stop(): void {
+    this.stopEvents?.()
+    this.stopEvents = undefined
+    this.abort.abort()
+    this.abort = new AbortController()
   }
 
   private patch(change: Partial<LlmState>): void {
@@ -35,13 +52,14 @@ export class LlmController {
   }
 
   async load(): Promise<void> {
+    const { signal } = this.abort
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.llm}`, { credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.llm}`, { credentials: 'same-origin', signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       const { routes } = await response.json() as LlmPayload
       this.patch({ status: 'ready', routes })
     } catch (error) {
-      if (this.abort.signal.aborted) return
+      if (signal.aborted) return
       const { error: _previous, ...rest } = this.store.getSnapshot()
       this.store.set({ ...rest, status: 'failed', error: error instanceof Error ? error.message : String(error) })
     }
@@ -49,14 +67,15 @@ export class LlmController {
 
   async probe(route: string, model: string): Promise<void> {
     const key = `${route}/${model}`
+    const { signal } = this.abort
     this.patch({ probes: { ...this.store.getSnapshot().probes, [key]: { status: 'running' } } })
     let result: LlmProbeResult
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.llmProbe}?route=${encodeURIComponent(route)}&model=${encodeURIComponent(model)}`, { method: 'POST', credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.llmProbe}?route=${encodeURIComponent(route)}&model=${encodeURIComponent(model)}`, { method: 'POST', credentials: 'same-origin', signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       result = await response.json() as LlmProbeResult
     } catch (error) {
-      if (this.abort.signal.aborted) return
+      if (signal.aborted) return
       result = { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) }
     }
     this.patch({ probes: { ...this.store.getSnapshot().probes, [key]: { status: 'done', result } } })
@@ -66,5 +85,5 @@ export class LlmController {
     return { hooks: { llm: this.store }, refresh: () => { void this.load() }, probe: (route, model) => { void this.probe(route, model) } }
   }
 
-  dispose(): void { this.abort.abort() }
+  dispose(): void { this.stop() }
 }

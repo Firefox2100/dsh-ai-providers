@@ -46,7 +46,7 @@ export interface CapabilityFace extends SettingsFormActions {
 export class CapabilityController {
   private readonly form: SettingsFormModel<CapabilitySettings>
   private readonly store: SnapshotStore<CapabilityState>
-  private readonly abort = new AbortController()
+  private abort = new AbortController()
   private entries: { id: string; label: string }[] = []
   private loaded = new Set<string>()
   private serviceAvailable = false
@@ -56,6 +56,8 @@ export class CapabilityController {
   private probeVersion = 0
   private unsubscribe = () => {}
   private timers: ReturnType<typeof setTimeout>[] = []
+  /** Stops what the mounted page started; present only while the page is mounted. */
+  private teardown: (() => void) | undefined
 
   constructor(private readonly ctx: Context, private readonly scope: SettingsFormScope<CapabilitySettings>, private readonly capability: Capability) {
     this.form = new SettingsFormModel(scope, [settingsTextField(capability)])
@@ -67,10 +69,27 @@ export class CapabilityController {
     }, 'dsh-ai-providers: provider list')
   }
 
+  /** Reads the capability and follows the section's document, while the page is mounted. */
   start(): void {
-    refreshOn(this.ctx, ['settings/document-updated'], () => { void this.refresh() })
+    if (this.teardown) return
+    const stopRefresh = refreshOn(this.ctx, ['settings/document-updated'], () => { void this.refresh() })
     this.unsubscribe = this.scope.subscribe(() => { this.refreshSoon() })
+    this.teardown = () => {
+      stopRefresh()
+      this.unsubscribe()
+      this.unsubscribe = () => {}
+      for (const timer of this.timers) clearTimeout(timer)
+      this.timers = []
+      this.abort.abort()
+      this.abort = new AbortController()
+    }
     void this.refresh()
+  }
+
+  /** Drops the listeners and the pending reads of a page that is no longer on screen. */
+  stop(): void {
+    this.teardown?.()
+    this.teardown = undefined
   }
 
   /**
@@ -121,8 +140,9 @@ export class CapabilityController {
 
   /** Read what the host knows: which providers are loaded and whether the service is up. */
   async refresh(): Promise<void> {
+    const { signal } = this.abort
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.capabilities}`, { credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.capabilities}`, { credentials: 'same-origin', signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       const payload = await response.json() as CapabilitiesPayload
       const state = payload.capabilities.find(entry => entry.capability === this.capability)
@@ -131,7 +151,7 @@ export class CapabilityController {
       this.status = 'ready'
       this.error = undefined
     } catch (error) {
-      if (this.abort.signal.aborted) return
+      if (signal.aborted) return
       this.status = 'failed'
       this.error = error instanceof Error ? error.message : String(error)
     }
@@ -140,17 +160,18 @@ export class CapabilityController {
 
   /** Ask the host to try the selected provider with a small job of its kind, and show what came of it. */
   async runProbe(): Promise<void> {
+    const { signal } = this.abort
     const version = ++this.probeVersion
     this.probe = { status: 'running' }
     this.publish()
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.probe}?capability=${this.capability}`, { method: 'POST', credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.probe}?capability=${this.capability}`, { method: 'POST', credentials: 'same-origin', signal })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`.trim())
       const result = await response.json() as ProbeResult
       if (version !== this.probeVersion) return
       this.probe = { status: 'done', result }
     } catch (error) {
-      if (this.abort.signal.aborted) return
+      if (signal.aborted) return
       if (version !== this.probeVersion) return
       this.probe = { status: 'done', result: { ok: false, code: 'internal', message: error instanceof Error ? error.message : String(error) } }
     }
@@ -171,9 +192,7 @@ export class CapabilityController {
   }
 
   dispose(): void {
-    this.abort.abort()
-    this.unsubscribe()
-    for (const timer of this.timers) clearTimeout(timer)
+    this.stop()
     this.form.dispose()
   }
 }

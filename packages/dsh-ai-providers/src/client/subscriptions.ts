@@ -28,12 +28,20 @@ interface ForwardedEvents {
  * @param ctx - the client plugin context.
  * @param events - forwarded host events that concern this page.
  * @param refresh - called once per event.
+ * @returns a disposer that stops listening; the caller owns it, so a page that unmounts leaves nothing behind.
  */
-export function refreshOn(ctx: Context, events: readonly PageEvent[], refresh: () => void): void {
+export function refreshOn(ctx: Context, events: readonly PageEvent[], refresh: () => void): () => void {
+  const offs: (() => void)[] = []
+  let stopped = false
+  const stop = (): void => {
+    stopped = true
+    for (const off of offs.splice(0)) off()
+  }
   ctx.inject(['remote'], (remoteCtx) => {
+    if (stopped) return
     const remote = remoteCtx.remote as unknown as ForwardedEvents
-    for (const event of events) {
-      remoteCtx.effect(() => remote.$on(event, () => { refresh() }), `dsh-ai-providers: ${event}`)
-    }
+    for (const event of events) offs.push(remote.$on(event, () => { refresh() }))
+    remoteCtx.effect(() => () => { stop() }, 'dsh-ai-providers: page events')
   })
+  return stop
 }

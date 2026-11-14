@@ -36,7 +36,7 @@ Open **Settings -> Observability**. The page contains these controls:
 
 When file output is selected, an empty folder setting writes to `traces` under the DSH home. The runtime creates one `trace-<date>.jsonl` file per day and writes one observation or score per line.
 
-The Langfuse section asks for a server address, an optional environment and two credential references. The default references are `AI_PROVIDERS_LANGFUSE_PUBLIC_KEY` and `AI_PROVIDERS_LANGFUSE_SECRET_KEY`. Their values stay in DSH's credential store. A value supplied by the environment is shown as read-only.
+The Langfuse section asks for a server address, an optional environment and two credential references. The default references are `AI_PROVIDERS_LANGFUSE_PUBLIC_KEY` and `AI_PROVIDERS_LANGFUSE_SECRET_KEY`. Their values stay in DSH's credential store: type a key into its box and save the page, and discarding the page leaves the stored key alone. A value supplied by the environment is shown as read-only. **Remove** deletes a stored key at once, because a removal is not a draft.
 
 ### Langfuse and compatible endpoints
 

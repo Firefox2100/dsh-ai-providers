@@ -22,9 +22,13 @@ const NAMESPACE = 'ai.observability'
 export function describeObservability(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: observability dictionaries')
-  const controller = new ObservabilityController(ctx.configForms.get(ENTRY_ID))
-  controller.start(ctx)
+  const controller = new ObservabilityController(ctx, ctx.configForms.get(ENTRY_ID))
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: observability tab')
   const face = controller.inject()
-  return { id: 'observability', label: () => t('nav'), render: props => createElement(ObservabilitySection, { ...props, t, ...face, useObservability: storeHook(face.hooks.observability) }) }
+  return {
+    id: 'observability',
+    label: () => t('nav'),
+    render: props => createElement(ObservabilitySection, { ...props, t, ...face, useObservability: storeHook(face.hooks.observability) }),
+    runtime: { start: () => { controller.start() }, stop: () => { controller.stop() } },
+  }
 }

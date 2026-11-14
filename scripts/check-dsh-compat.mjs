@@ -14,6 +14,9 @@ const root = resolve(import.meta.dirname, '..')
 const requested = process.argv[2]
 if (requested !== undefined && !DSH_RELEASES.includes(requested)) throw new Error(`usage: check-dsh-compat.mjs [${DSH_RELEASES.join(' | ')}]`)
 const versions = requested === undefined ? DSH_RELEASES.filter(release => release !== DSH_DEVELOPMENT) : [requested]
+if (versions.length === 0) {
+  throw new Error(`nothing to check: DSH_RELEASES in scripts/dsh-compat.mjs lists only the development release ${DSH_DEVELOPMENT}; add another supported release there or name one on the command line`)
+}
 
 const pnpmCli = process.env.npm_execpath
 if (pnpmCli === undefined || !isAbsolute(pnpmCli)) throw new Error('run this compatibility check through pnpm')
@@ -32,7 +35,7 @@ async function check(version) {
 
   const copy = await mkdtemp(join(tmpdir(), 'dsh-compat-'))
   try {
-    await cp(root, copy, { recursive: true, filter: source => !/(^|\/)(node_modules|coverage|lib|\.git)(\/|$)/.test(source.slice(root.length).replaceAll('\\\\', '/')) })
+    await cp(root, copy, { recursive: true, filter: source => !/(^|\/)(node_modules|coverage|lib|\.git)(\/|$)/.test(source.slice(root.length).replaceAll('\\', '/')) })
     for (const folder of await readdir(join(copy, 'packages'))) {
       const file = join(copy, 'packages', folder, 'package.json')
       const manifest = JSON.parse(await readFile(file, 'utf8'))

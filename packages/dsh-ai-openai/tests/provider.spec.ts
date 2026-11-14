@@ -2,7 +2,9 @@ import { Context } from '@deepseek-ai/cordis'
 import { AiProviders } from '@dsh-ai-providers/runtime'
 import { EmbeddingService, ImageGenerationService, LlmService, SttService, TtsService } from '@dsh-ai-providers/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectLocaleCoverage } from '@dsh-ai-providers/testkit'
 import * as plugin from '../src/index.ts'
+import { dictionaries } from '../src/client/locales.ts'
 
 let ctx: Context
 const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 40))
@@ -43,5 +45,11 @@ describe('the provider', () => {
       decisionModel: 'gpt-6-luna', imageModel: 'gpt-image-1', imageSize: '1024x1024', imageQuality: 'auto', imageOutputFormat: 'png', imageOutputCompression: 100,
       llmRoutes: [], llmIdleTimeoutMs: 300_000,
     })
+  })
+})
+
+describe('the copy', () => {
+  it('speaks every language the settings UI ships', () => {
+    expectLocaleCoverage(dictionaries)
   })
 })

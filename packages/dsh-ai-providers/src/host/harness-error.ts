@@ -13,8 +13,12 @@ export function asHarnessError(error: unknown): unknown {
   return new HarnessError(error.message, error.code, { cause: error })
 }
 
-/** How a capability failure reads to DSH's model loop; the codes a gate raises are the ones that reach it. */
-const LLM_CODE_OF: Record<string, string> = {
+/**
+ * How a capability failure reads to DSH's model loop; the codes a gate raises are the ones that reach it. Spelled as
+ * literal codes rather than plain strings because the model-loop error narrows its code to the built-in failures in
+ * newer releases while the release this workspace develops against still takes any string.
+ */
+const LLM_CODE_OF: Record<string, 'ABORTED' | 'TRANSPORT' | 'INVALID_REQUEST' | 'AUTH'> = {
   cancelled: 'ABORTED',
   unavailable: 'TRANSPORT',
   'not-configured': 'INVALID_REQUEST',

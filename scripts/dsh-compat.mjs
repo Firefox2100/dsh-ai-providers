@@ -1,7 +1,7 @@
 /** The DSH releases the packages are tested against, oldest first: the one list every constraint is derived from. */
-export const DSH_RELEASES = ['0.2.2-rc.1']
+export const DSH_RELEASES = ['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3']
 /** The release the workspace is developed against: dev dependencies pin it exactly. */
-export const DSH_DEVELOPMENT = DSH_RELEASES.at(-1)
+export const DSH_DEVELOPMENT = '0.2.2-rc.1'
 /**
  * Compatibility explicitly offered beyond the exact releases used by the test matrix.
  *

@@ -66,29 +66,43 @@ const pageHidden = (): boolean => typeof document !== 'undefined' && document.vi
 export class ConcurrencyController {
   private readonly form: SettingsFormModel<ConcurrencySettings>
   private readonly store: SnapshotStore<ConcurrencyState>
-  private readonly abort = new AbortController()
+  private abort = new AbortController()
   private live: Record<string, ConcurrencyStatus> = {}
   private routes: { id: string; name: string }[] = []
   private timer: ReturnType<typeof setInterval> | undefined
+  /** Stops everything the mounted page started; present only while the page is mounted. */
+  private teardown: (() => void) | undefined
   private nextLimit = 1
 
-  constructor(scope: SettingsFormScope<ConcurrencySettings>) {
+  constructor(private readonly ctx: Context, scope: SettingsFormScope<ConcurrencySettings>) {
     this.form = new SettingsFormModel(scope, [limitsField, settingsNumberField('maxWaitSeconds')])
     this.store = this.form.bind(() => this.projection())
   }
 
-  start(ctx: Context): void {
-    refreshOn(ctx, ['settings/document-updated'], () => { void this.refresh() })
-    void this.refresh()
+  /** Reads the counters and starts the timer, while the page is mounted. */
+  start(): void {
+    if (this.teardown) return
+    const stopRefresh = refreshOn(this.ctx, ['settings/document-updated'], () => { void this.refresh() })
     // The counters are live, so they are read on a timer — but only while the page is in front: a settings tab left in
-    // the background must not keep asking the host.
+    // the background, or closed, must not keep asking the host.
     this.timer = setInterval(() => { if (!pageHidden()) void this.refresh() }, REFRESH_MS)
     const onVisibility = (): void => { if (!pageHidden()) void this.refresh() }
     if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility)
-    ctx.effect(() => () => {
+    this.teardown = () => {
+      stopRefresh()
       if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibility)
-      this.dispose()
-    }, 'dsh-ai-providers: concurrency tab')
+      if (this.timer !== undefined) clearInterval(this.timer)
+      this.timer = undefined
+      this.abort.abort()
+      this.abort = new AbortController()
+    }
+    void this.refresh()
+  }
+
+  /** Drops the timer and the listeners of a page that is no longer on screen. */
+  stop(): void {
+    this.teardown?.()
+    this.teardown = undefined
   }
 
   private limits(): LimitRule[] {
@@ -104,8 +118,9 @@ export class ConcurrencyController {
   }
 
   async refresh(): Promise<void> {
+    const { signal } = this.abort
     try {
-      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.concurrency}`, { credentials: 'same-origin', signal: this.abort.signal })
+      const response = await fetch(`${AI_API_PREFIX}${AI_API_ROUTES.concurrency}`, { credentials: 'same-origin', signal })
       if (!response.ok) return
       const payload = await response.json() as ConcurrencyPayload
       this.live = Object.fromEntries(payload.limits.map(status => [status.id, status]))
@@ -135,8 +150,7 @@ export class ConcurrencyController {
   }
 
   dispose(): void {
-    if (this.timer !== undefined) clearInterval(this.timer)
-    this.abort.abort()
+    this.stop()
     this.form.dispose()
   }
 }

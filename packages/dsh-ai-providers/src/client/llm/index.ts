@@ -22,9 +22,13 @@ const NAMESPACE = 'ai.llm'
 export function describeLlm(ctx: Context): FeaturePage {
   const t = ctx.locale.bind(NAMESPACE)
   ctx.effect(() => ctx.locale.register(NAMESPACE, dictionaries), 'dsh-ai-providers: llm dictionaries')
-  const controller = new LlmController()
-  controller.start(ctx)
+  const controller = new LlmController(ctx)
   ctx.effect(() => () => { controller.dispose() }, 'dsh-ai-providers: llm tab')
   const face = controller.inject()
-  return { id: 'llm', label: () => t('nav'), render: props => createElement(LlmSection, { ...props, t, ...face, useLlm: storeHook(face.hooks.llm) }) }
+  return {
+    id: 'llm',
+    label: () => t('nav'),
+    render: props => createElement(LlmSection, { ...props, t, ...face, useLlm: storeHook(face.hooks.llm) }),
+    runtime: { start: () => { controller.start() }, stop: () => { controller.stop() } },
+  }
 }

@@ -458,6 +458,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.4
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -674,6 +677,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.4
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5
@@ -881,6 +887,9 @@ importers:
       '@dsh-ai-providers/core':
         specifier: workspace:0.7.4
         version: link:../dsh-ai-core
+      '@dsh-ai-providers/testkit':
+        specifier: workspace:0.0.0
+        version: link:../dsh-ai-testkit
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.5

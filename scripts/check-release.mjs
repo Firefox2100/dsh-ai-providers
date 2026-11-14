@@ -29,6 +29,7 @@ for (const { folder, name } of releasePackages) {
   if (manifest.bugs?.url !== 'https://github.com/Firefox2100/dsh-ai-providers/issues') throw new Error(`${name}: issue tracker is incorrect`)
   if (!Array.isArray(manifest.keywords) || !manifest.keywords.includes('deepseek-harness')) throw new Error(`${name}: keywords are missing`)
   if (!Array.isArray(manifest.files) || !manifest.files.includes('README.md') || !manifest.files.includes('LICENSE')) throw new Error(`${name}: README.md and LICENSE must be included`)
+  if (manifest.engines?.dsh !== DSH_ENGINES) throw new Error(`${name}: engines.dsh must be ${DSH_ENGINES}`)
 
   const readme = await text(resolve(directory, 'README.md'))
   if (!readme.startsWith(`# ${name}\n`)) throw new Error(`${name}: README heading must match the package name`)
@@ -65,7 +66,6 @@ for (const folder of bundleFolders) {
   const directory = resolve(root, 'packages', folder)
   const manifest = JSON.parse(await readFile(resolve(root, 'packages', folder, 'package.json'), 'utf8'))
   if (manifest.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error(`${manifest.name}: missing DSH bundle declaration`)
-  if (manifest.engines?.dsh !== DSH_ENGINES) throw new Error(`${manifest.name}: engines.dsh must be ${DSH_ENGINES}`)
   if (!manifest.files.includes('cordis.patch.yml')) throw new Error(`${manifest.name}: cordis.patch.yml must be published`)
   if (manifest.icon !== './icon.svg' || !manifest.files.includes('icon.svg')) throw new Error(`${manifest.name}: icon.svg must be declared and published`)
   if (manifest.exports?.['./locale/*.json'] !== './locale/*.json' || !manifest.files.includes('locale')) throw new Error(`${manifest.name}: locale metadata must be exported and published`)
@@ -98,6 +98,14 @@ for (const [folder, name, id] of standaloneBundles) {
   if (name !== '@dsh-ai-providers/runtime' && manifest.dependencies?.['@dsh-ai-providers/runtime'] !== `workspace:${version}`) {
     throw new Error(`${name}: vendor bundle must install @dsh-ai-providers/runtime without inserting its row`)
   }
+}
+
+// The loader keys a mounted entry by its id: a row inserted by two layers (the umbrella and a member bundle installed
+// alongside it) mounts once, with the options of whichever patch the profile applies last. The two layers must
+// therefore insert byte-identical rows, or which package a profile runs would depend on bundle order.
+const umbrellaPatch = `- insert:\n${standaloneBundles.map(([, name, id]) => `    - id: ${id}\n      name: '${name}'\n`).join('')}`
+if (await text(resolve(root, 'packages', 'dsh-ai-all', 'cordis.patch.yml')) !== umbrellaPatch) {
+  throw new Error('@dsh-ai-providers/all: the umbrella must insert exactly the rows the member bundles insert, byte for byte')
 }
 
 const workspaceFile = await text(resolve(root, 'pnpm-workspace.yaml'))

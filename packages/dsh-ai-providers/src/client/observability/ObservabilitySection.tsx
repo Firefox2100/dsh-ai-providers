@@ -9,16 +9,12 @@ export type ObservabilitySectionProps = PropsRuntime<'settings.section'> & Props
 
 type Translate = ObservabilitySectionProps['t']
 
-/** One Langfuse key: the credential's name (a setting) and a write-only box for its value, which goes to the credential store and is never shown again. */
-function KeyBox(props: { name: KeyName; label: string; refText: string; refField: 'langfusePublicKeyRef' | 'langfuseSecretKeyRef'; status: { configured: boolean; writable: boolean; source?: string } | undefined; writable: boolean; t: Translate; edit: (field: string, text: string) => void; store: (name: KeyName, value: string) => Promise<boolean> }) {
-  const [value, setValue] = useState('')
+/** One Langfuse key: the credential's name (a setting) and a write-only box for its value, staged with the form and written to the credential store on save. */
+function KeyBox(props: { name: KeyName; label: string; refText: string; refField: 'langfusePublicKeyRef' | 'langfuseSecretKeyRef'; text: string; status: { configured: boolean; writable: boolean; source?: string } | undefined; writable: boolean; t: Translate; edit: (field: string, text: string) => void; remove: () => Promise<boolean> }) {
   const [busy, setBusy] = useState(false)
   const { t, status } = props
-  const locked = !props.writable || busy || (status !== undefined && !status.writable)
-  const store = (next: string): void => {
-    setBusy(true)
-    void props.store(props.name, next).then((stored) => { if (stored) setValue('') }).finally(() => { setBusy(false) })
-  }
+  const readOnly = !props.writable || (status !== undefined && !status.writable)
+  const locked = readOnly || busy
   return (
     <div className={css.key} data-testid={`ai-observability-${props.name}`}>
       <label className={css.row}>
@@ -29,9 +25,9 @@ function KeyBox(props: { name: KeyName; label: string; refText: string; refField
         id={`ai-observability-${props.name}-value`}
         label={props.label}
         hint={t('keyHelp')}
-        text={value}
+        text={props.text}
         disabled={locked}
-        onEdit={setValue}
+        onEdit={(text) => { props.edit(props.name, text) }}
         configured={status?.configured === true}
         stateLabel={status === undefined
           ? t('keyChecking')
@@ -40,9 +36,8 @@ function KeyBox(props: { name: KeyName; label: string; refText: string; refField
             : t('keyUnset')}
       />
       <div className={css.row}>
-        <Button variant="outline" size="sm" disabled={locked || value === ''} onClick={() => { store(value) }}>{busy ? t('keySaving') : t('keySave')}</Button>
-        <Button variant="ghost" size="sm" disabled={locked || status?.configured !== true} onClick={() => { store('') }}>{t('keyRemove')}</Button>
-        {locked && <span className={css.muted} role="status">{t('keyReadOnly')}</span>}
+        <Button variant="ghost" size="sm" disabled={locked || status?.configured !== true} onClick={() => { setBusy(true); void props.remove().finally(() => { setBusy(false) }) }}>{busy ? t('keySaving') : t('keyRemove')}</Button>
+        {readOnly && <span className={css.muted} role="status">{t('keyReadOnly')}</span>}
       </div>
     </div>
   )
@@ -101,8 +96,8 @@ export function ObservabilitySection(props: ObservabilitySectionProps) {
               <label className={css.row}>{t('host')}<input className={`${css.input} ${css.wide}`} value={state.host.text} disabled={!state.writable} onChange={(event) => { props.edit('langfuseHost', event.target.value) }} /></label>
               <label className={css.row}>{t('environment')}<input className={css.input} value={state.environment.text} disabled={!state.writable} onChange={(event) => { props.edit('langfuseEnvironment', event.target.value) }} /></label>
               <p className={css.muted}>{t('environmentHelp')}</p>
-              <KeyBox name="publicKey" label={t('publicKey')} refText={state.publicKeyRef.text} refField="langfusePublicKeyRef" status={state.keys.publicKey} writable={state.writable} t={t} edit={props.edit} store={props.storeKey} />
-              <KeyBox name="secretKey" label={t('secretKey')} refText={state.secretKeyRef.text} refField="langfuseSecretKeyRef" status={state.keys.secretKey} writable={state.writable} t={t} edit={props.edit} store={props.storeKey} />
+              <KeyBox name="publicKey" label={t('publicKey')} refText={state.publicKeyRef.text} refField="langfusePublicKeyRef" text={state.publicKey.text} status={state.keys.publicKey} writable={state.writable} t={t} edit={props.edit} remove={() => props.removeKey('publicKey')} />
+              <KeyBox name="secretKey" label={t('secretKey')} refText={state.secretKeyRef.text} refField="langfuseSecretKeyRef" text={state.secretKey.text} status={state.keys.secretKey} writable={state.writable} t={t} edit={props.edit} remove={() => props.removeKey('secretKey')} />
               <p className={css.muted}>{t('keyHelp')}</p>
               {state.keyError !== undefined && <p className={css.error} role="alert">{state.keyError}</p>}
             </section>

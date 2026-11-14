@@ -29,7 +29,8 @@ Streaming language-model and TTS calls retain their place until the stream ends,
 
 Embedding requests can be deduplicated and batched. Equivalent pending requests share work, and prefetch calls may retain a result briefly for a later foreground caller. The cache key includes the provider, model, and request options, so results do not cross configurations.
 
-The settings page shows active calls, queue lengths, the oldest wait, and running calls for each rule.
+The settings page shows active calls, queue lengths, the oldest wait, and running calls for each rule. The counters are
+read while the page is open and in front, every three seconds; closing the section or hiding the tab stops the reads.
 
 ## Operational guidance
 

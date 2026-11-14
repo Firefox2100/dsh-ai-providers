@@ -48,7 +48,7 @@ export function LlmSection(props: LlmSectionProps) {
                 {model.maxTokens !== undefined && <span className={css.muted}>{t('output', { tokens: model.maxTokens })}</span>}
                 <Button variant="outline" size="sm" disabled={!route.active || probe?.status === 'running'} onClick={() => { props.probe(route.id, model.id) }}>{probe?.status === 'running' ? t('testing') : t('test')}</Button>
                 {probe?.status === 'done' && (probe.result.ok
-                  ? <span className={css.ok} role="status">{t('testOk', { text: probe.result.text.slice(0, 60), milliseconds: probe.result.milliseconds, tokens: probe.result.outputTokens === undefined ? '' : `, ${probe.result.outputTokens} tokens` })}</span>
+                  ? <span className={css.ok} role="status">{t('testOk', { text: probe.result.text.slice(0, 60), milliseconds: probe.result.milliseconds, tokens: probe.result.outputTokens === undefined ? '' : t('tokensSuffix', { count: probe.result.outputTokens }) })}</span>
                   : <span className={css.error} role="status">{t('testFailed', { code: probe.result.code, message: probeMessage(t, probe.result) })}</span>)}
               </div>
             )

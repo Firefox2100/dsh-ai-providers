@@ -1,4 +1,4 @@
-import { Button, Checkbox, SettingsForm, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, Checkbox, SettingsForm, SettingsValueField, type SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ConcurrencyFace } from './controller.ts'
 import type { ConcurrencyLocaleKey } from './locales.ts'
@@ -76,11 +76,22 @@ export function ConcurrencySection(props: ConcurrencySectionProps) {
           <div className={css.row}>
             <Button variant="outline" size="sm" disabled={!state.writable} onClick={props.addLimit}>{t('add')}</Button>
           </div>
-          <label className={css.row}>
-            {t('maxWait')}
-            <input className={`${css.input} ${css.number}`} type="number" min={0} step={1} value={state.maxWait.text} disabled={!state.writable} onChange={(event) => { props.edit('maxWaitSeconds', event.target.value) }} />
-          </label>
-          <p className={css.muted}>{t('maxWaitHelp')}</p>
+          {state.limits.length > 0 && <p className={css.muted}>{t('reserveHelp')}</p>}
+          <SettingsValueField
+            id="ai-concurrency-max-wait"
+            label={t('maxWait')}
+            hint={t('maxWaitHelp')}
+            text={state.maxWait.text}
+            overridden={state.maxWait.overridden}
+            invalid={state.maxWait.invalid}
+            numeric
+            onEdit={(text) => { props.edit('maxWaitSeconds', text) }}
+            onReset={() => { props.resetField('maxWaitSeconds') }}
+            overriddenLabel={t('overridden')}
+            resetLabel={t('reset')}
+            invalidLabel={t('invalidNumber')}
+            disabled={!state.writable}
+          />
         </div>
       </SettingsForm>
     </div>

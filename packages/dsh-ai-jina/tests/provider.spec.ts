@@ -2,7 +2,9 @@ import { Context } from '@deepseek-ai/cordis'
 import { AiProviders } from '@dsh-ai-providers/runtime'
 import { RerankService } from '@dsh-ai-providers/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { expectLocaleCoverage } from '@dsh-ai-providers/testkit'
 import * as plugin from '../src/index.ts'
+import { dictionaries } from '../src/client/locales.ts'
 
 let ctx: Context
 const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 40))
@@ -36,5 +38,11 @@ describe('the provider', () => {
       rerankConnection: 'jina', rerankModel: 'jina-reranker-v2-base-multilingual',
       embeddingConnection: 'jina', embeddingModel: 'jina-embeddings-v3', embeddingDimensions: 0, embeddingOverflow: 'truncate', batchSize: 64, timeoutMs: 60_000,
     })
+  })
+})
+
+describe('the copy', () => {
+  it('speaks every language the settings UI ships', () => {
+    expectLocaleCoverage(dictionaries)
   })
 })

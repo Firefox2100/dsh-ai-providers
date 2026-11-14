@@ -27,6 +27,27 @@ export interface ProviderContract {
 /** Lets Cordis finish the fibers a step started. */
 const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 40))
 
+/** The languages the settings UI ships; DSH requires `zh` and `en` and falls back to English for a missing key. */
+export const UI_LOCALES = ['en', 'zh', 'ja', 'es', 'fr', 'de', 'ru', 'pt'] as const
+
+const placeholdersOf = (value: string): string[] => [...value.matchAll(/\{(\w+)\}/g)].map(match => match[1]!).sort()
+
+/**
+ * Checks that a client half's copy covers every language the settings UI ships, with the same keys and the same
+ * `{placeholders}` as English. A locale added without a translation would otherwise fall back to English silently, and
+ * a placeholder dropped in one language would show up as a literal brace in the panel.
+ * @param dictionaries - the locale map a `src/client/locales.ts` exports.
+ */
+export function expectLocaleCoverage(dictionaries: Record<string, Record<string, string>>): void {
+  for (const locale of UI_LOCALES) expect(dictionaries[locale], `missing the ${locale} dictionary`).toBeDefined()
+  const reference = dictionaries.en!
+  for (const locale of UI_LOCALES) {
+    const entries = dictionaries[locale]!
+    expect(Object.keys(entries).sort(), `${locale} keys`).toEqual(Object.keys(reference).sort())
+    for (const [key, value] of Object.entries(entries)) expect(placeholdersOf(value), `${locale}.${key} placeholders`).toEqual(placeholdersOf(reference[key]!))
+  }
+}
+
 /**
  * Mounts one provider plugin the way DSH does — the runtime registry first, the plugin over it — and checks the
  * contract a provider owes: nothing before the runtime exists, one registration with its identity, a factory for each
