@@ -269,6 +269,13 @@ export function describeLlmErrorBody(raw: unknown): LlmErrorBody {
 const ERROR_TEXT_LIMIT = 300
 
 /**
+ * One tag of an HTML error page. Both neighbours exclude `<` as well as `>`: with `[^>]` a page made of bare `<`
+ * characters would re-read the rest of the body from every one of them, which is quadratic, and a proxy's broken HTML
+ * is exactly the input this function exists to survive.
+ */
+const HTML_TAG = /<[^<>]*>/g
+
+/**
  * An error body that is not JSON as one short line: a proxy's HTML error page (Cloudflare, nginx) becomes its title, or its text without markup, so a failed request does not show a page of tags.
  * @param body - the body as it came.
  * @returns the text, at most 300 characters.
@@ -276,9 +283,9 @@ const ERROR_TEXT_LIMIT = 300
 export function plainErrorText(body: string): string {
   let text = body
   if (/<\s*(?:!doctype\s+html|html|head|body)\b/i.test(body)) {
-    const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body)?.[1]?.trim()
-    const stripped = body.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]*>/g, ' ')
-    const heading = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(body)?.[1]?.replace(/<[^>]*>/g, ' ')
+    const title = /<title[^<>]*>([\s\S]*?)<\/title>/i.exec(body)?.[1]?.trim()
+    const stripped = body.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ').replace(HTML_TAG, ' ')
+    const heading = /<h1[^<>]*>([\s\S]*?)<\/h1>/i.exec(body)?.[1]?.replace(HTML_TAG, ' ')
     text = [title, heading].filter((part): part is string => part !== undefined && part.trim() !== '').join(': ') || stripped
   }
   const line = text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim()

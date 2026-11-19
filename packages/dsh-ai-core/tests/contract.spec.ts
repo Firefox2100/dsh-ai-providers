@@ -108,6 +108,17 @@ describe('shared language-model failure metadata', () => {
     expect(describeLlmErrorBody(null)).toEqual({ message: '', detail: '', type: '', code: '' })
   })
 
+  it('reads a page of broken markup in one pass', () => {
+    // A page cut off mid-tag is what a proxy timeout leaves behind: `<html><body>` followed by a run of bare `<` and
+    // no `>` anywhere after them. Excluding only `>` makes every one of those positions scan to the end of the body, so
+    // the only thing that tells a linear scan from a quadratic one is how long the call takes.
+    const broken = `<html><body>${'<'.repeat(200_000)}`
+    const started = performance.now()
+    const message = describeLlmErrorBody(broken).message
+    expect(performance.now() - started).toBeLessThan(1000)
+    expect(message.length).toBeLessThanOrEqual(301)
+  })
+
   it('reads retry delays and request ids in their supported order', () => {
     expect(retryAfterMsOf(new Headers({ 'retry-after-ms': '125.4', 'retry-after': '9' }))).toBe(125)
     expect(retryAfterMsOf(new Headers({ 'retry-after': '1.5' }))).toBe(1500)
