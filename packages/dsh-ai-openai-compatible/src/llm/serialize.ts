@@ -115,7 +115,8 @@ export function wireBody(call: LlmCall, style: WireStyle, images: WireImages = n
     ...sampling.minP === undefined ? {} : { min_p: sampling.minP },
     ...sampling.frequencyPenalty === undefined ? {} : { frequency_penalty: sampling.frequencyPenalty },
     ...sampling.presencePenalty === undefined ? {} : { presence_penalty: sampling.presencePenalty },
-    ...sampling.repetitionPenalty === undefined ? {} : { repetition_penalty: sampling.repetitionPenalty },
+    // vLLM and others read `repetition_penalty`, llama.cpp-based servers (LocalAI, llama-server) read `repeat_penalty` and ignore the other: both are sent, and a server ignores the one it does not know
+    ...sampling.repetitionPenalty === undefined ? {} : { repetition_penalty: sampling.repetitionPenalty, repeat_penalty: sampling.repetitionPenalty },
     ...sampling.seed === undefined ? {} : { seed: sampling.seed },
     ...sampling.stop === undefined || sampling.stop.length === 0 ? {} : { stop: sampling.stop },
     ...level?.body,

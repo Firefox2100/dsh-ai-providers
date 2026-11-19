@@ -96,6 +96,10 @@ describe('shared HTTP connections', () => {
 
 describe('shared language-model failure metadata', () => {
   it('reads the vendor error shapes used by compatible APIs', () => {
+    const page = '<!DOCTYPE html><html><head><title>524: A timeout occurred</title><style>body{x:1}</style></head><body><h1>Error 524</h1><p>The origin web server timed out.</p></body></html>'
+    expect(describeLlmErrorBody(page).message).toBe('524: A timeout occurred: Error 524')
+    expect(describeLlmErrorBody('<html><body><p>Bad&nbsp;gateway</p></body></html>').message).toBe('Bad gateway')
+    expect(describeLlmErrorBody('x'.repeat(1000)).message).toHaveLength(301)
     expect(describeLlmErrorBody('plain failure')).toEqual({ message: 'plain failure', detail: 'plain failure', type: '', code: '' })
     expect(describeLlmErrorBody({ error: { message: 'nested', type: 'request', code: 'bad' } })).toEqual({ message: 'nested', detail: 'request bad nested', type: 'request', code: 'bad' })
     expect(describeLlmErrorBody({ error: 'wrapped' }).message).toBe('wrapped')

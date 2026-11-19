@@ -107,6 +107,7 @@ describe('the request of a call', () => {
     const body = wireBody(callOf({ sampling: { temperature: 0.2, topP: 0.9, stop: ['END'], toolChoice: 'required', body: { extra: 1 } } }, { reasoningEffort: 'off' as never }), { maxTokensField: 'max_tokens', replayReasoning: false })
     expect(body).toMatchObject({ model: 'big', stream: true, stream_options: { include_usage: true }, max_tokens: 1000, temperature: 0.2, top_p: 0.9, stop: ['END'], tool_choice: 'required', reasoning_effort: 'none', extra: 1 })
     expect(body['tools']).toEqual([{ type: 'function', function: { name: 'look', description: 'Look', parameters: { type: 'object' } } }])
+    expect(wireBody(callOf({ sampling: { repetitionPenalty: 1.1 } }), { maxTokensField: 'max_tokens', replayReasoning: false })).toMatchObject({ repetition_penalty: 1.1, repeat_penalty: 1.1 })
     expect(wireBody(callOf({ sampling: { toolChoice: { name: 'look' }, maxTokens: 50 } }), { maxTokensField: 'max_completion_tokens', replayReasoning: false })).toMatchObject({ tool_choice: { type: 'function', function: { name: 'look' } }, max_completion_tokens: 50 })
     expect(wireBody(callOf({ sampling: { toolChoice: 'required' } }, { tools: [] }), { maxTokensField: 'max_tokens', replayReasoning: false })).not.toHaveProperty('tool_choice')
   })

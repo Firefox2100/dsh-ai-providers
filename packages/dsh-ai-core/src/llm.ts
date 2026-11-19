@@ -252,7 +252,10 @@ export interface LlmErrorBody {
  */
 export function describeLlmErrorBody(raw: unknown): LlmErrorBody {
   const text = (value: unknown): string => typeof value === 'string' ? value : ''
-  if (typeof raw === 'string') return { message: raw, detail: raw, type: '', code: '' }
+  if (typeof raw === 'string') {
+    const plain = plainErrorText(raw)
+    return { message: plain, detail: plain, type: '', code: '' }
+  }
   if (typeof raw !== 'object' || raw === null) return { message: '', detail: '', type: '', code: '' }
   const row = raw as Record<string, unknown>
   const error = row['error']
@@ -261,6 +264,25 @@ export function describeLlmErrorBody(raw: unknown): LlmErrorBody {
   const type = text(nested?.['type']) || text(row['type'])
   const code = text(nested?.['code']) || text(row['code'])
   return { message, detail: [type, code, message].filter(part => part !== '').join(' '), type, code }
+}
+
+const ERROR_TEXT_LIMIT = 300
+
+/**
+ * An error body that is not JSON as one short line: a proxy's HTML error page (Cloudflare, nginx) becomes its title, or its text without markup, so a failed request does not show a page of tags.
+ * @param body - the body as it came.
+ * @returns the text, at most 300 characters.
+ */
+export function plainErrorText(body: string): string {
+  let text = body
+  if (/<\s*(?:!doctype\s+html|html|head|body)\b/i.test(body)) {
+    const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body)?.[1]?.trim()
+    const stripped = body.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]*>/g, ' ')
+    const heading = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(body)?.[1]?.replace(/<[^>]*>/g, ' ')
+    text = [title, heading].filter((part): part is string => part !== undefined && part.trim() !== '').join(': ') || stripped
+  }
+  const line = text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim()
+  return line.length > ERROR_TEXT_LIMIT ? `${line.slice(0, ERROR_TEXT_LIMIT)}…` : line
 }
 
 /**
